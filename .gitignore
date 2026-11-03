@@ -1,0 +1,19 @@
+qwen_api.txt
+*api_key*
+.env
+.env.*
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+runs/
+*.zip
+# Preserve historical evidence locally; it is not the new implementation.
+research/**/traces/
+research/**/predictions/
+research/**/*.npz
+research/**/*.npy
+

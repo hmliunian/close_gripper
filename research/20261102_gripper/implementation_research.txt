@@ -1,0 +1,142 @@
+PushCart 夹爪指令重建：实现调研（2026-11-02）
+
+结论：建议先实现“离线开合事件识别 + 主臂过渡模板 + 不确定段原样保留”，再为训练 loader 增加显式的夹爪动作监督来源。现有数据和代码足够支持小规模验证。当前证据不支持直接用一个开度阈值处理全部发布数据，也不能保证仅凭夹爪宽度恢复每次真实抓取意图。
+
+本次完成的是只读调查与统计，不是清洗算法验收。检查了需求、四张配图、现有提取/画图代码、pipeline 映射、发布元数据、发布校验时的训练 loader 快照；统计了 16 条现有缓存轨迹，重读了其中 12 条原始 MCAP，并从 7 个数据根各取首/中/末 Parquet 文件，共检查 975 条 episode、99,854 帧。抽样有顺序偏差，不能当作全量比例或模型准确率。统计与原始路径见同目录 audit.json，复现入口是 audit.py。
+
+核实后的数据规模：
+
+  priority：20,586 episodes，912,352 frames，3 个数据根。
+  remaining：87,685 episodes，12,689,417 frames，3 个数据根。
+  drawer：16,965 episodes，1,439,605 frames，1 个数据根。
+  合计：125,236 episodes，15,041,374 frames；这是跨发布版累加，没有按原始 episode 去重。
+
+三个发布版均为 LeRobot v3.0，state 是 float32[20]，右夹爪索引 19，左夹爪索引 9。源发布表是 10 Hz；现有训练配置从它插值出 20 Hz 的动作网格。remaining 包含 20,253 条双臂叠衣服 episode。按本需求第一版只处理右夹爪，不把左臂也自动纳入。
+
+全部 1,961 个数据 Parquet 的磁盘大小约 1.96 GiB（不含视频/元数据）。数值批处理规模可控；首版规则算法无需 GPU。视频复制和跨用户链接权限可能比数值计算更影响发布成本，未实测全量处理时间。
+
+2026-10-26 目录下发现 1,750 个 recording_*.mcap 文件，其中 46 个在 xxx 测试目录；排除 xxx 后，8 个抓取任务有 1,584 个，叠衣服有 120 个。这只是文件清单，不代表全部具有可用的主从臂 topic。需求中的 pushcart-gripper-cmd-20261030 工作目录目前不存在；本次输出保存在当前 close_gripper 工作区。
+
+几个决定实现方式的发现：
+
+• 图 4 的绿色曲线来自 plot.py 第 43 行的 np.interp(ts, tc, lead)，使用了真实主臂指令。它是目标示意，不能当成从臂重建已成功的结果。
+
+• 12 条图示抓取里有 5 条从臂开度始终大于 0.5，简单的 0.5 二值阈值会漏掉这些抓取。另有 2 条主臂最大开度也低于 0.5，因此不能把“低于 0.5”直接解释成已闭合。还有 1 条主臂最终停在约 0.157，没有到 0。目标的 0/1 平台是一种训练监督规范化，不是逐帧精确复制原始主臂。
+
+• 复算图 2 的同一口径：11 条能完整穿过 0.9→0.1 的主臂闭合，中位数 130.1 ms，P10/P90 约 89.6/239.6 ms，最大 710.3 ms。该口径先除以本段主臂最大值；不能拿来改变发布数据固定 /0.095 的物理归一化。130 ms 只是 90%→10% 的跨度，不是整段 100%→0% 的总时长。
+
+• 4 条叠衣服缓存中，按绝对 0.9↔0.1 端点提取到 18 次完整闭合和 18 次完整打开，跨度中位数分别约 296/334 ms。部分包含中途停顿，且不统计未到 0.9 的部分打开；这些数值用于提示“开、关及任务间不能共用一个固定时长”，尚不能作为最终模板参数。
+
+• 12 条 MCAP 中同一阈值穿越的主从滞后，按 log_time 为 92.6 ms，按 header.stamp 为 94.4 ms。首条消息曾有约 56 ms 的录入延迟，但整段中位数不支持把它视为统一录制延迟。header 存在重复/非递增记录，需先检查、排序、按明确规则去重。应分别标定 clock 差异、控制延迟和阈值穿越差异，不能把 93 ms 机械地提前到所有事件上。
+
+• 975 条发布样本中有 54 条右夹爪全段幅度不超过 0.05，455 条首帧低于 0.5。这些只是曲线特征，不是“无抓取”或“已经持物”的真值。比如关抽屉样本既有全段接近 0，也有全段约 0.77 的。算法必须支持初始状态未知和没有可识别事件的情况。
+
+• 发布版没有 action 列。发布时校验的 ORION loader 在 canonical.py 第 1518 行明确关闭落盘 action 的读取，第 1602 行起从 absolute_state_grid 同时构造 state/action；table.py 也只选择约定列。只往 Parquet 加 action 或 annotation 列不会改变训练监督。
+
+推荐的实现顺序：
+
+1. 建立主从臂校准集，先解决语义和对齐。
+
+   初批建议按抓取任务、cart、日期分层选 200–300 条，加上多次抓放和低幅度/无事件负例。真实抓取成功与“发出闭合命令”分别标注：主臂指令只能提供后者，抓取成功仍需视频或接触证据。后续可扩展到候选全集。
+
+   优先复用现有 extract.py 的读取逻辑，但按 joint_names/name 找 gripper、按 interface_names 找 position，不能永久写死第 0 个关节。原始 position 以固定 0.095 m 归一化；把 log/publish/header 的 int64 纳秒时间都保留下来，先减原点再转秒。不要从浮点绝对秒反推纳秒时间。
+
+   本批 ROS2 schema 有短名 InterfaceValue[]、末尾分隔符和 /msg/ 名称不匹配问题。已验证用内存中的修复副本（补 control_msgs/、移除末尾分隔符、将 schema.name 的 /msg/ 规范为 /）后，公开 DecoderFactory 可以读取；audit.py 已保留实现及原/修复 schema 的哈希。固定 mcap-ros2-support 版本并覆盖真实 fixture，不改原 MCAP。现有 pipeline 的历史 reader 是 flatbuffer，不能直接当 ROS2 reader 使用。
+
+   比较时要把从臂按最终发布的 10 Hz 对齐策略采样，再进行推断；高频主臂只用于校准/真值。采用 source identity + 裁剪映射 + timestamp_ns 对齐，不靠文件名或独立归零的时间猜对应关系。主臂不能参与测试 episode 的事件检测或参数选择。
+
+2. 从从臂序列识别候选开合事件。
+
+   第一版选择可解释的离线状态机：OPEN → CLOSING → CLOSED → OPENING → OPEN，另设 UNKNOWN。CLOSED 表示推定的闭合指令状态，不等于物理夹爪宽度为零或已成功抓住物体。
+
+   候选特征是局部净下降/上升幅度、单位时间变化、变化后平台持续时间、反弹程度、前后是否有配对事件。开/闭平台的观测宽度按局部估计，允许杯子的平台停在 0.6。用滞回和最短停留约束抑制频繁切换；小幅短暂扰动不生成新抓放。
+
+   10 Hz 的 0.13 s 变化只占一两帧，不能要求闭合速度连续超过阈值 3 帧，也不宜先做宽窗口低通把它抹掉。在原序列找变化，用局部稳健统计确认前后平台，再回定位事件；确认时刻与动作开始时刻是两个变量。所有阈值以秒、归一化开度和每秒变化量表达。
+
+   无可信事件：逐值复制原夹爪。初始已闭/疑似持物、末尾未完成、严重抖动、过短段、失序时间戳、非有限值：分类记录 reason，不能默认从 OPEN 开始。对部分可信 episode 可以只处理有明确边界的区间；未判定区间保留，边界不满足连续性则整段退回 REVIEW。
+
+   严格限制：同一条稳定的 0.6 曲线，既可能是夹住杯子，也可能是操作员保持半开。单一宽度信号无法唯一确定真实意图。若产品要求所有此类段也必须正确，需引入主臂、视频、力/电流等补充证据；本需求的从臂单信号版本应保留“不处理”的出口。
+
+3. 独立拟合开、关过渡模板，再合成清洗曲线。
+
+   对高置信度主臂事件，提取局部起止平台、10%/50%/90% 穿越时刻、停顿和总时长。按事件相位对齐，剔除/单独分组多阶段动作，取稳健中位形状，拟合单调曲线。推荐单调化后用 PCHIP 插值；端点加平台约束，避免拼接处斜率突变。开与关分别拟合，必要时按设备/采集版本分组，别直接把闭合模板反转当松手模板。
+
+   调试基线可用 S(u)=6u^5−15u^4+10u^3（0≤u≤1），闭合用 1−S，打开用 S。完整支撑区间 T 应由数据拟合；不能直接把图 2 的 130 ms 填成 T。真实模板优于该基线需要验证支持。
+
+   对已确认的开/闭段输出精确 1/0；在事件区间按模板输出单调的 [0,1] 过渡。先生成连续时间函数，再在发布帧时间上求值。多次抓放逐次处理，重叠过渡不能互相覆盖：按时序约束缩短/重估，失败则 REVIEW。
+
+   如果训练仍只读 10 Hz 新列并线性插值到 20 Hz，输出曲线是模板的低频近似。若确实需要在 20 Hz 精确保留亚帧事件位置，可额外保存 episode 级事件起止时间/模板参数，由 loader 在动作网格求值；这是第二阶段增强，不能称为从 10 Hz 数据恢复出了真实高频细节。
+
+4. 新字段与训练接入分开设计。
+
+   建议新增 annotation.gripper_command：float32[1]，右臂，0=闭合、1=张开，语义是“从从臂推定的规范化指令”。未处理行写入原 observation.state[19]。可配 annotation.gripper_command_valid：bool[1]，表示该行是否有通过规则的推断；在 sidecar 记录 decision/reason、changed_frames、事件、置信分数、算法版本、配置哈希。分数未经校准时不能解释成概率。
+
+   loader 增加显式可选配置，例如 gripper_target_source（只是拟议接口，当前不存在）。读取新列并按同一时间网格对齐，只在生成 action 的右夹爪维度时采用它；实测 observation.state 及其输入语义保留。默认不开启时与现有 loader 行为完全一致。若推断无效按配置回退到原夹爪，不静默填零。读取成功之后还要验证 batch.action[...,19] 确实等于预期新标签。
+
+   不建议把 observation.state 整体 field_mapping 到新 20D 数组来“省掉 loader 改动”，那会连实测观测也替换成伪指令。该 loader 的 state/action 本来共享 absolute_state_grid，需要显式分开夹爪目标来源，并核实模型消费 state 的角色。
+
+   现有夹爪归一化是固定 0/1 端点，不做 z-score。若 episode 集、时间轴、XYZ/旋转均不变，已有 pose norm 的数值可复用并记录 provenance；无需因为新增夹爪列盲目重算全部 pose norm。新 feature 的统计按实际消费格式补齐，不套用旧 v2 episodes_stats.jsonl。
+
+5. 用独立留出集决定参数，避免只看叠图是否好看。
+
+   按原始 source episode 分组，再按 task/cart/day 留出，防止同一原始段在多个发布版或裁剪版本跨 train/test。先比较三个基线：原样保留、简单阈值、状态机+模板。必要时再引入带持续时间约束的 HSMM 或小型时序模型；复杂模型不能解决宽度本身的信息缺失。
+
+   指标包括：抓/放事件 precision/recall；事件时间误差（秒及 10 Hz 帧）；闭合平台残差；不必要切换次数；无抓取负例被改比例；保留/拒绝比例。报告主臂原始曲线误差，但另报规范化目标误差，因为“抓前统一为 1”和真实主臂预开度 0.36 本来就不同。分别看 transition、open/closed 平台，不能让长平台掩盖边界错位。
+
+   首版可设试验目标：事件 precision≥98%，召回≥95%，边界误差中位数≤1 个发布帧，人工确认无抓取样本误改率≤1%。这些是建议门槛，当前均未测得；报告样本量和置信区间。少量零误报样本不能证明全量误改率低于 1%，可先积累约 300 条独立负例并继续按任务分层检查。
+
+   人工检查应同时包含三曲线（原从臂/重建/真主臂，如有）、事件/置信度以及同步视频，覆盖杯子、薄物、慢动作、多次抓放、边界截断和低置信度。长多次抓放 episode 不能只看前几秒。
+
+6. 验收后再派生发布。
+
+   按现有子数据根与 shard 布局，在 <原目录名>-gripcmd 独立生成新 Parquet；新增列后原列 dtype、值、行序、episode/frame/global index、时间戳与任务一律保持。处理以 episode 为逻辑单位：v3 的一个文件可含多条 episode，不能把 shard 当成一条轨迹；跨 shard 边界应由元数据确认。
+
+   metadata/info.json 加入新 feature；保留原任务表、相机、裁剪映射和视频时间偏移；生成指向新目录的训练 YAML 和来源清单。新增字段相关 mask/统计按明确契约扩展，不修改原 action availability 或伪造物理观测。不要照抄父版 COMPLETE.json 宣称新版本已经验收。
+
+   可复用只读视频字节，使用现有发布协议允许的链接/复制机制；跨用户 hardlink 可能受保护，不能把硬链接成功作为前提。需改写的 parquet/metadata 必须有独立 inode，不能硬链接后原位修改。使用 staging、临时文件、原子替换和成功清单，配置/源哈希不匹配时不续写旧结果。
+
+   每任务记录 total/changed/passthrough/review/error、改动帧数、开合事件数和理由；作业打印阶段、进度和失败位置。轻量数值步骤用 CPU；扩大批处理走集群 CPU 队列，不在登录节点全量跑。
+
+   必做验证：所有旧列逐值回读一致；无可信事件的输出与原夹爪逐值一致；新值有界有限；旧配置行为不变；新配置实际选中新标签；单臂/双臂 mask 正确；边界/插值帧对齐；每个数据根及跨 episode/shard 样本、短段、多次抓放可读；视频和源映射可追溯。最后的小规模训练或 replay 才能说明训练收益，loader smoke 只证明读取和语义接入。
+
+   根据原需求“发布前先确认”，正式发布前应提供完整的候选目录、统计、失败清单、人工抽检与 loader 回读结果供确认。本次没有创建或发布 -gripcmd 数据。
+
+代码落点建议（均为待实现项，不代表现有命令）：
+
+  orion_pipeline/robot/pushcart/ 下增加 gripper_reference.py（读取与模板统计）、gripper_command.py（纯序列推断/合成）、gripper_release.py（按原发布结构派生与审计）。只有出现复用需求才提取共享代码。
+  configs/robot/pushcart/gripper_command.json 集中保存单位、右臂索引、最小净幅度、噪声倍数、平台时长、滞回、开/关时长、delay 校准、未知状态策略、模板路径/哈希和版本。
+  新 operation 注册到 registry，CLI 可按 calibrate / evaluate / derive 分阶段实现；参数未标定时拒绝正式 derive，而不是沿用演示数值。
+  训练仓库的 pretrain/table.py、canonical.py 和配置合同增加可选夹爪监督读取；在当前生产 checkout 重新确认快照差异后再修改。
+
+本地证据入口：
+
+  需求：../../Untitled.md
+  统计：audit.json
+  可复现脚本：audit.py
+  原图示脚本：/gpfs/jiuquyun/projects/yiyang/pushcart-gripper-figs-20261102/plot.py
+  原提取脚本：/gpfs/jiuquyun/projects/yiyang/pushcart-gripper-figs-20261102/extract.py
+  pipeline 现有映射：/gpfs/jiuquyun/projects/youzi/orion-data-pipeline/src/orion_pipeline/robot/pushcart/mapping.py
+  发布校验时 loader：/gpfs/jiuquyun/projects/yiyang/pushcart-durclean-20261029/orion0-check/src/dataloader/pretrain/canonical.py
+
+外部一手资料及适用范围：
+
+  OpenVLA 的 binarize_gripper_actions 使用 >0.95/<0.05 端点和反向扫描填充中间状态；末尾没有到端点时保留末值。它针对已有 action，不解决“从臂被物体挡在 0.6”的问题；可作为基线参考，不能直接替代本任务的事件识别。
+  https://github.com/openvla/openvla/blob/main/prismatic/vla/datasets/rlds/utils/data_utils.py
+
+  SciPy PCHIP 保持单调、避免插值过冲，适合已经单调化的经验过渡模板；它不负责判断抓取事件，也不会自动去除输入手抖。
+  https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.PchipInterpolator.html
+
+  MCAP 提供不依赖完整 ROS2 安装的 Python 动态解码接口；本批 schema 的额外兼容修复需自行保留验证。
+  https://mcap.dev/docs/python/ros2_noenv_example
+
+  LeRobot v3 把多个 episode 存入共享 Parquet/MP4，以元数据记录边界。派生时应保留实际 v3 索引/元数据合同。
+  https://huggingface.co/docs/lerobot/en/lerobot-dataset-v3
+
+  PyArrow 可用 Table.append_column 增加列并写入新文件；不经 pandas 重建旧列，有助于保留原 dtype 和嵌套 list 类型，最终仍须回读验证。
+  https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.append_column
+
+复现本次调查：
+
+  OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /gpfs/jiuquyun/projects/youzi/orion-data-pipeline/.venv/bin/python -B research/20261102_gripper/audit.py
+
+该命令仅覆盖当前 research 目录内的 audit.json，不改写源 MCAP、既有发布数据或其他项目代码。当前依赖版本已写入 audit.json。
