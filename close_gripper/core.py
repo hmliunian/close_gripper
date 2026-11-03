@@ -46,7 +46,7 @@ def detect_candidates(episode, config=None):
                 candidates.append({"candidate_id": f"{episode['episode_id']}:{side}:{start}:{peak}",
                                    "side": side, "start": start, "end": peak,
                                    "start_time": times[start], "end_time": times[peak],
-                                   "net_opening_mm": net, "speed_mm_s": speed,
+                                   "net_opening_mm": net, "opening_speed_mm_s": speed,
                                    "cameras": cameras,
                                    "camera_status": "available" if cameras else "missing_same_side_camera"})
             i = max(peak, j - 1)
@@ -55,8 +55,6 @@ def detect_candidates(episode, config=None):
 
 def _estimate(widths, times, contact, opening_start, cfg):
     """Fit only the contiguous descending segment preceding the reviewed contact."""
-    if contact <= 0:
-        return None, "episode_starts_holding_or_missing_descent"
     platform_end = contact
     while platform_end + 1 <= opening_start and times[platform_end + 1] - times[contact] <= cfg["platform_window_s"] + 1e-9:
         platform_end += 1
@@ -67,7 +65,11 @@ def _estimate(widths, times, contact, opening_start, cfg):
     if max(platform) - min(platform) > cfg["platform_tolerance_mm"] or abs(widths[contact] - c) > cfg["platform_tolerance_mm"]:
         return None, "unstable_platform_or_contact_mismatch"
     if c <= cfg["zero_tolerance_mm"]:
+        if max(platform) > cfg["zero_tolerance_mm"]:
+            return None, "near_zero_connection_mismatch"
         return {"contact_frame": contact, "platform_mm": c, "connection_mm": widths[contact]}, "near_zero_platform"
+    if contact <= 0:
+        return None, "episode_starts_holding_or_missing_descent"
     start = contact
     while start > 0 and times[contact] - times[start - 1] <= cfg["closing_lookback_s"] + 1e-9:
         speed = (widths[start - 1] - widths[start]) / (times[start] - times[start - 1])
@@ -214,11 +216,12 @@ def generate_targets(episode, candidates, decisions, config=None):
         estimate, reason = _estimate(widths, times, contact, candidate["start"], cfg)
         if estimate:
             event.update(estimate)
-        if reason:
+        near_zero_hold = reason == "near_zero_platform" and category == "suspected_misopen"
+        if reason and not near_zero_hold:
             event["reason"] = reason
             continue
         allowed_end = hold_end - 1 if category == "normal_release" else hold_end
-        if estimate["zero_time"] > times[allowed_end] + 1e-9:
+        if not near_zero_hold and estimate["zero_time"] > times[allowed_end] + 1e-9:
             event["reason"] = "insufficient_holding_time"
             continue
         # A reviewed independent grasp/release is a hard boundary regardless of curve sign.
@@ -233,9 +236,16 @@ def generate_targets(episode, candidates, decisions, config=None):
             continue
         curve = list(widths)
         for i in range(contact + 1, hold_end + 1):
-            value = widths[contact] - estimate["speed_mm_s"] * (times[i] - times[contact])
+            # A near-zero grasp needs no extrapolated closure. Retain the contact
+            # sample and everything before it, then suppress confirmed openings
+            # only on the existing, reviewed holding grid. Never invent a speed.
+            value = 0.0 if near_zero_hold else widths[contact] - estimate["speed_mm_s"] * (times[i] - times[contact])
             curve[i] = 0.0 if value <= 1e-9 else value
-        event["zero_frame"] = next(i for i in range(contact + 1, hold_end + 1) if curve[i] <= 1e-9)
+        search_start = contact if near_zero_hold else contact + 1
+        event["zero_frame"] = next(i for i in range(search_start, hold_end + 1) if curve[i] <= 1e-9)
+        if near_zero_hold:
+            event.update(no_closure_extension=True, contact_time=times[contact],
+                         zero_time=times[event["zero_frame"]], zero_time_source="existing_near_zero_grid")
         event["limit_frame"] = hold_end
         comparison = None
         if category == "normal_release":

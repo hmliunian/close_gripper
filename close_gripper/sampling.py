@@ -25,16 +25,22 @@ def build_manifest(roots, limit=48):
                     source_group=group, split=split, semantic_category="needs_visual_review",
                     review_status="not_reviewed", source_metadata_file=str(file),
                     semantic_coverage_verified=False))
-    queues = []
+    root_queues = defaultdict(deque)
     for group in sorted(groups):
         # Hash order avoids always selecting the first temporal block.
         items = groups[group]
         items.sort(key=lambda x: hashlib.sha256(f'{x["dataset"]}:{x["episode_index"]}'.encode()).hexdigest())
-        queues.append(deque(items))
+        root_queues[group[0]].append(deque(items))
     chosen = []
-    while queues and len(chosen) < limit:
-        for queue in queues:
-            if queue and len(chosen) < limit:
-                chosen.append(queue.popleft())
-        queues = [q for q in queues if q]
+    while root_queues and len(chosen) < limit:
+        for root in list(root_queues):
+            if len(chosen) >= limit:
+                break
+            tasks = root_queues[root]
+            queue = tasks.popleft()
+            chosen.append(queue.popleft())
+            if queue:
+                tasks.append(queue)
+            if not tasks:
+                del root_queues[root]
     return chosen

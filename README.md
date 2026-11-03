@@ -22,6 +22,8 @@ python3 -m venv .venv
 
 打开 `runs/my_demo/review.html`，切换 episode，拖动时间滑块。`curves.png` 可直接查看或分享。示例涵盖左侧误开、右侧正常释放、双侧同时误开、空夹和未触发；全部标明合成来源，橙线是候选，绿色仅绘制有效目标。
 
+本次已生成的可移植示例：[曲线图](examples/synthetic_curves.png)、[交互审阅页](examples/synthetic_review.html)。图中30 mm受阻平台按接触前速度继续降至0；正常释放候选保留原释放起止时刻，另显示按原张开速度所需的额外时间。
+
 所有输出必须使用本工作区内**新的** `runs/<run_id>`。已有目录拒绝覆盖，失败后保留审计信息，换新 run 重试。
 
 ## 实际数据与 Qwen

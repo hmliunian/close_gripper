@@ -138,9 +138,57 @@ class CoreTests(unittest.TestCase):
 
     def test_near_zero_plateau_still_triggers(self):
         widths = [50, 40, 30, 20, 10, .5, .5, .5, .5, .5, 8, .5, .5, .5, .5, .5]
-        _, candidates, _, result = self.run_case(widths)
+        ep, candidates, _, result = self.run_case(widths)
         self.assertEqual(len(candidates), 1)
+        event = result["events"][0]
+        self.assertEqual(event["reason"], "confirmed_misopen")
+        self.assertTrue(event["no_closure_extension"])
+        self.assertNotIn("speed_mm_s", event)
+        self.assertEqual([r[1] for r in result["target"][:6]], [r[19] for r in ep["state"][:6]])
+        self.assertTrue(all(r[1] == 0 for r in result["target"][6:]))
+        self.assertTrue(all(not r[0] for r in result["valid"]))
+
+    def test_zero_hold_needs_no_fabricated_closing_speed(self):
+        widths = [0] * 10 + [8] + [0] * 5
+        _, _, _, result = self.run_case(widths, hold_start=0)
+        event = result["events"][0]
+        self.assertEqual(event["status"], "applied")
+        self.assertTrue(event["no_closure_extension"])
+        self.assertEqual(event["zero_frame"], 0)
+        self.assertNotIn("speed_mm_s", event)
+        self.assertTrue(all(row[1] == 0 for row in result["target"]))
+
+    def test_near_zero_unconfirmed_and_synthetic_remain_preview_only(self):
+        widths = [0] * 10 + [8] + [0] * 5
+        for source in ("human", "model", "synthetic"):
+            ep, _, _, result = self.run_case(widths, hold_start=0, review_source=source, confirmed=False)
+            with self.subTest(source=source):
+                self.assertEqual(result["events"][0]["status"], "preview")
+                self.assertFalse(any(any(row) for row in result["valid"]))
+                self.assertEqual(result["target"], [[r[9], r[19]] for r in ep["state"]])
+                self.assertEqual(result["preview_target"][10][1], 0)
+
+    def test_near_zero_normal_release_is_unchanged(self):
+        widths = [50, 40, 30, 20, 10, .5, .5, .5, .5, .5, .5, 20, 40, 60, 80, 80]
+        ep, _, _, result = self.run_case(widths, category="normal_release", grasp_after="not_held", hold_end=10, release_end=14)
         self.assertEqual(result["events"][0]["reason"], "near_zero_platform")
+        self.assertEqual(result["target"], [[r[9], r[19]] for r in ep["state"]])
+        self.assertEqual(result["preview_target"], result["target"])
+
+    def test_near_zero_requires_continuous_grasp_and_valid_exit(self):
+        widths = [0] * 10 + [8] + [0] * 3 + [30, 30]
+        for changes, reason in (({"hold_end": 13}, "unconfirmed_exit_boundary"),
+                                ({"grasp_after": "uncertain"}, "continuous_grasp_not_established")):
+            _, _, _, result = self.run_case(widths, hold_start=0, **changes)
+            with self.subTest(changes=changes):
+                self.assertEqual(result["events"][0]["reason"], reason)
+                self.assertEqual(result["target"], result["preview_target"])
+
+    def test_near_zero_median_cannot_hide_nonzero_contact(self):
+        widths = [50, 40, 30, 20, 10, 1.5, .5, .5, .5, .5, 8, .5, .5, .5, .5, .5]
+        _, _, _, result = self.run_case(widths)
+        self.assertEqual(result["events"][0]["reason"], "near_zero_connection_mismatch")
+        self.assertEqual(result["target"], result["preview_target"])
 
     def test_initial_hold_without_descent_not_fabricated(self):
         widths = [30] * 10 + [45] + [30] * 5

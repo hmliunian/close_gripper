@@ -152,8 +152,11 @@ def load_episode(root: Path | str, episode_index: int) -> dict:
         "episode_index": episode_index, "data_path": str(data_path),
         "dataset_from_index": meta["dataset_from_index"], "dataset_to_index": meta["dataset_to_index"],
         "tasks": meta.get("tasks", []), "source_metadata": source_fields,
-        "source_episode_identity_available": any(k in source_fields for k in (
+        "source_episode_identity_available": any(source_fields.get(k) not in (None, "") for k in (
             "source_episode_id", "source_episode_index", "original_episode_id", "source_path")),
+        # Metadata presence alone does not establish a globally unique raw
+        # recording or prove that separate published crops belong together.
+        "source_episode_identity_verified": False,
         "info_sha256": hashlib.sha256((root / "meta/info.json").read_bytes()).hexdigest(),
         "mask_sha256": hashlib.sha256((root / "dataset_configs/masks/mask.json").read_bytes()).hexdigest(),
     }

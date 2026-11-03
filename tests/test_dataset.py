@@ -147,6 +147,23 @@ class EpisodeReadTests(unittest.TestCase):
         with self.assertRaises(DatasetError):
             load_episode(self.root, 0)
 
+    def test_source_tasks_and_timestamps_do_not_claim_raw_identity(self):
+        self.metadata[0]["source_tasks"] = ["fixture task"]
+        self.metadata[0]["source_episode_id"] = None
+        for index, row in enumerate(self.rows):
+            row["timestamp_ns"] = 1_700_000_000_000_000_000 + index * 100_000_000
+        self._write_tables()
+        identity = load_episode(self.root, 0)["identity"]
+        self.assertFalse(identity["source_episode_identity_available"])
+        self.assertFalse(identity["source_episode_identity_verified"])
+        self.assertEqual(identity["source_metadata"]["source_tasks"], ["fixture task"])
+        self.assertEqual(identity["first_timestamp_ns"], self.rows[0]["timestamp_ns"])
+        self.metadata[0]["source_episode_id"] = "declared-source-id"
+        self._write_tables()
+        identity = load_episode(self.root, 0)["identity"]
+        self.assertTrue(identity["source_episode_identity_available"])
+        self.assertFalse(identity["source_episode_identity_verified"])
+
     def test_missing_camera_keeps_numerical_side_and_reports_reason(self):
         camera = SIDE_CAMERAS["left"][0]
         path = self.root / self.info["video_path"].format(video_key=camera, chunk_index=0, file_index=0)

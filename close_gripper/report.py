@@ -19,9 +19,10 @@ def write_report(run_dir, records):
                          target=result["target"], preview=result.get("preview_target", result["target"]),
                          valid=result["valid"], events=result["events"],
                          candidates=record["candidates"], frames=frames,
-                         identity=episode["identity"], comparisons=result.get("release_comparisons", [])))
+                         identity=episode["identity"], issues=result.get("pipeline_issues", []),
+                         comparisons=result.get("release_comparisons", [])))
     encoded = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
-    page = '''<!doctype html><html lang="zh"><meta charset="utf-8">
+    page = r'''<!doctype html><html lang="zh"><meta charset="utf-8">
 <title>夹爪曲线审阅</title><style>
 body{font:16px system-ui;margin:24px auto;max-width:1200px;padding:0 20px;background:#f4f7fa;color:#172b40}
 h1{font-size:26px}select,input{font:inherit}section{background:white;padding:18px;margin:18px 0;border-radius:12px}
@@ -34,13 +35,15 @@ svg{width:100%;height:auto}pre{white-space:pre-wrap;font-size:12px;max-height:36
 <p class="legend"><span style="color:#526577">━ 原始从臂</span><span style="color:#e59420">┄ 候选曲线</span><span style="color:#12826c">━ 有效目标</span></p>
 <div id="charts"></div><input id="scrub" type="range" min="0" value="0" style="width:90%"><button id="play">播放</button><p id="time"></p></section>
 <section><h2>同侧腕部画面</h2><div class="frames" id="frames"></div></section>
+<section><h2>释放策略比较</h2><div id="release"></div></section>
 <section><h2>事件、平台、速度与回退原因</h2><pre id="events"></pre></section>
 <script>const records=__DATA__;let r, timer; const $=id=>document.getElementById(id);
 records.forEach((v,i)=>{let o=document.createElement('option');o.value=i;o.textContent=v.id;$('episodes').append(o)});
 function line(values,col,accepted=false){let active=false;return values.map((v,i)=>{if(accepted&&!r.valid[i][col]){active=false;return ''}let op=active?'L':'M';active=true;return op+(55+930*(r.t[i]-r.t[0])/(r.t.at(-1)-r.t[0]||1)).toFixed(2)+','+(190-v[col]*160).toFixed(2)}).join(' ')}
 function render(){r=records[+$('episodes').value];$('identity').textContent=JSON.stringify(r.identity);$('scrub').max=r.t.length-1;$('scrub').value=0;
 $('charts').innerHTML=[0,1].map(col=>`<svg viewBox="0 0 1020 230"><text x="5" y="20">${col?'右':'左'}夹爪 / mm</text>${[0,25,50,75,95].map(v=>`<path d="M55 ${190-v/95*160}H985" stroke="#e6ebef"/><text x="12" y="${194-v/95*160}" font-size="12">${v}</text>`).join('')}<path d="${line(r.original,col)}" stroke="#526577" fill="none" stroke-width="2"/><path d="${line(r.preview,col)}" stroke="#e59420" fill="none" stroke-width="3" stroke-dasharray="6 4"/><path d="${line(r.target,col,true)}" stroke="#12826c" fill="none" stroke-width="1.5"/><line class="cursor" y1="25" y2="195" stroke="#9b3065"/><text x="55" y="218" font-size="12">${r.t[0]} s</text><text x="930" y="218" font-size="12">${r.t.at(-1)} s</text></svg>`).join('');
-$('events').textContent=JSON.stringify({candidates:r.candidates,events:r.events,release_comparisons:r.comparisons},null,2);scrub()}
+$('events').textContent=JSON.stringify({pipeline_issues:r.issues,candidates:r.candidates,events:r.events,release_comparisons:r.comparisons},null,2);
+$('release').textContent=r.comparisons.length?r.comparisons.map(c=>`${c.side} · 帧 ${c.start}–${c.end}：橙线保留释放起止时刻，改变张开速度；按原估计速度 ${c.opening_speed_mm_s.toFixed(1)} mm/s 从0开始，额外需要 ${c.extra_time_needed_s.toFixed(3)} s。${c.original_speed?'原速候选也能在确认窗口内完成。':'确认窗口不足，原速方案未延伸到窗口外。'} 两种方案均未批准。`).join('\n'):'本片段无可比较的完整释放候选。';scrub()}
 function scrub(){let i=+$('scrub').value,t=r.t[i],x=55+930*(t-r.t[0])/(r.t.at(-1)-r.t[0]||1);document.querySelectorAll('.cursor').forEach(el=>{el.setAttribute('x1',x);el.setAttribute('x2',x)});
 $('time').textContent=`帧 ${i} · episode ${t.toFixed(2)} s · 左/右原值 ${r.original[i].map(x=>(x*95).toFixed(2)).join(' / ')} mm`;
 $('frames').replaceChildren();[...new Set(r.frames.map(f=>f.camera))].forEach(camera=>{let fs=r.frames.filter(f=>f.camera===camera),f=fs.reduce((a,b)=>Math.abs(b.timestamp-t)<Math.abs(a.timestamp-t)?b:a),d=document.createElement('div');d.className='frame';let p=document.createElement('p');p.textContent=`${camera} · 证据帧 ${f.frame_index} · 视频 ${f.video_timestamp.toFixed(2)}s · 距光标 ${Math.abs(f.timestamp-t).toFixed(2)}s`;d.append(p);let img=document.createElement('img');img.src=f.path;d.append(img);$('frames').append(d)});
@@ -71,6 +74,11 @@ def write_plot(run_dir, records):
             ax.set(title=f'{ep["episode_id"]} / {side}', xlabel="Episode time (s)", ylabel="Width (mm)", ylim=(-3, 100))
             ax.grid(alpha=.2)
             ax.legend(fontsize=8)
+            comparisons = [c for c in result.get("release_comparisons", []) if c["side"] == side]
+            for comp in comparisons:
+                if comp["original_speed"] is not None:
+                    ax.plot(ep["timestamps"], [v*95 for v in comp["original_speed"]], color="#7755aa", ls=":", label="Original release speed")
+                ax.text(.02, .03, f'Original release speed needs +{comp["extra_time_needed_s"]:.2f}s; review only', transform=ax.transAxes, fontsize=8)
     fig.suptitle("Gripper targets: review candidates are NOT approved training labels", fontsize=13)
     fig.tight_layout(rect=(0, 0, 1, .98))
     path = Path(run_dir) / "curves.png"

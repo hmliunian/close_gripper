@@ -98,6 +98,12 @@ def process_episode(episode, run_dir, config, decisions=None, client=None, candi
             # Do not persist arbitrary exception text from model/IO adapters.
             issues.append({"candidate_id":candidate["candidate_id"], "reason":"frame_or_model_error", "error_type":type(exc).__name__})
     result = generate_targets(episode, candidates, decisions, config)
+    issues_by_id = {issue["candidate_id"]: issue for issue in issues}
+    for event in result["events"]:
+        if event["candidate_id"] in issues_by_id:
+            event["pipeline_issue"] = issues_by_id[event["candidate_id"]]
+            if event.get("reason") == "missing_visual_decision":
+                event["reason"] = issues_by_id[event["candidate_id"]]["reason"]
     result["pipeline_issues"] = issues
     result["evidence_type"] = "supplied_review" if supplied else "real_vlm" if client else "no_visual_review"
     record = dict(episode=episode, result=result, candidates=candidates, frames=frames)
@@ -117,6 +123,7 @@ def finish_run(run_dir, records, config):
     dump(run_dir / "config.json", cfg)
     digest = hashlib.sha256(json.dumps(cfg, sort_keys=True).encode()).hexdigest()
     tasks = {}
+    side_counts = {s: dict(candidates=0, applied=0, preview=0, unchanged=0, not_triggered_episodes=0, invalid_episodes=0) for s in ("left", "right")}
     for record in records:
         ep, res = record["episode"], record["result"]
         task = str(ep["identity"].get("task", ep["identity"].get("tasks", "unknown")))
@@ -125,11 +132,18 @@ def finish_run(run_dir, records, config):
         counts["candidates"] += len(record["candidates"])
         counts["changed_frames"] += sum(any(abs(row[c]-ep["state"][i][(9,19)[c]])>1e-12 for c in (0,1)) for i,row in enumerate(res["target"]))
         counts["accepted_side_frames"] += sum(sum(row) for row in res["valid"])
+        for event in res["events"]:
+            side_counts[event["side"]]["candidates"] += 1
+            side_counts[event["side"]][event["status"]] += 1
+        for side, status in res["side_status"].items():
+            if status in ("not_triggered", "invalid"):
+                side_counts[side][status + "_episodes"] += 1
     write_report(run_dir, records)
     plot = write_plot(run_dir, records)
-    summary = dict(status="complete", config_sha256=digest, episodes=len(records), tasks=tasks,
+    summary = dict(status="complete", config_sha256=digest, episodes=len(records), tasks=tasks, sides=side_counts,
                    release_policy="review_only", real_vlm_requests=sum(sum(response.get("attempts", 0) for response in json.loads((run_dir / hashlib.sha256(str(r["episode"]["episode_id"]).encode()).hexdigest()[:12] / "model_responses.json").read_text())) for r in records),
                    review="review.html", plot=plot.name if plot else None)
+    summary["implementation_sha256"] = hashlib.sha256(b"".join(p.name.encode()+p.read_bytes() for p in sorted((WORKSPACE / "close_gripper").glob("*.py")))).hexdigest()
     dump(run_dir / "summary.json", summary)
     print(json.dumps(summary, ensure_ascii=False))
     return summary

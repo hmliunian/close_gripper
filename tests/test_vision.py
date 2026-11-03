@@ -161,6 +161,26 @@ class VisionTest(unittest.TestCase):
         self.assertEqual(result["attempts"], 1)
         self.assertEqual(call.call_count, 1)
 
+    def test_authentication_denial_blocks_later_uploads_and_credential_reads(self):
+        for status_code in (401, 403):
+            with self.subTest(status_code=status_code):
+                client = QwenClient({"max_requests": 4, "max_retries": 2})
+                error = HTTPError("https://test.invalid", status_code, "denied", {}, io.BytesIO(b"ignored"))
+                with patch.object(client, "_credential", return_value="sk-fake-test") as credential, patch(
+                        "close_gripper.vision.urlopen", side_effect=error) as call:
+                    first = client.annotate(self.episode, self.candidate, self.frames)
+                    with patch("close_gripper.vision.build_request", side_effect=AssertionError("image bytes read")):
+                        second = client.annotate(self.episode, self.candidate, self.frames)
+                self.assertEqual(first["error"], f"http_{status_code}")
+                self.assertEqual(first["attempts"], 1)
+                self.assertEqual(second["error"], "authentication_blocked")
+                self.assertEqual(second["attempts"], 0)
+                self.assertEqual(second["decision"]["category"], "uncertain")
+                self.assertIsNone(second["request_hash"])
+                self.assertEqual(client.request_count, 1)
+                self.assertEqual(call.call_count, 1)
+                self.assertEqual(credential.call_count, 1)
+
     def test_invalid_response_preserves_raw_and_falls_back(self):
         client = QwenClient({})
         response = self.response(dict(self.decision, evidence_frames=[0]))

@@ -23,4 +23,3 @@ def apply_gripper_targets(actions, target, valid):
                     raise ValueError("invalid gripper target")
                 row[index] = value
     return result
-

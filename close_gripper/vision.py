@@ -273,6 +273,7 @@ class QwenClient:
     def __init__(self, config):
         self.config = dict(config)
         self.request_count = 0
+        self.authentication_blocked = False
         self.base_url = self.config.get("base_url", DEFAULT_BASE_URL).rstrip("/")
         parsed = urlparse(self.base_url)
         if (parsed.scheme != "https" or not parsed.hostname
@@ -316,6 +317,11 @@ class QwenClient:
                   "base_url": self.base_url, "attempts": 0, "error": None}
         secret = ""
         try:
+            # One failed authentication is enough to stop this client. Do not
+            # reread credentials/images or retry uploads until configuration is
+            # corrected and a fresh client is explicitly constructed.
+            if self.authentication_blocked:
+                raise VisionValidationError("authentication_blocked")
             payload = build_request(episode, candidate, frames, self.config)
             result["request_hash"] = request_fingerprint(payload, self.base_url)
             if self.request_count >= self.max_requests:
@@ -341,6 +347,8 @@ class QwenClient:
                     # Do not read or persist service error bodies: they may echo requests.
                     code = exc.code
                     exc.close()
+                    if code in (401, 403):
+                        self.authentication_blocked = True
                     if code in (429, 500, 502, 503, 504) and attempt < self.max_retries:
                         time.sleep(min(2 ** attempt, 4))
                         continue

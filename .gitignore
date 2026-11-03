@@ -16,4 +16,6 @@ research/**/traces/
 research/**/predictions/
 research/**/*.npz
 research/**/*.npy
-
+research/**/*.json
+research/**/*.csv
+research/**/*.html
