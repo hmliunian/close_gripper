@@ -33,11 +33,11 @@ def decision(candidate, size, **changes):
 
 
 class CoreTests(unittest.TestCase):
-    def run_case(self, widths=MISOPEN, **changes):
+    def run_case(self, widths=MISOPEN, config=None, **changes):
         ep = episode(widths)
         candidates = detect_candidates(ep)
         d = decision(candidates[0], len(widths), **changes)
-        return ep, candidates, d, generate_targets(ep, candidates, [d])
+        return ep, candidates, d, generate_targets(ep, candidates, [d], config)
 
     def test_one_frame_pulse_triggers(self):
         ep = episode([30, 30, 35, 30, 30])
@@ -66,7 +66,7 @@ class CoreTests(unittest.TestCase):
         ep = episode(MISOPEN)
         snapshot = copy.deepcopy(ep)
         candidates = detect_candidates(ep)
-        result = generate_targets(ep, candidates, [decision(candidates[0], len(MISOPEN))])
+        result = generate_targets(ep, candidates, [decision(candidates[0], len(MISOPEN))], {"closing_policy": "original_speed"})
         self.assertEqual(ep, snapshot)
         self.assertEqual([r[1] for r in result["target"][:6]], [r[19] for r in ep["state"][:6]])
         self.assertEqual([r[0] for r in result["target"]], [0] * len(MISOPEN))
@@ -87,7 +87,7 @@ class CoreTests(unittest.TestCase):
     def test_connection_uses_actual_not_platform_median(self):
         widths = list(MISOPEN)
         widths[5:9] = [31, 30, 30, 30]
-        _, _, _, result = self.run_case(widths)
+        _, _, _, result = self.run_case(widths, config={"closing_policy": "original_speed"})
         event = result["events"][0]
         self.assertEqual(event["connection_mm"], 31)
         self.assertEqual(event["platform_mm"], 30)
@@ -125,7 +125,7 @@ class CoreTests(unittest.TestCase):
 
     def test_insufficient_hold_rolls_back_whole_event(self):
         widths = [80, 70, 60, 50, 40, 30, 30, 40, 50, 60]
-        _, _, _, result = self.run_case(widths, category="normal_release", grasp_after="not_held", hold_end=6, release_end=9)
+        _, _, _, result = self.run_case(widths, config={"closing_policy": "original_speed"}, category="normal_release", grasp_after="not_held", hold_end=6, release_end=9)
         self.assertEqual(result["events"][0]["reason"], "insufficient_holding_time")
         self.assertEqual(result["target"], result["preview_target"])
 
@@ -279,6 +279,150 @@ class CoreTests(unittest.TestCase):
         malformed = dict(d, candidate_id="nonexistent", hold_end="bad", category="normal_release")
         result = generate_targets(ep, c, [d, malformed])
         self.assertEqual(result["events"][0]["status"], "applied")
+
+    def test_default_closure_maps_original_endpoints_on_same_time_grid(self):
+        ep, _, _, result = self.run_case()
+        event = result["events"][0]
+        self.assertEqual(event["closing_policy"], "fixed_timing")
+        self.assertTrue(event["closing_speed_changed"])
+        self.assertEqual(event["modified_start"], 1)
+        self.assertEqual(event["zero_frame"], 5)
+        self.assertEqual(event["zero_time"], ep["timestamps"][5])
+        self.assertEqual(len(result["target"]), len(ep["timestamps"]))
+        self.assertEqual(result["target"][0][1], ep["state"][0][19])
+        for i in range(6):
+            phase = (80 - MISOPEN[i]) / (80 - 30)
+            self.assertAlmostEqual(result["target"][i][1] * 95, 80 * (1 - phase))
+        self.assertTrue(all(row[1] == 0 for row in result["target"][5:]))
+        self.assertEqual([row[0] for row in result["target"]], [row[9] for row in ep["state"]])
+
+    def test_fixed_closure_and_release_apply_symmetric_endpoint_mapping(self):
+        widths = [80, 70, 60, 50, 40, 30, 30, 30, 30, 30, 30, 40, 50, 60, 70, 80]
+        _, _, _, result = self.run_case(widths, category="normal_release", grasp_after="not_held", hold_end=10, release_end=15)
+        preview = [row[1] * 95 for row in result["preview_target"]]
+        for closing, opening in zip(preview[:6], reversed(preview[10:16])):
+            self.assertAlmostEqual(closing, opening)
+        self.assertEqual(result["events"][0]["status"], "preview")
+        self.assertFalse(any(any(row) for row in result["valid"]))
+
+    def test_fixed_closure_preserves_observed_phase_instead_of_inventing_smoothness(self):
+        widths = [80, 79, 60, 58, 40, 30] + MISOPEN[6:]
+        _, _, _, result = self.run_case(widths)
+        mapped = [row[1] * 95 for row in result["target"][:6]]
+        for i in range(1, 6):
+            self.assertAlmostEqual((mapped[i - 1] - mapped[i]) / (widths[i - 1] - widths[i]), 80 / 50)
+        self.assertEqual(result["events"][0]["zero_frame"], 5)
+
+    def test_fixed_closure_succeeds_when_old_extension_would_overrun_hold(self):
+        widths = [80, 70, 60, 50, 40, 30, 30, 40, 50, 60]
+        _, _, _, result = self.run_case(widths, category="normal_release", grasp_after="not_held", hold_end=6, release_end=9)
+        event = result["events"][0]
+        self.assertEqual(event["status"], "preview")
+        self.assertEqual(event["zero_frame"], 5)
+        self.assertEqual(result["preview_target"][5][1], 0)
+        comparison = result["closing_comparisons"][0]
+        self.assertIsNone(comparison["original_speed"])
+        self.assertEqual(comparison["original_speed_status"], "insufficient_holding_time")
+        self.assertAlmostEqual(comparison["original_speed_zero_time"], .8)
+        self.assertAlmostEqual(comparison["extra_time_needed_s"], .3)
+
+    def test_closure_comparisons_share_one_release_transition(self):
+        _, _, _, result = self.run_case(RELEASE, category="normal_release", grasp_after="not_held", hold_end=10, release_end=15)
+        comparison = result["closing_comparisons"][0]
+        release = result["release_comparisons"][0]
+        self.assertEqual(comparison["start"], 0)
+        self.assertEqual(comparison["end"], 5)
+        self.assertEqual(comparison["display_end"], 15)
+        self.assertEqual(comparison["fixed_timing"][10:16], release["fixed_timing"][10:16])
+        self.assertEqual(comparison["original_speed"][10:16], release["fixed_timing"][10:16])
+        self.assertEqual(comparison["fixed_timing"][5], 0)
+        self.assertAlmostEqual(comparison["original_speed"][5] * 95, 30)
+        self.assertEqual(comparison["original_speed"][8], 0)
+
+    def test_fixed_closure_preserves_every_frame_before_detected_closing_start(self):
+        widths = [80, 80] + MISOPEN
+        ep, _, _, result = self.run_case(widths, hold_start=7)
+        self.assertEqual(result["events"][0]["closing_start"], 2)
+        self.assertEqual(result["target"][:3], [[row[9], row[19]] for row in ep["state"][:3]])
+        self.assertEqual(result["target"][7][1], 0)
+        self.assertTrue(all(not any(row) for row in result["valid"][:3]))
+
+    def test_fixed_closure_bilateral_targets_and_independent_comparisons(self):
+        ep = episode(MISOPEN, other=MISOPEN)
+        candidates = detect_candidates(ep)
+        result = generate_targets(ep, candidates, [decision(c, len(MISOPEN)) for c in candidates])
+        self.assertEqual({c["side"] for c in result["closing_comparisons"]}, {"left", "right"})
+        self.assertEqual(result["target"][5], [0, 0])
+        self.assertTrue(all(all(row) for row in result["valid"][1:]))
+
+    def test_fixed_closure_unconfirmed_cannot_modify_training_targets(self):
+        ep, _, _, result = self.run_case(confirmed=False, review_source="model")
+        self.assertEqual(result["events"][0]["status"], "preview")
+        self.assertEqual(result["preview_target"][5][1], 0)
+        self.assertEqual(result["target"], [[row[9], row[19]] for row in ep["state"]])
+        self.assertFalse(any(any(row) for row in result["valid"]))
+
+    def test_invalid_closing_policy_rejected(self):
+        with self.assertRaises(ValueError):
+            self.run_case(config={"closing_policy": "unknown-fit"})
+
+    def test_fixed_policy_still_rejects_unreliable_descent(self):
+        _, _, _, result = self.run_case(config={"closing_max_speed_mm_s": 50})
+        self.assertEqual(result["events"][0]["reason"], "unreliable_closing_speed")
+        self.assertEqual(result["target"], result["preview_target"])
+        self.assertEqual(result["closing_comparisons"], [])
+
+    def test_rejected_release_still_protects_its_full_interval_from_later_fit(self):
+        widths = [90, 60, 30, 30, 30, 50, 70, 90, 80, 70, 60, 50, 40, 40, 40, 40, 40, 55, 40, 40]
+        ep = episode(widths)
+        candidates = detect_candidates(ep)
+        self.assertEqual([(c["start"], c["end"]) for c in candidates], [(4, 7), (16, 17)])
+        decisions = [decision(candidates[0], len(widths), category="normal_release", grasp_after="not_held", hold_start=2, hold_end=4, release_end=10),
+                     decision(candidates[1], len(widths), hold_start=12, hold_end=19)]
+        result = generate_targets(ep, candidates, decisions)
+        self.assertEqual(result["events"][0]["reason"], "nonmonotonic_release_requires_review")
+        self.assertEqual(result["events"][1]["reason"], "overlaps_other_release_interval")
+        self.assertEqual(result["target"], [[r[9], r[19]] for r in ep["state"]])
+        self.assertEqual(result["preview_target"], result["target"])
+        self.assertFalse(any(any(row) for row in result["valid"]))
+        self.assertEqual(result["closing_comparisons"], [])
+        # The old extension only modifies frames after contact 12, outside the
+        # preceding declared release [4,10], so that independent case is allowed.
+        original = generate_targets(ep, candidates, decisions, {"closing_policy": "original_speed"})
+        self.assertEqual(original["events"][1]["status"], "applied")
+        self.assertEqual(original["target"][:13], [[r[9], r[19]] for r in ep["state"][:13]])
+
+    def test_own_release_end_cannot_reach_next_reviewed_grasp(self):
+        widths = RELEASE + MISOPEN
+        ep = episode(widths)
+        candidates = detect_candidates(ep)
+        self.assertEqual(len(candidates), 2)
+        for next_contact in (14, 15, 16):
+            decisions = [decision(candidates[0], len(widths), category="normal_release", grasp_after="not_held", hold_end=10, release_end=15),
+                         decision(candidates[1], len(widths), hold_start=next_contact)]
+            result = generate_targets(ep, candidates, decisions)
+            with self.subTest(next_contact=next_contact):
+                if next_contact <= 15:
+                    self.assertEqual(result["events"][0]["reason"], "crosses_next_independent_grasp")
+                    self.assertEqual(result["events"][0]["status"], "unchanged")
+                    self.assertFalse(result["release_comparisons"])
+                else:
+                    self.assertEqual(result["events"][0]["reason"], "release_policy_pending")
+                    self.assertEqual(result["events"][0]["status"], "preview")
+
+    def test_other_arm_release_interval_does_not_block_a_same_side_fit(self):
+        widths = [90, 60, 30, 30, 30, 50, 70, 90, 80, 70, 60, 50, 40, 40, 40, 40, 40, 55, 40, 40]
+        ep = episode(widths, other=widths)
+        candidates = detect_candidates(ep)
+        first = next(c for c in candidates if c["side"] == "left" and c["start"] == 4)
+        second = next(c for c in candidates if c["side"] == "right" and c["start"] == 16)
+        decisions = [decision(first, len(widths), category="normal_release", grasp_after="not_held", hold_start=2, hold_end=4, release_end=10),
+                     decision(second, len(widths), hold_start=12)]
+        result = generate_targets(ep, candidates, decisions)
+        current = next(e for e in result["events"] if e["candidate_id"] == second["candidate_id"])
+        self.assertEqual(current["status"], "applied")
+        self.assertEqual(result["target"][12][1], 0)
+        self.assertEqual([r[0] for r in result["target"]], [r[9] for r in ep["state"]])
 
 
 if __name__ == "__main__":

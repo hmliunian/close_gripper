@@ -5,6 +5,7 @@ import copy
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -127,6 +128,85 @@ class VisionTest(unittest.TestCase):
             path.write_text(text)
             with self.assertRaises(VisionValidationError):
                 QwenClient({"api_key_file": str(path)})._credential()
+
+    def test_default_workspace_file_beats_implicit_environment(self):
+        fake_default = self.root / "qwen_api.txt"
+        fake_default.write_text("测试密钥：sk-default-fake")
+        with patch("close_gripper.vision.DEFAULT_API_KEY_FILE", fake_default), patch.dict(
+                os.environ, {"DASHSCOPE_API_KEY": "sk-env-fake"}, clear=True):
+            self.assertEqual(QwenClient({})._credential(), "sk-default-fake")
+
+    def test_dotted_key_is_preserved_in_full_authorization_and_absent_from_body(self):
+        key = "sk-FAKE.segment-two.segment-three.final_" + "x" * 75
+        self.assertEqual(len(key), 115)
+        fake_default = self.root / "qwen_api.txt"
+        for text in (key, f"api_key={key}", f'key: "{key}"', f"测试密钥 {key}", json.dumps({"api_key": key})):
+            fake_default.write_text(text)
+            client = QwenClient({})
+            with patch("close_gripper.vision.DEFAULT_API_KEY_FILE", fake_default), patch(
+                    "close_gripper.vision.urlopen", return_value=io.BytesIO(json.dumps(self.response()).encode())) as call:
+                result = client.annotate(self.episode, self.candidate, self.frames)
+            self.assertEqual(result["status"], "ok")
+            request = call.call_args.args[0]
+            self.assertEqual(request.get_header("Authorization"), "Bearer " + key)
+            self.assertNotIn(key.encode(), request.data)
+            self.assertNotIn(key, json.dumps(result))
+
+    def test_invalid_key_suffixes_and_multiple_keys_never_truncate(self):
+        fake = self.root / "invalid-key.txt"
+        for text in ("sk-valid.suffix!", "sk-valid/suffix", "sk-valid+suffix", "sk-valid trailing",
+                     "key=sk-valid!", "sk-first sk-second", "key sk-first sk-second", "key=sk-first,sk-second",
+                     "sk-first\nsk-second", 'key="sk-valid.suffix\''):
+            with self.subTest(text=text):
+                fake.write_text(text)
+                with self.assertRaises(VisionValidationError):
+                    QwenClient({"api_key_file": str(fake)})._credential()
+
+    def test_explicit_file_and_named_environment_precedence(self):
+        explicit = self.root / "explicit.txt"
+        explicit.write_text("sk-explicit-fake")
+        with patch.dict(os.environ, {"CUSTOM_QWEN_KEY": "sk-env-fake"}, clear=True), patch(
+                "close_gripper.vision.DEFAULT_API_KEY_FILE") as default:
+            self.assertEqual(QwenClient({"api_key_file": str(explicit), "api_key_env": "CUSTOM_QWEN_KEY"})._credential(),
+                             "sk-explicit-fake")
+            self.assertEqual(QwenClient({"api_key_env": "CUSTOM_QWEN_KEY"})._credential(), "sk-env-fake")
+            default.exists.assert_not_called()
+
+    def test_missing_default_file_allows_environment_fallback_only(self):
+        missing = self.root / "absent.txt"
+        with patch("close_gripper.vision.DEFAULT_API_KEY_FILE", missing), patch.dict(
+                os.environ, {"DASHSCOPE_API_KEY": "sk-env-fake"}, clear=True):
+            self.assertEqual(QwenClient({})._credential(), "sk-env-fake")
+            with self.assertRaisesRegex(VisionValidationError, "credential_unavailable"):
+                QwenClient({"api_key_file": str(missing)})._credential()
+            with self.assertRaisesRegex(VisionValidationError, "credential_unavailable"):
+                QwenClient({"api_key_env": "MISSING_QWEN_KEY"})._credential()
+        with patch("close_gripper.vision.DEFAULT_API_KEY_FILE", missing), patch.dict(os.environ, {}, clear=True):
+            with self.assertRaisesRegex(VisionValidationError, "credential_unavailable"):
+                QwenClient({})._credential()
+
+    def test_invalid_default_file_does_not_fall_back_to_environment(self):
+        invalid = self.root / "qwen_api.txt"
+        invalid.write_text("not a credential")
+        with patch("close_gripper.vision.DEFAULT_API_KEY_FILE", invalid), patch.dict(
+                os.environ, {"DASHSCOPE_API_KEY": "sk-env-fake"}, clear=True):
+            with self.assertRaises(VisionValidationError):
+                QwenClient({})._credential()
+
+    def test_annotate_default_key_never_enters_result_or_config(self):
+        fake_default = self.root / "qwen_api.txt"
+        fake_default.write_text("key=sk-default-fake")
+        client = QwenClient({})
+        response = self.response()
+        # Exercise redaction as well as actual default-source authentication.
+        response["diagnostic"] = "sk-default-fake"
+        with patch("close_gripper.vision.DEFAULT_API_KEY_FILE", fake_default), patch(
+                "close_gripper.vision.urlopen", return_value=io.BytesIO(json.dumps(response).encode())) as call:
+            result = client.annotate(self.episode, self.candidate, self.frames)
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(call.call_args.args[0].get_header("Authorization"), "Bearer sk-default-fake")
+        self.assertNotIn("sk-default-fake", json.dumps(result))
+        self.assertEqual(client.config, {})
 
     def test_client_records_usage_and_enforces_budget(self):
         client = QwenClient({"max_requests": 1})

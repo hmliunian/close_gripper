@@ -2,7 +2,7 @@
 
 从左右从臂开度与同侧腕部图像生成独立夹爪训练目标，保留实际观测与原时间轴。算法以 [PLAN.md](PLAN.md) 为准，工程约束见 [BOUNDARIES.md](BOUNDARIES.md)，当前验证见 [VALIDATION.md](VALIDATION.md)。
 
-已实现趋势检测、LeRobot v3 只读加载、Qwen 视觉适配、保守闭合延伸、两种释放候选比较、同步图片与曲线审阅页、独立目标 sidecar 和本地训练适配函数。模型或合成结果只生成候选；正常释放策略仍需审阅，不标为有效训练标签。
+已实现趋势检测、LeRobot v3 只读加载、Qwen 视觉适配、闭合与张开的端点拟合、原速延伸对照、同步图片与曲线审阅页、独立目标 sidecar 和本地训练适配函数。模型或合成结果只生成候选；正常释放策略仍需审阅，不标为有效训练标签。
 
 ## 安装与离线检查
 
@@ -22,7 +22,9 @@ python3 -m venv .venv
 
 打开 `runs/my_demo/review.html`，切换 episode，拖动时间滑块。`curves.png` 可直接查看或分享。示例涵盖左侧误开、右侧正常释放、双侧同时误开、空夹和未触发；全部标明合成来源，橙线是候选，绿色仅绘制有效目标。
 
-本次已生成的可移植示例：[曲线图](examples/synthetic_curves.png)、[交互审阅页](examples/synthetic_review.html)。图中30 mm受阻平台按接触前速度继续降至0；正常释放候选保留原释放起止时刻，另显示按原张开速度所需的额外时间。
+本次已生成的可移植示例：[曲线图](examples/synthetic_curves.png)、[交互审阅页](examples/synthetic_review.html)。闭合与张开均保留原起止时刻，将闭合终点和张开起点映射到0；蓝色虚线保留旧原速闭合延伸对照。正常释放仍只生成候选。闭合默认 `closing_policy: "fixed_timing"`，配置 `"original_speed"` 可复现旧的延伸方案。
+
+[闭合与张开局部对比](examples/closing_opening_fit.png)可直接查看两个过渡段的变化，数据明确为合成示例。
 
 所有输出必须使用本工作区内**新的** `runs/<run_id>`。已有目录拒绝覆盖，失败后保留审计信息，换新 run 重试。
 
@@ -42,7 +44,7 @@ python3 -m venv .venv
   --output runs/qwen_ep11
 ```
 
-也可使用 `DASHSCOPE_API_KEY` 环境变量。默认固定 `qwen3.8-max-2026-09-02`、北京 compatible-mode endpoint；地域必须匹配密钥，可在配置中指定其他官方 endpoint。默认不重试，全部请求共用预算；模型原始输出、解析结果、token 用量与请求摘要独立保存。失败或超预算保持原值。
+实际请求默认读取本工作区根目录的 `qwen_api.txt`，也可显式指定 `--api-key-file`。密钥完整读取（支持含点号的格式），仅放入鉴权头，不进入请求正文、报告或Git。优先级为显式文件、显式配置的 `api_key_env`、默认文件；只有默认文件不存在时才回退 `DASHSCOPE_API_KEY` 环境变量，文件无效时不静默换key。默认固定 `qwen3.8-max-2026-09-02`、北京 compatible-mode endpoint；地域必须匹配密钥，可在配置中指定其他官方 endpoint。默认不重试，全部请求共用预算；模型原始输出、解析结果、token 用量与请求摘要独立保存。失败或超预算保持原值。
 
 示例配置只选择 episode 11 中起始帧为97、187、188的三个候选。删除 `candidate_starts` 可按时间顺序检查，仍受请求上限控制。`context_before_s/context_after_s` 设置窗口，保留原始10 Hz帧。默认取同侧主视角，解码失败才尝试同腕另一眼；视觉遮挡需用 `camera_mode: "stereo"` 或人工另视角复核。超出图像上限直接拒绝，不隐式抽稀。
 

@@ -26,6 +26,9 @@ from .contracts import SIDE_CAMERAS, SIDE_INDICES
 PROMPT_VERSION = "gripper-vision-v1"
 DEFAULT_MODEL = "qwen3.8-max-2026-09-02"
 DEFAULT_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+# Constructing this path does not inspect or read the credential file.
+DEFAULT_API_KEY_FILE = Path(__file__).resolve().parents[1] / "qwen_api.txt"
+KEY_PATTERN = r"sk-[A-Za-z0-9._-]+"
 CATEGORIES = {"normal_release", "suspected_misopen", "no_grasp", "uncertain"}
 GRASP_STATES = {"held", "not_held", "uncertain"}
 
@@ -287,9 +290,29 @@ class QwenClient:
             raise VisionValidationError("invalid_request_budget")
 
     def _credential(self):
-        path = self.config.get("api_key_file")
+        """Resolve credentials only for an explicit annotation request.
+
+        An explicit file wins over an explicit environment variable. Otherwise
+        use this workspace's qwen_api.txt; only an absent default file permits
+        fallback to DASHSCOPE_API_KEY. An unreadable or invalid existing file
+        fails closed, without silently switching accounts or regions.
+        """
         try:
-            if path:
+            path = self.config.get("api_key_file")
+            env_name = self.config.get("api_key_env")
+            key = ""
+            if path is not None:
+                if not isinstance(path, (str, Path)) or not str(path):
+                    raise VisionValidationError("credential_source_invalid")
+            elif env_name is not None:
+                if not isinstance(env_name, str) or not env_name:
+                    raise VisionValidationError("credential_source_invalid")
+                key = os.environ.get(env_name, "")
+            elif DEFAULT_API_KEY_FILE.exists():
+                path = DEFAULT_API_KEY_FILE
+            else:
+                key = os.environ.get("DASHSCOPE_API_KEY", "")
+            if path is not None:
                 credential_path = Path(path)
                 if credential_path.stat().st_size > 16_384:
                     raise VisionValidationError("credential_format_invalid")
@@ -297,16 +320,24 @@ class QwenClient:
                 if text.startswith("{"):
                     key = json.loads(text).get("api_key", "")
                 else:
-                    # Existing credentials may be a single labelled line (including
-                    # Chinese labels). Require exactly one unambiguous key token;
-                    # never copy the label or surrounding text into auth or logs.
-                    tokens = re.findall(r"(?<![A-Za-z0-9_-])sk-[A-Za-z0-9_-]+(?![A-Za-z0-9_-])", text)
-                    key = tokens[0] if len(text.splitlines()) == 1 and len(tokens) == 1 else ""
-            else:
-                key = os.environ.get(self.config.get("api_key_env", "DASHSCOPE_API_KEY"), "")
+                    # Full matching is essential: dotted bearer keys must never
+                    # be truncated into a valid-looking prefix. Permit only a
+                    # bare/quoted key or one explicitly delimited single label.
+                    match = re.fullmatch(
+                        r"(?:(?P<label>(?!sk-)[A-Za-z_\u3400-\u9fff][A-Za-z0-9_\- \u3400-\u9fff]*)"
+                        r"(?:\s*[=:：]\s*|\s+))?"
+                        r"(?P<quote>['\"]?)(?P<key>" + KEY_PATTERN + r")(?P=quote)", text)
+                    if (len(text.splitlines()) != 1 or match is None
+                            or re.search(r"\bsk-", match.group("label") or "")):
+                        raise VisionValidationError("credential_format_invalid")
+                    key = match.group("key")
+        except VisionValidationError:
+            raise
         except (OSError, ValueError, TypeError):
             raise VisionValidationError("credential_unavailable") from None
-        if not isinstance(key, str) or not re.fullmatch(r"sk-[A-Za-z0-9_-]+", key):
+        if not key:
+            raise VisionValidationError("credential_unavailable")
+        if not isinstance(key, str) or not re.fullmatch(KEY_PATTERN, key):
             raise VisionValidationError("credential_format_invalid")
         return key
 

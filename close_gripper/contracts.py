@@ -23,6 +23,7 @@ DEFAULT_CONFIG = {
     "closing_min_speed_mm_s": 5.0,
     "closing_max_speed_mm_s": 1500.0,
     "speed_disagreement_ratio": 0.5,
+    "closing_policy": "fixed_timing",
     "release_policy": "review",
 }
 
@@ -104,4 +105,6 @@ def validated_config(config=None):
         raise ValueError("dataset normalization is fixed at 95 mm")
     if result["release_policy"] != "review":
         raise ValueError("release_policy must remain review pending sample adjudication")
+    if result["closing_policy"] not in ("fixed_timing", "original_speed"):
+        raise ValueError("closing_policy must be fixed_timing or original_speed")
     return result

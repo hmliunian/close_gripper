@@ -126,6 +126,26 @@ def _release_comparison(candidate, decision, widths, times, base, cfg):
             "fixed_timing_changes_speed": True}, None
 
 
+def _closing_curves(widths, times, estimate, hold_end, allowed_end):
+    """Compare endpoint mapping and the earlier speed extension on the original grid."""
+    start, contact = estimate["closing_start"], estimate["contact_frame"]
+    beginning, connection = widths[start], widths[contact]
+    fixed = list(widths)
+    for i in range(start + 1, contact + 1):
+        phase = (beginning - widths[i]) / (beginning - connection)
+        fixed[i] = max(0.0, min(beginning, beginning * (1.0 - phase)))
+    fixed[contact] = 0.0
+    for i in range(contact + 1, hold_end + 1):
+        fixed[i] = 0.0
+    original_speed = None
+    if estimate["zero_time"] <= times[allowed_end] + 1e-9:
+        original_speed = list(widths)
+        for i in range(contact + 1, hold_end + 1):
+            value = connection - estimate["speed_mm_s"] * (times[i] - times[contact])
+            original_speed[i] = 0.0 if value <= 1e-9 else value
+    return fixed, original_speed
+
+
 def generate_targets(episode, candidates, decisions, config=None):
     """Return independent two-column targets and review previews without input mutation.
 
@@ -138,7 +158,7 @@ def generate_targets(episode, candidates, decisions, config=None):
     original = [[row[SIDE_INDICES[side]] for side in ("left", "right")] for row in episode["state"]]
     target, preview = [row[:] for row in original], [row[:] for row in original]
     valid = [[False, False] for _ in original]
-    events, comparisons = [], []
+    events, comparisons, closing_comparisons = [], [], []
     by_id = {}
     duplicate_ids = set()
     for decision in decisions:
@@ -159,7 +179,8 @@ def generate_targets(episode, candidates, decisions, config=None):
     claimed = {side: set() for side in SIDE_INDICES}
     for candidate in candidates:
         event = dict(candidate)
-        event.update(status="unchanged", reason="missing_visual_decision", changed_frames=0)
+        event.update(status="unchanged", reason="missing_visual_decision", changed_frames=0,
+                     closing_policy=cfg["closing_policy"])
         events.append(event)
         side = candidate.get("side")
         if side not in episode["valid_sides"]:
@@ -221,31 +242,52 @@ def generate_targets(episode, candidates, decisions, config=None):
             event["reason"] = reason
             continue
         allowed_end = hold_end - 1 if category == "normal_release" else hold_end
-        if not near_zero_hold and estimate["zero_time"] > times[allowed_end] + 1e-9:
+        if not near_zero_hold and cfg["closing_policy"] == "original_speed" and estimate["zero_time"] > times[allowed_end] + 1e-9:
             event["reason"] = "insufficient_holding_time"
             continue
+        modification_anchor = contact if near_zero_hold or cfg["closing_policy"] == "original_speed" else estimate["closing_start"]
         # A reviewed independent grasp/release is a hard boundary regardless of curve sign.
         crossing = any(d is not decision and d.get("side") == side and d.get("category") == "normal_release"
-                       and d.get("hold_end") is not None and contact < d["hold_end"] < hold_end for d in checked_decisions)
+                       and d.get("hold_end") is not None and modification_anchor < d["hold_end"] < hold_end for d in checked_decisions)
         if crossing:
             event["reason"] = "crosses_other_release_boundary"
             continue
         if any(d is not decision and d["side"] == side and d.get("hold_start") is not None
-               and contact < d["hold_start"] <= hold_end for d in checked_decisions):
+               and modification_anchor < d["hold_start"] <= hold_end and d["hold_start"] != contact for d in checked_decisions):
             event["reason"] = "crosses_next_independent_grasp"
             continue
-        curve = list(widths)
-        for i in range(contact + 1, hold_end + 1):
-            # A near-zero grasp needs no extrapolated closure. Retain the contact
-            # sample and everything before it, then suppress confirmed openings
-            # only on the existing, reviewed holding grid. Never invent a speed.
-            value = 0.0 if near_zero_hold else widths[contact] - estimate["speed_mm_s"] * (times[i] - times[contact])
-            curve[i] = 0.0 if value <= 1e-9 else value
-        search_start = contact if near_zero_hold else contact + 1
-        event["zero_frame"] = next(i for i in range(search_start, hold_end + 1) if curve[i] <= 1e-9)
+        closing_comparison = None
         if near_zero_hold:
+            curve = list(widths)
+            # Near-zero contact remains unchanged. No speed or new transition is inferred.
+            for i in range(contact + 1, hold_end + 1):
+                curve[i] = 0.0
+            event["zero_frame"] = next(i for i in range(contact, hold_end + 1) if curve[i] <= 1e-9)
             event.update(no_closure_extension=True, contact_time=times[contact],
-                         zero_time=times[event["zero_frame"]], zero_time_source="existing_near_zero_grid")
+                         zero_time=times[event["zero_frame"]], zero_time_source="existing_near_zero_grid",
+                         closing_speed_changed=False)
+        else:
+            fixed, original_speed = _closing_curves(widths, times, estimate, hold_end, allowed_end)
+            curve = fixed if cfg["closing_policy"] == "fixed_timing" else original_speed
+            closing_comparison = {
+                "candidate_id": candidate["candidate_id"], "side": side,
+                "start": estimate["closing_start"], "end": contact, "display_end": hold_end,
+                "fixed_timing": [w / cfg["width_mm"] for w in fixed],
+                "original_speed": None if original_speed is None else [w / cfg["width_mm"] for w in original_speed],
+                "original_speed_status": "preview_only" if original_speed is not None else "insufficient_holding_time",
+                "original_speed_zero_time": estimate["zero_time"],
+                "extra_time_needed_s": estimate["zero_time"] - times[contact],
+                "original_speed_time_shortfall_s": max(0.0, estimate["zero_time"] - times[allowed_end]),
+                "fixed_timing_changes_speed": True,
+            }
+            event.update(original_speed_zero_time=estimate["zero_time"],
+                         closing_speed_changed=cfg["closing_policy"] == "fixed_timing")
+            if cfg["closing_policy"] == "fixed_timing":
+                event.update(zero_time=times[contact], zero_frame=contact,
+                             zero_time_source="mapped_closing_endpoint",
+                             closing_speed_scale=widths[estimate["closing_start"]] / (widths[estimate["closing_start"]] - widths[contact]))
+            else:
+                event["zero_frame"] = next(i for i in range(contact + 1, hold_end + 1) if curve[i] <= 1e-9)
         event["limit_frame"] = hold_end
         comparison = None
         if category == "normal_release":
@@ -254,6 +296,15 @@ def generate_targets(episode, candidates, decisions, config=None):
                 event["reason"] = reason
                 continue
             curve = [x * cfg["width_mm"] for x in comparison["fixed_timing"]]
+            if closing_comparison:
+                # Both closure alternatives share the same reviewed release mapping.
+                # Comparing full columns must not introduce a return-to-platform jump.
+                for name in ("fixed_timing", "original_speed"):
+                    alternative = closing_comparison[name]
+                    if alternative is not None:
+                        for i in range(candidate["start"], decision["release_end"] + 1):
+                            alternative[i] = comparison["fixed_timing"][i]
+                closing_comparison["display_end"] = decision["release_end"]
             region_end = decision["release_end"]
             status, reason = "preview", "release_policy_pending"
         else:
@@ -265,13 +316,34 @@ def generate_targets(episode, candidates, decisions, config=None):
                 status, reason = "applied", "confirmed_misopen"
             else:
                 status, reason = "preview", "synthetic_evidence" if decision["review_source"] == "synthetic" else "requires_human_review"
-        modified = set(range(contact + 1, region_end + 1))
+        modification_start = modification_anchor + 1
+        # Semantic intervals remain protected even when their own numerical fit
+        # was rejected. ``claimed`` only describes generated curves, so it cannot
+        # enforce these boundaries by itself.
+        overlaps_release = any(
+            d is not decision and d["side"] == side and d["category"] == "normal_release"
+            and d.get("hold_end") is not None and d.get("release_end") is not None
+            and d["hold_end"] <= d["release_end"]
+            and modification_start <= d["release_end"] and d["hold_end"] <= region_end
+            for d in checked_decisions
+        )
+        if overlaps_release:
+            event["reason"] = "overlaps_other_release_interval"
+            continue
+        if any(d is not decision and d["side"] == side and d.get("hold_start") is not None
+               and d["hold_start"] != contact and modification_start <= d["hold_start"] <= region_end
+               for d in checked_decisions):
+            event["reason"] = "crosses_next_independent_grasp"
+            continue
+        modified = set(range(modification_start, region_end + 1))
         if claimed[side] & modified:
             event["reason"] = "overlapping_event_requires_review"
             continue
         claimed[side].update(modified)
         if comparison:
             comparisons.append(comparison)
+        if closing_comparison:
+            closing_comparisons.append(closing_comparison)
         for i in modified:
             preview[i][col] = curve[i] / cfg["width_mm"]
             if status == "applied":
@@ -279,9 +351,9 @@ def generate_targets(episode, candidates, decisions, config=None):
                 valid[i][col] = True
         event.update(status=status, reason=reason,
                      changed_frames=sum(abs(curve[i] / cfg["width_mm"] - original[i][col]) > 1e-12 for i in modified),
-                     modified_start=contact + 1, modified_end=region_end)
+                     modified_start=modification_start, modified_end=region_end)
     triggered_sides = {c.get("side") for c in candidates}
     return {"target": target, "valid": valid, "preview_target": preview, "events": events,
-            "release_comparisons": comparisons,
+            "release_comparisons": comparisons, "closing_comparisons": closing_comparisons,
             "side_status": {side: ("invalid" if side not in episode["valid_sides"] else "triggered" if side in triggered_sides else "not_triggered") for side in SIDE_INDICES},
             "config": cfg}
