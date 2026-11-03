@@ -217,6 +217,24 @@ def extract_frames(episode: dict, candidate: dict, output_dir: Path | str, confi
     the actual bytes supplied to the vision adapter.
     """
     requests = frame_requests(episode, candidate, config)
+    return _extract_requests(episode, candidate["side"], requests, output_dir, config)
+
+
+def extract_selected_frames(episode, side, indices, output_dir, config):
+    """Decode explicit evidence indices; sampling is recorded by the caller."""
+    if (not isinstance(indices, list) or not indices
+            or any(type(i) is not int for i in indices)
+            or indices != sorted(set(indices))
+            or not 0 <= indices[0] <= indices[-1] < len(episode["timestamps"])):
+        raise DatasetError("evidence indices must be unique, ordered episode frames")
+    selection = set(indices)
+    dense = frame_requests(episode, {"side": side, "start": indices[0], "end": indices[-1]},
+                           {"context_before_s": 0., "context_after_s": 0., "lookback_s": 0.})
+    requests = [request for request in dense if request["frame_index"] in selection]
+    return _extract_requests(episode, side, requests, output_dir, config)
+
+
+def _extract_requests(episode, side, requests, output_dir, config):
     output_dir = Path(output_dir).absolute()
     if any(path.is_symlink() for path in (output_dir, *output_dir.parents)):
         raise DatasetError("frame output must not traverse a symlink")
@@ -240,7 +258,7 @@ def extract_frames(episode: dict, candidate: dict, output_dir: Path | str, confi
     max_size = _integer(config.get("image_max_size_px", 512), "image_max_size_px")
     if max_size < 32:
         raise DatasetError("image_max_size_px must be at least 32")
-    for camera in SIDE_CAMERAS[candidate["side"]]:
+    for camera in SIDE_CAMERAS[side]:
         group = [request for request in requests if request["camera"] == camera]
         if not group:
             continue

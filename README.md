@@ -1,8 +1,8 @@
 # close_gripper
 
-从左右从臂实测开度与同侧腕部图像生成独立的夹爪目标开度（0～1），保留实际观测与原时间轴。目标指令与实测开度的区别、算法及未完成范围以 [PLAN.md](PLAN.md) 为准，工程约束见 [BOUNDARIES.md](BOUNDARIES.md)，当前验证见 [VALIDATION.md](VALIDATION.md)。
+从从臂实测开度和同侧腕部图像生成完整的 **0～1夹爪目标开度曲线**：抓前稳定张开、闭合过渡、持物保持0、释放过渡。目标及最终交付以用户的 [Untitled.md](Untitled.md) 为准，实现方法见 [PLAN.md](PLAN.md)，工程边界见 [BOUNDARIES.md](BOUNDARIES.md)，实际证据与限制见 [VALIDATION.md](VALIDATION.md)。
 
-已实现趋势检测、LeRobot v3 只读加载、Qwen 视觉适配、闭合与张开的端点拟合、原速延伸对照、同步图片与曲线审阅页、独立目标 sidecar 和本地训练适配函数。模型或合成结果只生成候选；正常释放策略仍需审阅，不标为有效训练标签。
+当前主入口是 `clean`，扫描完整 episode 的所有有效侧与候选周期。模型证据通过校验后可生成有效自动标签；有效不代表人工核验。原始观测保持不变，新目标独立保存。已实现小样本派生和隔离副本中的实际 ORION loader 接入；全量三版数据处理、人工质量验收和正式发布尚未完成。
 
 ## 安装与离线检查
 
@@ -12,88 +12,80 @@ python3 -m venv .venv
 .venv/bin/python -B scripts/check.py
 ```
 
-默认检查不读取凭据、不访问实际数据集、不联网。数值核心只需标准库；数据、图片和 PNG 依赖按 extras 安装。缺少 matplotlib 时仍生成独立 HTML，但没有 PNG；统一检查缺少数据依赖时会报告跳过项，不能当作全检查通过。
+统一检查不读取凭据、不访问实际数据集、不联网。数值核心只需标准库；数据、图片和 PNG 依赖按 extras 安装。缺少依赖时会报告跳过项，不能当作全检查通过。HTML 脚本有语法检查；尚无完整浏览器自动化。
 
-## 先查看曲线变化
+所有运行输出必须使用本工作区内**新的** `runs/<run_id>`，已有目录拒绝覆盖。失败产物保留，重试使用新目录。
+
+## 处理完整 episode
+
+准备 JSON 清单，每项指定 LeRobot 子集和 episode：
+
+```json
+[
+  {"dataset": "/absolute/path/to/lerobot_subset", "episode_index": 11}
+]
+```
+
+可改用冻结快照：`episode_cache` 为清单目录内的相对 JSON 路径，配套 `episode_id` 和 `episode_sha256`。程序核验完整输入摘要，拒绝路径越界或过期快照；历史代表事件清单中的候选选择不限制新入口的全周期扫描。
 
 ```sh
-.venv/bin/python -m close_gripper demo --output runs/my_demo
+# 检测与报告，不调用模型；未审阅范围保持原值
+.venv/bin/python -B -m close_gripper clean --manifest /path/to/manifest.json --config configs/full_cycle.json --output runs/my_full_cycle_inspection
+
+# 固定配置、4并发、所有 episode 共用请求预算
+.venv/bin/python -B -m close_gripper clean --manifest /path/to/manifest.json --config configs/full_cycle.json --workers 4 --max-requests 50 --qwen --api-key-file qwen_api.txt --output runs/my_full_cycle_qwen
 ```
 
-打开 `runs/my_demo/review.html`，切换 episode，拖动时间滑块。`curves.png` 可直接查看或分享。纵轴和逐帧数值均为0～1的夹爪开度，灰线为实测开度，橙线为候选目标指令，绿色仅绘制有效目标。示例涵盖左侧误开、右侧正常释放、双侧同时误开、空夹和未触发；全部标明合成来源。
+参数集中在 [configs/full_cycle.json](configs/full_cycle.json)。使用固定的 Qwen 模型、零重试、全局请求上限；认证失败后阻止排队请求。预算不足、证据不足、缺少同侧图像和边界矛盾分别记录。图像采样保留过渡附近原始帧，稳定区间默认每0.5秒采样；超过图片上限时明确拒绝，不隐式压缩证据。
 
-本次已生成的可移植示例：[曲线图](examples/synthetic_curves.png)、[交互审阅页](examples/synthetic_review.html)。闭合与张开均保留原起止时刻，将闭合终点和张开起点映射到0；蓝色虚线保留旧原速闭合延伸对照。正常释放仍只生成候选。闭合默认 `closing_policy: "fixed_timing"`，配置 `"original_speed"` 可复现旧的延伸方案。
+默认凭据为工作区 `qwen_api.txt`，也可传入 `--api-key-file`。完整密钥仅进入鉴权头，不进入请求正文、报告或Git。显式文件优先，其次配置中的环境变量、默认文件；只有默认文件不存在时才回退 `DASHSCOPE_API_KEY`。非法凭据文件不静默切换来源。
 
-[闭合与张开局部对比](examples/closing_opening_fit.png)可直接查看两个过渡段的变化，数据明确为合成示例。
+根目录生成 `review.html`、`summary.json`、配置与实现快照；每条 episode 保存输入、周期、图片引用、模型原始响应、结构化决定、复核模板、结果、目标和单条曲线图。任务汇总记录修改 episode／帧数；请求用量与未知用量分别记录。
 
-所有输出必须使用本工作区内**新的** `runs/<run_id>`。已有目录拒绝覆盖，失败后保留审计信息，换新 run 重试。
+打开 `review.html`，切换 episode 并拖动时间滑块：灰线是实测开度，绿色是有效目标，橙线是候选；同时显示同侧腕部图像、逐帧阶段、来源和拒绝原因。覆盖统计表示候选及其上下文经过检查，**不表示每帧都有视觉真值**。根目录 `status=complete` 仅表示运行产物完成。
 
-## 实际数据与 Qwen
+只调整数值实现、保持原候选和参数时，可用 `scripts/replay_clean_run.py --source-run /path/to/completed_run --manifest /path/to/frozen_manifest.json --output runs/my_numeric_replay` 复用证据。脚本先核验输入、原实现快照和图片摘要，保留原响应与失败记录；新调用数为0，复用的请求与用量单列。这是同一批证据的数值重放，不是独立评估。独立产物检查入口为 `scripts/verify_clean_run.py --run /path/to/run --manifest /path/to/frozen_manifest.json --output runs/my_run_audit`，均使用本地 Python 执行。
+
+## 复核与独立目标
+
+人工复核使用每条 `review_template.json`，保留 `episode_sha256`。填写证据与边界；人工确认需 `review_source: "human"`、`confirmed: true` 和 `reviewer`、`reviewed_at`、`review_note`。将封套按 `episode_id` 放入一个 JSON 对象，再使用 `clean --reviews /path/to/reviews.json` 写入新的运行。模型输出不能通过改一个确认位冒充人工来源。
+
+`targets.json` 的列顺序为**左、右**，与 episode 时间戳和帧号一一对应：
+
+| 字段 | 用途 |
+| --- | --- |
+| `annotation.gripper_target` | 0～1目标开度；无效帧保存实测原值 |
+| `annotation.gripper_target_valid` | 该侧该帧是否可采用新目标 |
+| `annotation.gripper_target_source` | 模型／人工等逐帧来源 |
+| `annotation.gripper_phase` | 准备、闭合、持物、释放或保持原样 |
+
+目标还绑定完整 episode 摘要、生成方法版本和运行来源。`result.json.preview_target` 是审阅候选，不能代替有效训练目标。来源和阶段通过完整 sidecar 随派生产物保存。
+
+## 派生与实际训练读取
 
 ```sh
-# 默认只检测，不调用服务
-.venv/bin/python -m close_gripper run \
-  --dataset /absolute/path/to/lerobot_subset --episode 11 \
-  --output runs/inspect_ep11
+# 仅派生明确提供标签的 episode，源数据只读
+.venv/bin/python -B -m close_gripper.export subset --dataset-root /absolute/path/to/lerobot_subset --targets /path/to/run/episode/targets.json --output runs/my_derived_subset
 
-# 显式调用服务；凭据不会进入模型输入或报告
-.venv/bin/python -m close_gripper run \
-  --dataset /absolute/path/to/lerobot_subset --episode 11 \
-  --config configs/episode11_qwen.json \
-  --qwen --api-key-file qwen_api.txt --max-requests 3 \
-  --output runs/qwen_ep11
+# 只读生成三版数据的任务分母与派生清单；不是全量处理或发布
+.venv/bin/python -B -m close_gripper.export plan --release-root /absolute/path/to/release1 --release-root /absolute/path/to/release2 --release-root /absolute/path/to/release3 --output runs/my_release_plan
 ```
 
-实际请求默认读取本工作区根目录的 `qwen_api.txt`，也可显式指定 `--api-key-file`。密钥完整读取（支持含点号的格式），仅放入鉴权头，不进入请求正文、报告或Git。优先级为显式文件、显式配置的 `api_key_env`、默认文件；只有默认文件不存在时才回退 `DASHSCOPE_API_KEY` 环境变量，文件无效时不静默换key。默认固定 `qwen3.8-max-2026-09-02`、北京 compatible-mode endpoint；地域必须匹配密钥，可在配置中指定其他官方 endpoint。默认不重试，全部请求共用预算；模型原始输出、解析结果、token 用量与请求摘要独立保存。失败或超预算保持原值。
+导出在 Parquet 中新增目标与有效性字段，保留原列、原值、帧与 episode 索引、图像时间关系。新目录包含元数据、训练配置、标签 sidecar、摘要及一致性验证；小样本目录显式标识为部分覆盖，不能当作完整 `-gripcmd` 发布版。
 
-示例配置只选择 episode 11 中起始帧为97、187、188的三个候选。删除 `candidate_starts` 可按时间顺序检查，仍受请求上限控制。`context_before_s/context_after_s` 设置窗口，保留原始10 Hz帧。默认取同侧主视角，解码失败才尝试同腕另一眼；视觉遮挡需用 `camera_mode: "stereo"` 或人工另视角复核。超出图像上限直接拒绝，不隐式抽稀。
-
-输出每个 episode 有 `episode.json`、`candidates.json`、`frames.json`、`model_responses.json`、`decisions.json`、`review_template.json`、`result.json`、`targets.json`。根目录 `summary.json` 表示流程完成，**不表示视觉与训练验收完成**。未触发、未检查、拒绝与候选状态分别记录。
-
-## 人工复核与训练合同
-
-复制本次 `review_template.json`，保留 `episode_sha256`，在 `decisions` 中记录明确的视觉边界与证据。人工确认的条目需设置 `review_source: "human"`、`confirmed: true`，并填写 `reviewer`、`reviewed_at`、`review_note`，然后：
+本地 `training.py` 提供20维动作9/19维替换及10→20 Hz标签插值合同。实际接入脚本复制指定 ORION loader 到新 run，生成可审阅补丁，并调用真实 `get_dataloader`／`make_dataloader` 对比 batch：
 
 ```sh
-.venv/bin/python -m close_gripper run \
-  --dataset /absolute/path/to/lerobot_subset --episode 11 \
-  --decisions /path/to/reviewed.json --output runs/reviewed_ep11
+# 使用已装有 ORION 依赖的 Python；不修改外部仓库
+/gpfs/jiuquyun/projects/youzi/orion-data-pipeline/.venv/bin/python scripts/verify_orion_loader.py --source /gpfs/jiuquyun/projects/youzi/orion-0 --derived-root /absolute/path/to/derived_subset --output runs/my_orion_verification
 ```
 
-摘要不匹配时拒绝使用过期审阅；重新使用模型输出不能冒充人工确认。持物起点应标注为与视觉证据一致的数值接触/平台连接帧，含糊边界回退。类别与字段要求见 `contracts.py`，业务语义仍以 PLAN 为准。
+新配置通过 `dataset.gripper_target_source: annotation` 启用标签；默认仍读取观测。标签仅替换动作的两个夹爪通道，物理观测及其他动作通道保留；插值跨无效区间回退，时间戳不符合声明网格时拒绝。实际仓库版本、继承的已有修改、补丁及逐 batch 结果保存到运行目录。此验证不等于训练效果验证，也未把补丁安装到外部仓库。
 
-`targets.json` 包含对齐的 timestamp、帧号及两个新字段：`annotation.gripper_target` 和 `annotation.gripper_target_valid`，列顺序为**左、右**。无效帧保存原夹爪值。模型候选单独在 `result.json.preview_target`，不得用它替代有效目标。
+## 历史入口与证据
 
-```python
-from close_gripper.training import apply_gripper_targets
-actions = apply_gripper_targets(original_actions, targets, valid)
-```
+`run` 是局部张开候选实验，`batch` 每条只检查一个指定代表事件，`demo` 展示旧方法的合成契约；这些入口和产物用于复现历史基线。完整曲线任务请使用 `clean`。
 
-该函数只替换20维动作的9/19维，不改输入或物理观测。调用者必须在同一时间网格上使用。它是本地接入合同；外部实际 loader、20 Hz 插值、训练与执行效果尚未验证。
+旧版100条／91任务检查及GUI单位修正的记录保留在 [VALIDATION.md](VALIDATION.md)。[合成曲线](examples/synthetic_curves.png)、[合成审阅页](examples/synthetic_review.html)、[旧100条统计](reports/20261103_real100_summary.json)都不代表新方法质量验收。实际图片、完整响应和运行目录默认不提交Git。
 
-## 审阅清单
-
-```sh
-.venv/bin/python -m close_gripper sample \
-  --dataset /path/to/subset1 --dataset /path/to/subset2 \
-  --limit 48 --output runs/sample_manifest
-```
-
-按子集和任务分层并确定性选取。没有原始 episode 对应关系的样本标为 `unassigned`，不能当作无泄漏留出集。左右、误开、释放、遮挡等语义覆盖需要实际审阅，工具不会从任务名推造参考标签。
-
-当前不执行全量数据派生、不修改外部训练仓库、不发布 `-gripcmd` 版本。发布仍须遵循原需求的发布前确认。
-
-## 冻结清单的真实批次检查
-
-```sh
-.venv/bin/python -m close_gripper batch \
-  --manifest runs/20261103_real100_selection/manifest.json \
-  --config configs/real100.json --workers 4 --qwen \
-  --api-key-file qwen_api.txt --output runs/my_real100
-```
-
-清单需包含每条episode的缓存相对路径、完整输入摘要、准确候选ID和侧别。运行前核对缓存与候选，避免两侧同时张开时选错侧。每条episode只检查清单指定的一个代表事件，不将其余事件算作已检查。最大4个并发，每条最多1次真实请求、0重试；认证失败后阻止排队任务继续请求。去掉 `--qwen` 可只运行数值与报告流程。
-
-根目录 `batch_review.html` 提供任务／侧别／状态筛选，逐条链接同步腕部画面和曲线；`case_results.json` 与 `summary.json` 分别保存逐条结果及汇总。模型解析成功、类别、数值回退、候选变化、有效训练目标变化和服务返回用量分别统计，不把调用成功率当作视觉准确率。失败用量未返回时保持未知。
-
-已完成100条真实episode、91种任务的检查：[统计图](examples/real100_summary.png)、[详细验证记录](VALIDATION.md#100-条真实-episode-的固定配置检查)。最新按0～1开度展示的逐条审阅页位于本地 `runs/20261103_real100_opening_review/batch_review.html`，由原批次缓存重绘；原结果保留在 `runs/20261103_real100_qwen/`。真实图像和完整响应不提交Git。
+正式发布仍按任务书约定，在三版完整派生产物与验收结果准备好后确认。

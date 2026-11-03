@@ -1,0 +1,23 @@
+{
+  "config_version": "full-cycle-v3",
+  "calibrated": false,
+  "closing_policy": "fixed_timing",
+  "release_policy": "fixed_timing",
+  "auto_accept_model": true,
+  "motion_min_delta": 0.04,
+  "motion_noise": 0.003,
+  "boundary_tolerance_s": 0.5,
+  "context_before_s": 3.0,
+  "context_after_s": 0.5,
+  "steady_image_interval_s": 0.5,
+  "transition_context_s": 0.3,
+  "camera_mode": "primary",
+  "image_max_size_px": 512,
+  "max_images": 128,
+  "max_requests": 128,
+  "max_retries": 0,
+  "timeout_s": 120,
+  "model": "qwen3.8-max-2026-09-02",
+  "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "max_tokens": 4000
+}

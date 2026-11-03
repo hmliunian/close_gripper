@@ -9,6 +9,15 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="command", required=True)
     demo = sub.add_parser("demo", help="合成契约示例，不调用模型")
     demo.add_argument("--output", required=True)
+    clean = sub.add_parser("clean", help="完整episode夹爪指令曲线；显式--qwen才调用模型")
+    clean.add_argument("--manifest", required=True, help="episode清单；每条处理所有周期")
+    clean.add_argument("--output", required=True)
+    clean.add_argument("--config")
+    clean.add_argument("--qwen", action="store_true")
+    clean.add_argument("--api-key-file")
+    clean.add_argument("--max-requests", type=int)
+    clean.add_argument("--workers", type=int, default=1)
+    clean.add_argument("--reviews", help="按episode_id索引的人工/模型证据封套")
     run = sub.add_parser("run", help="读取实际episode；默认只检测，--qwen才调用模型")
     run.add_argument("--dataset", required=True)
     run.add_argument("--episode", type=int, action="append", required=True)
@@ -31,7 +40,23 @@ def main(argv=None):
     batch.add_argument("--api-key-file")
     args = parser.parse_args(argv)
     try:
-        if args.command == "demo":
+        if args.command == "clean":
+            from .clean import load_clean_manifest, run_clean
+            config = json.loads(Path(args.config).read_text()) if args.config else {}
+            if args.api_key_file:
+                config["api_key_file"] = args.api_key_file
+            if args.max_requests is not None:
+                config["max_requests"] = args.max_requests
+            reviews = json.loads(Path(args.reviews).read_text()) if args.reviews else None
+            summary = run_clean(load_clean_manifest(args.manifest), args.output, config,
+                                call_model=args.qwen, workers=args.workers, reviews=reviews)
+            print(json.dumps(dict(status=summary["status"], episodes=len(summary["episodes"]),
+                                  actual_requests=summary["actual_requests"],
+                                  changed_frames=sum(ep["changed_frames"] for ep in summary["episodes"]),
+                                  reported_token_usage=summary["reported_token_usage"]), ensure_ascii=False))
+            print(f"Review: {Path(args.output).resolve() / 'review.html'}")
+            return 0
+        elif args.command == "demo":
             from .demo import examples
             config = default_config()
             directory = create_run(args.output)

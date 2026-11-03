@@ -1,0 +1,372 @@
+{
+  "schema": "close_gripper_full_cycle_delivery_summary_v1",
+  "date": "2026-11-03",
+  "status": "implementation_and_pilot_evidence_prepared_full_task_not_accepted",
+  "task_authority": "Untitled.md",
+  "current_method_version": "full-cycle-v3",
+  "offline_checks": {
+    "passed_tests": 227,
+    "skipped_tests": 0,
+    "command": ".venv/bin/python -B scripts/check.py",
+    "exit_code": 0,
+    "log": "/tmp/close_gripper_full_cycle_final_check.log",
+    "log_sha256": "9c3b3e19153750f1a79d5ce398b85fdc996693dc696db296d3ef5c9feaee9cad",
+    "final_check_pending": false,
+    "scope": "software contracts, not semantic accuracy or training effect"
+  },
+  "published_episode_pilot": {
+    "run": "runs/20261103_full_cycle_pilot_v1",
+    "method_version": "full-cycle-v1",
+    "episodes": 8,
+    "release_count": 3,
+    "subset_count": 5,
+    "actual_model_requests": 43,
+    "retries": 0,
+    "structured_judgments": 38,
+    "accepted_cycles": 17,
+    "rejected_cycles": 11,
+    "no_grasp_candidates": 10,
+    "candidates_without_valid_judgment": 5,
+    "model_valid_frame_sides": 776,
+    "changed_episode_frames": 450,
+    "changed_frame_sides": 452,
+    "episodes_with_all_valid_sides_complete_candidate_window_review": 6,
+    "reported_token_usage": {
+      "prompt_tokens": 312564,
+      "completion_tokens": 15014,
+      "total_tokens": 327578
+    },
+    "human_reference": false,
+    "coverage_semantics": "candidate context-window coverage is not per-frame semantic truth or valid-label coverage"
+  },
+  "paired_same_source_reference": {
+    "input_run": "runs/20261103_paired_reference_inputs_v1",
+    "model_run": "runs/20261103_paired_full_cycle_v2",
+    "evaluation_run": "runs/20261103_paired_reference_evaluation_v2",
+    "independent_npz_audit": "runs/20261103_paired_reference_audit_v1/audit.json",
+    "method_version": "full-cycle-v2",
+    "prompt_version": "gripper-full-cycle-v2.1",
+    "actual_model_requests": 5,
+    "reported_token_usage": {
+      "prompt_tokens": 34184,
+      "completion_tokens": 1421,
+      "total_tokens": 35605
+    },
+    "sources": 5,
+    "frames": 126,
+    "model_valid_frames": 126,
+    "release_cycles": 0,
+    "not_for_training": true,
+    "published_dataset": false,
+    "independent_human_semantic_reference": false,
+    "time_shift_ns": 0,
+    "leader_used_for_generation": false,
+    "split_metrics": {
+      "calibration": {
+        "sources": 3,
+        "frames": 75,
+        "model_valid_frames": 75,
+        "changed_frames": 53,
+        "frame_weighted_follower_mae_to_leader": 0.1495192417897885,
+        "frame_weighted_target_mae_to_leader": 0.015578882819092985,
+        "model_claimed_hold_frames": 29,
+        "model_claimed_hold_follower_mean_abs_opening": 0.3367513012539886,
+        "model_claimed_hold_target_mean_abs_opening": 0.0,
+        "generated_hold_phase_frames": 29,
+        "generated_hold_target_mean_abs_opening": 0.0,
+        "local_closing_10_90_source_equal_mean_s": {
+          "follower": 0.2025353122055327,
+          "target": 0.20019199924787792,
+          "leader": 0.22100273018934366
+        }
+      },
+      "heldout": {
+        "sources": 2,
+        "frames": 51,
+        "model_valid_frames": 51,
+        "changed_frames": 31,
+        "frame_weighted_follower_mae_to_leader": 0.09709653872153093,
+        "frame_weighted_target_mae_to_leader": 0.06077607583601165,
+        "model_claimed_hold_frames": 20,
+        "model_claimed_hold_follower_mean_abs_opening": 0.09060455829297241,
+        "model_claimed_hold_target_mean_abs_opening": 0.007260794700333204,
+        "generated_hold_phase_frames": 16,
+        "generated_hold_target_mean_abs_opening": 0.0,
+        "local_closing_10_90_source_equal_mean_s": {
+          "follower": 0.2507608593072125,
+          "target": 0.2492591480979588,
+          "leader": 0.1525506654338501
+        }
+      }
+    },
+    "rabbit_boundary_difference": {
+      "source_id_prefix": "ef64d52b",
+      "task": "拿起玩偶兔",
+      "model_hold_start_frame": 14,
+      "numeric_contact_frame": 18,
+      "difference_s": 0.4
+    },
+    "limitations": [
+      "five short right-only closure convenience samples, no release coverage",
+      "leader is an offline command reference, not semantic ground truth",
+      "zero in generated hold phase is a construction property",
+      "fixed timing largely retains follower closing duration and does not establish leader-speed matching",
+      "10 Hz threshold interpolation does not establish millisecond timing accuracy"
+    ],
+    "numeric_v3_invariance": {
+      "verification": "runs/20261103_paired_numeric_v3_invariance/verification.json",
+      "status": "passed",
+      "sources": 5,
+      "new_model_requests": 0,
+      "compared_fields": [
+        "target",
+        "preview_target",
+        "valid",
+        "phase",
+        "source"
+      ],
+      "all_fields_equal": true,
+      "implementation_sha256": "5972e3b7081423212e3be240a908d58670f631eaf0b814744b4702b3e4a7fbaa",
+      "independent_quality_evaluation": false
+    }
+  },
+  "pilot_derivation": {
+    "run": "runs/20261103_full_cycle_delivery_v3",
+    "artifact_batch_version": "v3",
+    "label_method_version": "full-cycle-v3",
+    "numeric_replay_run": "runs/20261103_full_cycle_100_replay_v4",
+    "visual_evidence_source_run": "runs/20261103_full_cycle_100_v3",
+    "input_relation": "same eight source episodes as early pilot; labels use later 100-episode model evidence",
+    "new_model_requests": 0,
+    "scope": "selected_episodes",
+    "subsets": 5,
+    "episodes": 8,
+    "frames": 1143,
+    "valid_side_frames": [
+      463,
+      452
+    ],
+    "source_columns_and_episode_fingerprints_verified": true,
+    "publication_ready": false,
+    "formal_publication": false
+  },
+  "actual_loader": {
+    "run": "runs/20261103_orion_real_cycle_verify_v3",
+    "status": "passed",
+    "upstream_repository": "/gpfs/jiuquyun/projects/youzi/orion-0",
+    "upstream_commit": "e08dea45b92198c6b94c1b94236215ac30669640",
+    "inherited_upstream_dirty_diff_recorded": true,
+    "patch_base": "commit plus recorded inherited working-tree diff",
+    "patch_sha256": "6f321fcc5c5846467c495f3d2d047e3263ac47246122da899689ee2b70cb9dc7",
+    "deployment": "isolated_workspace_copy_only",
+    "source_files_byte_checked": 18,
+    "upstream_unchanged": true,
+    "derived_subsets_checked": 5,
+    "samples": 27,
+    "checked_gripper_values": 396,
+    "changed_action_values": 62,
+    "valid_label_values": 97,
+    "fallback_values": 299,
+    "batch_size": 1,
+    "batches_checked": 27,
+    "action_rate_hz": 20,
+    "channel_semantics": "original 20-dimensional gripper slots 9/19 mapped into the actual unified 128-dimensional batch gripper channels",
+    "other_unified_action_dimensions": 126,
+    "physical_state_unchanged": true,
+    "other_action_dimensions_unchanged": true,
+    "video_timestamps_masks_unchanged": true,
+    "nonuniform_timestamp_fixture_rejected_by_real_loader": true,
+    "training_effect_evaluated": false
+  },
+  "release_inventory": {
+    "path": "runs/20261103_full_cycle_delivery_v3/release_plan/release_plan.json",
+    "status": "prepared_not_derived",
+    "releases": 3,
+    "subsets": 7,
+    "episodes": 125236,
+    "frames": 15041374,
+    "metadata_inventory_only": true,
+    "full_source_data_rows_validated": false,
+    "full_release_derived": false,
+    "publication_ready": false,
+    "supplied_final_target_artifact_episodes": 100
+  },
+  "full_cycle_100": {
+    "failed_run": "runs/20261103_full_cycle_100_v2",
+    "failed_network_attempts": 316,
+    "failed_run_service_responses": 0,
+    "failed_run_error": "network_error",
+    "failed_run_token_usage": null,
+    "failed_run_token_usage_status": "unknown; zero aggregate counters do not establish zero service usage",
+    "source_model_run": "runs/20261103_full_cycle_100_v3",
+    "source_model_numeric_version": "full-cycle-v2",
+    "prompt_version": "gripper-full-cycle-v2.1",
+    "source_model_requests": 316,
+    "source_usage_reported_requests": 316,
+    "source_reported_token_usage": {
+      "prompt_tokens": 2178531,
+      "completion_tokens": 98590,
+      "total_tokens": 2277121
+    },
+    "source_implementation_sha256": "cf05bf26367fc153428bf0cb97803b3acdf590be8369ceb647b0c41e974c27ba",
+    "source_implementation_changed_during_run": false,
+    "source_structured_decisions": 294,
+    "source_model_categories": {
+      "no_grasp": 97,
+      "grasp_release": 131,
+      "grasp_hold": 63,
+      "uncertain": 3
+    },
+    "source_parse_rejection_reasons": {
+      "contradictory_non_grasp_evidence": 13,
+      "contradictory_pregrasp_evidence": 9
+    },
+    "final_run": "runs/20261103_full_cycle_100_replay_v4",
+    "final_status": "complete_audit_passed",
+    "final_method_version": "full-cycle-v3",
+    "final_implementation_sha256": "5972e3b7081423212e3be240a908d58670f631eaf0b814744b4702b3e4a7fbaa",
+    "final_implementation_changed_during_run": false,
+    "evidence_type": "reused_real_vlm",
+    "repeated_evaluation_same_inputs": true,
+    "new_model_requests": 0,
+    "reused_model_requests": 316,
+    "reused_reported_token_usage": {
+      "prompt_tokens": 2178531,
+      "completion_tokens": 98590,
+      "total_tokens": 2277121
+    },
+    "usage_accounting": "source requests and tokens counted once; final numerical replay adds no model calls",
+    "episodes": 100,
+    "frames": 8655,
+    "candidates": 316,
+    "accepted_cycles": 134,
+    "unchanged_candidates": 182,
+    "changed_episodes": 75,
+    "changed_episode_frames": 3543,
+    "changed_frame_sides": 3604,
+    "changed_side_frames": {
+      "left": 388,
+      "right": 3216
+    },
+    "valid_frame_sides": 5805,
+    "valid_side_frames": {
+      "left": 1355,
+      "right": 4450
+    },
+    "episodes_with_complete_candidate_window_review": 83,
+    "episodes_with_incomplete_candidate_window_review": 17,
+    "accepted_pregrasp_status_counts": {
+      "partially_cleaned": 36,
+      "unresolved_context_preserved": 9,
+      "not_modified": 45,
+      "cleaned": 44
+    },
+    "source_changed_episode_frames": 3328,
+    "numerical_replay_added_changed_episode_frames": 215,
+    "scope_limitation": "window review completeness and model valid labels are not per-frame semantic truth; frozen published crops do not establish source-level calibration/heldout separation",
+    "replay_audit": {
+      "path": "runs/20261103_full_cycle_100_replay_v4_audit_v1/verification.json",
+      "status": "passed",
+      "errors": 0,
+      "input_snapshots_checked": 100,
+      "implementation_status": "checked",
+      "implementation_sha256": "5972e3b7081423212e3be240a908d58670f631eaf0b814744b4702b3e4a7fbaa",
+      "new_model_calls_by_audit": 0,
+      "source_dataset_read_by_audit": false,
+      "checked_input_file_hashes": 9589,
+      "checks": {
+        "manifest_input_fingerprint": 100,
+        "original_observations_match_input_snapshot": 100,
+        "target_timestamps": 100,
+        "targets_result_target": 100,
+        "targets_result_valid": 100,
+        "reuse_responses_unchanged": 100,
+        "reused_decisions_unchanged": 100,
+        "reuse_has_no_new_model_responses": 100,
+        "reused_candidates_unchanged": 100,
+        "usage_matches_raw_response": 316,
+        "image_sha256": 15092
+      },
+      "image_checks_count_semantics": "hash-check operations can include both source and reused copies; not unique image count"
+    }
+  },
+  "shareable_figure": {
+    "path": "examples/paired_full_cycle_v2_reference.png",
+    "sha256": "181762e1fdb2e6454bac87be9507d417249ed8829fc1dd2d462cfee6072dcb86",
+    "independent_plot": "runs/20261103_paired_reference_audit_v1/paired_reference_shareable.png",
+    "camera_images_included": false,
+    "model_response_text_included": false
+  },
+  "formal_publication": {
+    "performed": false,
+    "confirmation_requirement": "original task-plan requirement before formal publication",
+    "current_stage": "not at formal publication"
+  },
+  "source_evidence_sha256": {
+    "runs/20261103_full_cycle_pilot_v1/summary.json": "c1414881f16d60a0b53db701215c28aacac63fa78bc8c2137ffe014be9cf2bc9",
+    "runs/20261103_paired_full_cycle_v2/summary.json": "aa1f615b3539b037c185fe301b1ab2f77b32f0879c8711177edc634f76f33f98",
+    "runs/20261103_paired_reference_evaluation_v2/metrics.json": "1a093e5aa4b4f801651c0a497ee3700fa0c244e8968063f24ea8aa1925b89527",
+    "runs/20261103_paired_reference_audit_v1/audit.json": "62b960d90ef24722c4b10e734691b25dc15d35b2887aa132b37d00100eeacff1",
+    "runs/20261103_full_cycle_delivery_v2/delivery_index.json": "b2cc4a5729f8b243a3f45fd9ea96f1e70da9a9b92c36f8462f25b168c150ec2a",
+    "runs/20261103_full_cycle_delivery_v2/release_plan/release_plan.json": "ac45e0fdd154c4be41e2c09552bf352d68b51afa5ddff9b0e718aa97e8b3594b",
+    "runs/20261103_orion_real_cycle_verify_v2/verification.json": "59c7a9e17e9a4ae81abf36679d9ba22f7bd582e79deccadc81ae2819244680ed",
+    "runs/20261103_full_cycle_100_v2/summary.json": "962177a78c3109f72241307a7034d6ecbe4c6f269faa37e9fb4a0de82b40ff75",
+    "runs/20261103_full_cycle_100_replay_v4/summary.json": "a51bb5f9445a24772895a25f6eb4d8dab2eec7375c044a7a5f6a0c9a8129f985",
+    "runs/20261103_full_cycle_100_replay_v4_audit_v1/verification.json": "04742038b39d069e15a800b17f35ef915d7cb905cbc9d63c50bd7ff146e9c08d",
+    "runs/20261103_full_cycle_100_v3/summary.json": "2885bc5e99efd1614fa9f6184e55b4780ad704217a945d87c12fdcbc359e3f2a",
+    "runs/20261103_paired_numeric_v3_invariance/verification.json": "a58b659684d2c6259401b068892b962545d683e5792e45df0cbbd310d8de0466",
+    "runs/20261103_full_cycle_delivery_v3/delivery_index.json": "5b50ec9701630521191319c0aecbe0f994f8fcd387af15e559ff7a3d2d7c2a4a",
+    "runs/20261103_orion_real_cycle_verify_v3/verification.json": "f90c19496fb8cb56ee4e4f647cb82abeefae209724f21e89ab06d8c3a2dc4f3c",
+    "runs/20261103_full_cycle_delivery_v3/release_plan/release_plan.json": "29d98e90779a88b37199549d1af78b1e1366a6f424664bc07c1538660cc8368a",
+    "runs/20261103_full_cycle_final_gui_check_v1/verification.json": "1b2213e3f228fb794ac6351436e8e774788f72c74eda41712bc346a9c40c988e"
+  },
+  "content_scope": "numeric summaries, evidence paths and hashes only; no camera imagery, model response text, or secrets",
+  "historical_v2_integration": {
+    "pilot_derivation": {
+      "run": "runs/20261103_full_cycle_delivery_v2",
+      "artifact_batch_version": "v2",
+      "label_method_version": "full-cycle-v1",
+      "scope": "selected_episodes",
+      "subsets": 5,
+      "episodes": 8,
+      "frames": 1143,
+      "source_columns_and_episode_fingerprints_verified": true,
+      "publication_ready": false,
+      "formal_publication": false
+    },
+    "actual_loader": {
+      "run": "runs/20261103_orion_real_cycle_verify_v2",
+      "status": "passed",
+      "upstream_repository": "/gpfs/jiuquyun/projects/youzi/orion-0",
+      "upstream_commit": "e08dea45b92198c6b94c1b94236215ac30669640",
+      "inherited_upstream_dirty_diff_recorded": true,
+      "patch_base": "commit plus recorded inherited working-tree diff",
+      "deployment": "isolated_workspace_copy_only",
+      "source_files_byte_checked": 18,
+      "upstream_unchanged": true,
+      "derived_subsets_checked": 5,
+      "samples": 29,
+      "checked_gripper_values": 436,
+      "changed_action_values": 74,
+      "valid_label_values": 121,
+      "fallback_values": 315,
+      "action_rate_hz": 20,
+      "physical_state_unchanged": true,
+      "other_action_dimensions_unchanged": true,
+      "video_timestamps_masks_unchanged": true,
+      "nonuniform_timestamp_fixture_rejected_by_real_loader": true,
+      "training_effect_evaluated": false
+    }
+  },
+  "gui_verification": {
+    "path": "runs/20261103_full_cycle_final_gui_check_v1/verification.json",
+    "status": "passed",
+    "url": "http://127.0.0.1:8766/review.html",
+    "http_status": 200,
+    "episodes": 100,
+    "image_references": 7546,
+    "html_sha256": "0b49c2007b4f8befc1e5b6e122222a4fb4911be02ca7dd0dd436e5c972abbc29",
+    "full_browser_automation": false,
+    "scope": "original/target/valid/phase/source arrays and image references, not semantic grasp accuracy"
+  }
+}

@@ -273,6 +273,17 @@ def _redact(value, secret):
 class QwenClient:
     """Synchronous client with an absolute request budget and no default retries."""
 
+    prompt_version = PROMPT_VERSION
+
+    def build_payload(self, episode, candidate, frames):
+        return build_request(episode, candidate, frames, self.config)
+
+    def parse_output(self, response, episode, candidate, frames):
+        return parse_decision(response, candidate, len(episode["timestamps"]), frames)
+
+    def uncertain_output(self, candidate, reason):
+        return _uncertain(candidate, reason)
+
     def __init__(self, config):
         self.config = dict(config)
         self.request_count = 0
@@ -342,9 +353,9 @@ class QwenClient:
         return key
 
     def annotate(self, episode, candidate, frames):
-        result = {"status": "error", "decision": _uncertain(candidate, "not_called"),
+        result = {"status": "error", "decision": self.uncertain_output(candidate, "not_called"),
                   "raw_response": None, "usage": {}, "model": self.config.get("model", DEFAULT_MODEL),
-                  "request_hash": None, "prompt_version": PROMPT_VERSION,
+                  "request_hash": None, "prompt_version": self.prompt_version,
                   "base_url": self.base_url, "attempts": 0, "error": None}
         secret = ""
         try:
@@ -353,7 +364,7 @@ class QwenClient:
             # corrected and a fresh client is explicitly constructed.
             if self.authentication_blocked:
                 raise VisionValidationError("authentication_blocked")
-            payload = build_request(episode, candidate, frames, self.config)
+            payload = self.build_payload(episode, candidate, frames)
             result["request_hash"] = request_fingerprint(payload, self.base_url)
             if self.request_count >= self.max_requests:
                 raise VisionValidationError("request_budget_exhausted")
@@ -394,12 +405,12 @@ class QwenClient:
             result["usage"] = response.get("usage", {})
             result["model"] = response.get("model", result["model"])
             result["response_id"] = response.get("id")
-            result["decision"] = parse_decision(response, candidate, len(episode["timestamps"]), frames)
+            result["decision"] = self.parse_output(response, episode, candidate, frames)
             result["status"] = "ok"
         except VisionValidationError as exc:
             result["error"] = str(exc)
-            result["decision"] = _uncertain(candidate, str(exc))
+            result["decision"] = self.uncertain_output(candidate, str(exc))
         except (OSError, ValueError, KeyError, TypeError, OverflowError):
             result["error"] = "invalid_request_or_response"
-            result["decision"] = _uncertain(candidate, result["error"])
+            result["decision"] = self.uncertain_output(candidate, result["error"])
         return _redact(result, secret)
