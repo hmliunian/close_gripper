@@ -1,0 +1,46 @@
+{
+  "scope": "presentation only; existing full-cycle targets and original wrist videos",
+  "display_run": "runs/20261103_full_cycle_100_video_review_v1",
+  "source_run": "/gpfs/jiuquyun/home/xuran/xuran_projects/close_gripper/runs/20261103_full_cycle_100_replay_v4",
+  "url": "http://127.0.0.1:8766/review.html",
+  "episodes": 100,
+  "video_references": 220,
+  "evidence_images": 7546,
+  "model_requests": 0,
+  "algorithm_executions": 0,
+  "original_numeric_arrays_preserved": true,
+  "video_mappings_verified": true,
+  "renderer_sha256": "54f461b50bfde4816606829eb8a3e2de48c1c42d33462d163081964e41af88ea",
+  "offline_tests": {
+    "command": ".venv/bin/python -B scripts/check.py",
+    "tests": 237,
+    "skipped": 0,
+    "status": "passed"
+  },
+  "browser": {
+    "status": "passed",
+    "checks": 19,
+    "selected_real_cases_only": true,
+    "decoded_frame_rgb_mae": 0.9083,
+    "pixel_scale": 255
+  },
+  "evidence": [
+    {
+      "path": "runs/20261103_full_cycle_100_video_review_v1/render_summary.json",
+      "sha256": "d69c6e0cdd56d10c007092095175ea839bdaf745e867fc537a8ab332ab90e163"
+    },
+    {
+      "path": "runs/20261103_video_gui_validation_v1/verification.json",
+      "sha256": "56f38f9fd297ec6c34284351b4a2ba67fc66eaa4c4216ed8d851deba440c8e2e"
+    },
+    {
+      "path": "runs/20261103_video_browser_check_v1/attempt-002/browser_verification.json",
+      "sha256": "09de1e1d945bd5855c95f8befa22974852f00653e2066f1a511d29364b7ba0c2"
+    }
+  ],
+  "video_integrity": "source size/mtime/device/inode before and after; URL digest is not a content SHA",
+  "limitations": [
+    "Browser interaction and decoded pixel comparison use selected cases; not all 100 videos frame by frame",
+    "No new human grasp reference or training-effect evaluation"
+  ]
+}

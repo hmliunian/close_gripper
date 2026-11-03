@@ -12,7 +12,7 @@ python3 -m venv .venv
 .venv/bin/python -B scripts/check.py
 ```
 
-统一检查不读取凭据、不访问实际数据集、不联网。数值核心只需标准库；数据、图片和 PNG 依赖按 extras 安装。缺少依赖时会报告跳过项，不能当作全检查通过。HTML 脚本有语法检查；尚无完整浏览器自动化。
+统一检查不读取凭据、不访问实际数据集、不联网。数值核心只需标准库；数据、图片和 PNG 依赖按 extras 安装。缺少依赖时会报告跳过项，不能当作全检查通过。HTML 脚本有语法检查；视频交互另有真实浏览器验证，范围见 VALIDATION。
 
 所有运行输出必须使用本工作区内**新的** `runs/<run_id>`，已有目录拒绝覆盖。失败产物保留，重试使用新目录。
 
@@ -43,6 +43,15 @@ python3 -m venv .venv
 根目录生成 `review.html`、`summary.json`、配置与实现快照；每条 episode 保存输入、周期、图片引用、模型原始响应、结构化决定、复核模板、结果、目标和单条曲线图。任务汇总记录修改 episode／帧数；请求用量与未知用量分别记录。
 
 打开 `review.html`，切换 episode 并拖动时间滑块：灰线是实测开度，绿色是有效目标，橙线是候选；同时显示同侧腕部图像、逐帧阶段、来源和拒绝原因。覆盖统计表示候选及其上下文经过检查，**不表示每帧都有视觉真值**。根目录 `status=complete` 仅表示运行产物完成。
+
+要在 GUI 中播放对应的连续腕部视频，使用已有运行生成独立展示目录，然后启动支持视频跳转的本地服务：
+
+```sh
+.venv/bin/python -B scripts/render_video_review.py --source-run runs/my_full_cycle_qwen --output runs/my_video_review
+.venv/bin/python -B scripts/serve_review.py --run runs/my_video_review --port 8766
+```
+
+访问 `http://127.0.0.1:8766/review.html`。视频与曲线并排显示，可同步播放／暂停、拖动时间条、逐帧查看、调节速度及切换同侧双目视角；双臂样本同时显示左右腕。原模型证据帧保留在折叠区域。服务按每个相机的时间偏移定位，只读取清单内的源视频；无需复制或重新编码全部 MP4。展示目录保留原数值结果，新模型请求和算法执行均为0。视频页面需要通过此服务打开，直接打开本地 HTML 不提供视频路由。
 
 只调整数值实现、保持原候选和参数时，可用 `scripts/replay_clean_run.py --source-run /path/to/completed_run --manifest /path/to/frozen_manifest.json --output runs/my_numeric_replay` 复用证据。脚本先核验输入、原实现快照和图片摘要，保留原响应与失败记录；新调用数为0，复用的请求与用量单列。这是同一批证据的数值重放，不是独立评估。独立产物检查入口为 `scripts/verify_clean_run.py --run /path/to/run --manifest /path/to/frozen_manifest.json --output runs/my_run_audit`，均使用本地 Python 执行。
 

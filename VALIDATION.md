@@ -80,9 +80,19 @@
 
 `runs/20261103_full_cycle_100_replay_v4_audit_v1/verification.json` 独立审计100条输入快照、实现快照、同侧图像摘要、原始响应来源、目标与有效标记、覆盖及用量，错误0；审计本身调用模型0次。源和重放实现摘要分别绑定，原始输入、响应和失败证据保留。最终审阅产物为 `runs/20261103_full_cycle_100_replay_v4/review.html`。
 
-GUI 已切换到该最终产物：[本机审阅入口](http://127.0.0.1:8766/review.html)。`runs/20261103_full_cycle_final_gui_check_v1/verification.json` 核对100条原始／目标／valid／phase／source数组和7,546个图片引用，HTTP200；未运行完整浏览器自动化。茄子例最终曲线已目视确认0～15帧稳定在0.995088，15～18帧连续闭合到0，原始观测曲线保留。该目视检查验证展示，不升级为人工抓取语义真值。
+最初的逐帧图片 GUI 由该最终产物生成。`runs/20261103_full_cycle_final_gui_check_v1/verification.json` 核对100条原始／目标／valid／phase／source数组和7,546个图片引用，HTTP200；这一轮尚未运行完整浏览器自动化。茄子例最终曲线已目视确认0～15帧稳定在0.995088，15～18帧连续闭合到0，原始观测曲线保留。该目视检查验证展示，不升级为人工抓取语义真值。当前带连续视频的界面见下节。
 
 正式发布前确认来自任务书原约定，目前尚未到正式发布阶段；已完成的是实现、小样本证据、隔离接入和发布准备，不是整个任务验收。
+
+### GUI 连续视频与曲线同步
+
+按用户要求，当前 [8766审阅页](http://127.0.0.1:8766/review.html) 切换到 `runs/20261103_full_cycle_100_video_review_v1/`。100条 episode 与220个有效侧腕部视频逐一绑定，视频和开度曲线并排显示，支持同步播放／暂停、时间条和曲线定位、逐帧、速度、双目切换及全屏；模型证据帧保留在折叠区域。切换 episode 时停止旧视频，播放范围限于该 episode。
+
+本次仅重新展示 `full_cycle_100_replay_v4` 的既有结果，**新模型请求0次，数值算法执行0次**。原JSON逐字节复制，7,546张证据图片按SHA核验。独立 `runs/20261103_video_gui_validation_v1/verification.json` 核对全部100条页面的原值、目标、候选、valid、阶段、来源及220组相机、视频路径和偏移均与原产物一致。源MP4通过白名单只读流式提供，支持HTTP Range；URL摘要由规范路径及stat生成，不是视频内容SHA。源视频前后核对size、mtime、device和inode，未复制或转码视频。
+
+真实 Chromium 153／Playwright 1.64.1 验证位于 `runs/20261103_video_browser_check_v1/attempt-002/`：19项检查通过，JS、控制台和网络错误均为0。覆盖非零偏移、实帧解码、左右同步、曲线光标推进、暂停／播放中换视角、切 episode 停止旧视频、Range 206及2倍速。抽查 episode15889 的右腕证据帧192：episode 19.2秒加0.5秒偏移，对应视频 `currentTime` 与解码帧 `mediaTime` 均为19.7秒；实际视频帧与原JPEG的RGB像素MAE为0.9083／255。该内容检查证明抽查画面对应，未逐帧检查全部100条。attempt-001因沙箱禁止浏览器启动而未执行交互，记录保留；获工具权限后完成attempt-002。
+
+统一离线检查 `.venv/bin/python -B scripts/check.py` 退出0：**237项测试、0跳过**，日志 `/tmp/close_gripper_video_gui_check.log`。新增媒体偏移与侧别绑定、HTTP Range／HEAD／越界保护和展示产物保留测试；默认HTTP测试使用内存请求，不绑定端口或联网。精简证据见 [视频审阅汇总](reports/20261103_video_review_summary.json)，真实截图、视频和完整运行记录不提交Git。本次验证不新增视觉判断、人工参考或训练效果结论。
 
 ## 历史记录：局部候选流程与开度展示修正
 
