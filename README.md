@@ -16,6 +16,27 @@ python3 -m venv .venv
 
 所有运行输出必须使用本工作区内**新的** `runs/<run_id>`，已有目录拒绝覆盖。失败产物保留，重试使用新目录。
 
+## 任务开合配置
+
+[任务配置](configs/task_gripper_profiles.json)覆盖三个发布版的150个中文任务、151个有效侧别；逐任务区间和状态可查[配置表](reports/20261103_task_profiles.csv)。规则见 PLAN，扫描与视觉复核的实际覆盖见 VALIDATION。
+
+```sh
+.venv/bin/python -B -m close_gripper.task_profiles validate configs/task_gripper_profiles.json
+.venv/bin/python -B -m close_gripper.task_profiles inspect configs/task_gripper_profiles.json --task 拿起杯子 --side right
+
+# episode.json 使用现有 load_episode / clean 保存的完整输入格式；start/end 为闭区间帧号
+.venv/bin/python -B -m close_gripper.task_profiles match configs/task_gripper_profiles.json --episode /path/to/episode.json --side right --start 20 --end 30
+```
+
+这些命令只读取配置和输入，输出 JSON。`match` 返回是否满足任务开度带和0.6秒稳定条件、原平台起点及确认帧；它不生成目标、不调用模型，当前 `clean` 尚未消费该任务配置。
+
+复现数值扫描与配置构建的入口如下，实际校准使用的证据与输入摘要记录在配置中。构建所需的原始视觉审阅、完整模式成员映射和实验文件保留在本地 run，真实图片不进入 Git；没有这些证据不能仅凭数值统计重新生成视觉判断。
+
+```sh
+.venv/bin/python -B scripts/survey_task_grippers.py --output runs/my_task_census --workers 4
+.venv/bin/python -B scripts/build_task_profiles.py --census /path/to/completed_census_with_mode_membership --scope /path/to/scope_and_aliases.json --reviews /path/to/normalized_native_reviews.json --output runs/my_task_catalog
+```
+
 ## 处理完整 episode
 
 准备 JSON 清单，每项指定 LeRobot 子集和 episode：

@@ -1,6 +1,42 @@
 # 实现与验证记录
 
-日期：2026-11-03。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录完整周期阶段的实际证据，再保留旧局部候选流程的历史结果。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
+日期：2026-11-03。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录任务开度校准，再保留完整周期阶段及旧局部候选流程的实际证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
+
+## 任务开度配置：全量统计与原生视觉校准
+
+分支 `feat/task-gripper-profiles-20261103`，基线 `84c6895`。已交付[配置](configs/task_gripper_profiles.json)、[全部任务表](reports/20261103_task_profiles.csv)、[汇总](reports/20261103_task_profiles_summary.json)和[精简视觉证据](reports/20261103_task_profiles_evidence.json)。业务规则及启用语义只在 PLAN 定义；本节记录实际结果。
+
+| 核查项 | 实际完成 |
+| --- | --- |
+| 全量数值扫描 | 三发布版、7子集、1,961个Parquet、125,236条发行episode、15,041,374帧；108,472个独立原始录制；150任务、151有效任务侧 |
+| 数值窗口 | 1,230,356个按包含关系最大的稳定窗，其中772,042个满足0.6秒；窗口可相互重叠，不能当作抓取次数 |
+| Codex 原生视觉 | 302个任务侧样本，来自301个独立录制／发行episode；每任务侧两个不同来源。242支持夹持、40不支持、20不确定；均为模型来源、非人工真值 |
+| 补充复核 | 28例查看同侧另一目，8例由另一agent交叉复核；Qwen API请求0。开度由对齐的state读取，未从画面猜测数字 |
+| 可用配置 | 133任务、134任务侧允许数值匹配；166个夹持带、249个局部张开参考带 |
+| 禁用配置 | 17任务：9个已审样本不支持，8个需要补证；不等于确认这些任务的全部episode都无抓取 |
+| 支持强度 | 27个可用任务侧只有一条正例，166个夹持带中91个仅一来源支持。没有把单例校准称为双来源一致验证 |
+| 来源与区间审核 | 独立执行16,018项依据断言，核验302样本、151任务侧、1,216个实际帧文件摘要、原曲线、模式归属与反例阻断，全部通过 |
+| 输入保留 | 再计算全部1,961个源Parquet的SHA256、大小、mtime及元数据摘要，变化数0 |
+
+数值分布在 `runs/20261103_task_profiles_census_v2/`，逐样本视觉记录在 `runs/20261103_task_profiles_build_v1/visual_reviews_v3.json`。全量扫描的v1曾因先消耗短平台而遗漏跨边界的稳定窗；已改为线性时间枚举最大的稳定窗口，并在新的v2全量重扫。v1的视觉样本都能在v2中找到包含其完整区间的窗口，身份、数值和精确模式归属另经核验，未覆盖旧证据。
+
+全数据整窗数值匹配覆盖 **71,959 / 108,472独立录制（66.34%）**、82,845 / 125,236发行episode，合计336,570个窗口。它只表示至少有一个保存的完整稳定窗落入可用带，不是抓持准确率或清洗成功率；没有穷举从更长窗口中截出的全部可匹配子区间。覆盖与源文件复核记录在 `runs/20261103_task_profiles_coverage_v2/coverage.json`，依据审核在同目录 `catalog_basis_audit.json`。
+
+真实缓存回读 `runs/20261103_task_profiles_runtime_verification_v2/`：302例全部解析到正确中文任务／侧别并通过输入摘要核对；241例匹配，34例因配置禁用拒绝，27例在可用带外拒绝。匹配例全为本轮支持夹持的校准样本；一条支持样本因同任务近零混合持物／空夹反例而禁用。此结果不是留出集评估。确认时间为原平台起点加0.6秒，返回起点保持不变。以“拿起杯子”实际帧33～56为例，原开度约0.6906、确认帧39，未写目标字段。
+
+实际成功执行的入口（退出码均0）：
+
+```sh
+.venv/bin/python -B scripts/survey_task_grippers.py --output runs/20261103_task_profiles_census_v2 --workers 4
+.venv/bin/python -B scripts/build_task_profiles.py --census runs/20261103_task_profiles_census_v2 --scope runs/20261103_task_profiles_build_v1/scope_and_aliases.json --reviews runs/20261103_task_profiles_build_v1/visual_reviews_v3.json --output runs/20261103_task_profiles_catalog_v3
+.venv/bin/python -B -m close_gripper.task_profiles validate configs/task_gripper_profiles.json
+.venv/bin/python -B -m close_gripper.task_profiles match configs/task_gripper_profiles.json --episode runs/20261103_task_profiles_visual_group_b_v1/cases/108f6b8c3c374e70/episode.json --side right --start 33 --end 56
+.venv/bin/python -B scripts/check.py
+```
+
+统一离线检查 **283项通过、0跳过**，日志 `runs/20261103_task_profiles_build_v1/final_offline_check.log`；真实数据核验单独执行。配置SHA256为 `3a29ea422befb087278bd2480ff2e27fba6d602e8f306156b6d13f6a63186552`，与独立审核版本逐字节一致。原生视觉的完整图片保留在本地run，没有提交Git。
+
+本次完成任务配置、数值读取与匹配，并保留原拟合方法。`clean` 尚未接入这个任务配置；本轮未生成新的全量目标、派生数据或训练效果。独立语义验收、未审模式及17项禁用配置仍有待验证；已有小样本训练读取证据不能当作这版配置的训练接入结果。
 
 ## 当前阶段：完整周期实现与分层验证
 

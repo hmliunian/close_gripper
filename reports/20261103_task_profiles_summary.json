@@ -1,0 +1,156 @@
+{
+  "schema": "close_gripper.task_profile_delivery_summary.v1",
+  "branch": "feat/task-gripper-profiles-20261103",
+  "base_commit": "84c6895",
+  "config": "configs/task_gripper_profiles.json",
+  "catalog_sha256": "3a29ea422befb087278bd2480ff2e27fba6d602e8f306156b6d13f6a63186552",
+  "policy": {
+    "minimum_hold_s": 0.6,
+    "maximum_sample_gap_s": 0.15,
+    "maximum_plateau_range": 0.02,
+    "minimum_positive_reviewed_sources_for_numeric_matching": 1,
+    "calibration_is_not_independent_validation": true,
+    "targets_generated": false,
+    "fitting_changed": false
+  },
+  "numerical_census": {
+    "tasks": 150,
+    "task_sides": 151,
+    "files": 1961,
+    "episodes": 125236,
+    "frames": 15041374,
+    "unique_sources": 108472,
+    "episode_sides": 145489,
+    "platforms": 1230356,
+    "stable_0_6s_platforms": 772042,
+    "review_samples": 450,
+    "source_data_changed": false,
+    "model_calls": 0,
+    "elapsed_s": 95.67527198791504,
+    "status": "complete_numerical_census",
+    "limitations": [
+      "Plateaus are not grasp labels.",
+      "Numerical modes require visual semantic review.",
+      "Same source is weighted once within each mode; different crops remain separately counted episodes.",
+      "Inclusion-maximal stable windows can overlap and are not separate grasp events."
+    ]
+  },
+  "calibration": {
+    "tasks": 150,
+    "task_sides": 151,
+    "statuses": {
+      "not_supported": 40,
+      "supported": 242,
+      "uncertain": 20
+    },
+    "same_arm_stereo_recheck_cases": 28,
+    "independent_agent_cross_review_cases": 8,
+    "source": "model",
+    "method": "codex_native_vision",
+    "human_confirmed": false,
+    "qwen_api_requests": 0,
+    "known_limit": "Two source recordings per task-side; selected modes only, not all episodes or all modes visually reviewed.",
+    "reviewed_cases": 302,
+    "unique_source_recordings": 301,
+    "unique_release_episodes": 301
+  },
+  "configuration": {
+    "tasks": 150,
+    "task_sides": 151,
+    "enabled_tasks": 133,
+    "enabled_task_sides": 134,
+    "disabled_task_sides": 17,
+    "statuses": {
+      "unsupported": 9,
+      "visual_reviewed": 134,
+      "needs_review": 8
+    },
+    "closed_bands": 166,
+    "open_bands": 249,
+    "enabled_profiles_with_one_positive_case": 27,
+    "closed_bands_with_one_reviewed_source": 91,
+    "ambiguous_english_aliases": 9
+  },
+  "numerical_coverage": {
+    "status": "PASS",
+    "task_sides": 151,
+    "enabled_task_sides": 134,
+    "disabled_task_sides": 17,
+    "task_sides_without_closed_bands": 17,
+    "all_numerical_windows": 1230356,
+    "stable_minimum_hold_windows": 772042,
+    "matched_windows": 336570,
+    "matched_episode_sides": 103095,
+    "matched_release_episodes": 82845,
+    "matched_unique_sources": 71959,
+    "total_episode_sides": 145489,
+    "total_release_episodes": 125236,
+    "total_unique_sources": 108472,
+    "source_files_verified": 1961,
+    "source_files_changed": 0,
+    "metadata_files_changed": 0,
+    "elapsed_seconds": 24.546403646469116
+  },
+  "numerical_coverage_semantics": "Coverage is numerical compatibility of saved maximal windows, not grasp accuracy. Overlapping windows are not distinct grasp events. Sources are deduplicated by original source_path. The 0.15 s gap constraint comes from census extraction; this audit checks persisted windows and rehashes inputs, but does not independently decode each timestamp curve again. Disabled and missing-band counts can overlap.",
+  "independent_basis_audit": {
+    "status": "PASS",
+    "checks": {
+      "assertions": 16018,
+      "reviewed_cases": 302,
+      "task_sides": 151,
+      "closed_bands": 166,
+      "open_bands": 249,
+      "unique_frame_files_verified": 1216
+    },
+    "failures": [],
+    "catalog_sha256": "3a29ea422befb087278bd2480ff2e27fba6d602e8f306156b6d13f6a63186552",
+    "script_sha256": "2494c1eaa42af78861c2cbbdef1594d7d3d035542daf51c57bc46c3c6c968cb0",
+    "scope": "Independent identity, full saved curve, actual viewed frame hash, raw bin membership, boundary and negative-evidence checks. This does not measure visual classification accuracy."
+  },
+  "runtime_readback": {
+    "status": "PASS",
+    "reviewed_cases": 302,
+    "resolved_cases": 302,
+    "statuses": {
+      "rejected": 61,
+      "matched": 241
+    },
+    "reasons": {
+      "profile_not_automatic": 34,
+      "outside_single_closed_band": 27,
+      "task_profile_numeric_match": 241
+    },
+    "matched_by_visual_status": {
+      "supported": 241
+    },
+    "identity_and_input_fingerprints": "PASS",
+    "same_catalog_rebuilt": "PASS",
+    "note": "Calibration sample numerical read-back; not heldout grasp accuracy or generated targets."
+  },
+  "artifacts": {
+    "census": "runs/20261103_task_profiles_census_v2",
+    "reviews": "runs/20261103_task_profiles_build_v1/visual_reviews_v3.json",
+    "catalog_build": "runs/20261103_task_profiles_catalog_v3",
+    "coverage": "runs/20261103_task_profiles_coverage_v2",
+    "runtime": "runs/20261103_task_profiles_runtime_verification_v2"
+  },
+  "limitations": [
+    "Numeric calibration is ready; clean does not consume this catalog yet.",
+    "Numerical coverage is neither grasp accuracy nor cleaning success.",
+    "Maximal windows may overlap, and narrower in-band subwindows were not exhaustively counted.",
+    "No derived datasets or trained policies were generated by this task-profile work."
+  ],
+  "offline_checks": {
+    "command": ".venv/bin/python -B scripts/check.py",
+    "exit_code": 0,
+    "tests_passed": 283,
+    "tests_skipped": 0,
+    "log": "runs/20261103_task_profiles_build_v1/final_offline_check.log",
+    "log_sha256": "1eeb799dde12a986fafdacd09af1807d9eb0af51379af8ec10ccb7b9ae924afc"
+  },
+  "implementation_sha256": {
+    "scripts/build_task_profiles.py": "fa7df94ca8e429b77a951e97cc83f84100503df1aa71d683230214415582468d",
+    "scripts/survey_task_grippers.py": "8664d216ec5bbcafba4593044572ef1d382623ca56c604cb052a0cee31fcfd81",
+    "close_gripper/task_profiles.py": "bfd07ee9d8bc576e8e14d544236818681db5a618e6f6cfdd5523174dda66928b"
+  }
+}
