@@ -42,7 +42,7 @@ def _links(relative):
         return "—"
     prefix = quote(path.as_posix(), safe="/")
     return (f'<a href="{_escape(prefix)}/review.html">同步审阅</a> '
-            f'<a href="{_escape(prefix)}/curves.png">曲线图</a>')
+            f'<a href="{_escape(prefix)}/curves.png">开度曲线图</a>')
 
 
 def _counter_table(title, counts):
@@ -125,7 +125,8 @@ def write_batch_report(run_dir, rows):
 <style>
 :root{color-scheme:light}*{box-sizing:border-box}body{font:15px system-ui,sans-serif;color:#183247;background:#f3f6fa;margin:0;padding:28px}main{max-width:1720px;margin:auto}h1{font-size:28px;margin:8px 0}h2{font-size:17px}p{line-height:1.6}.muted,small{color:#61758a}small{display:block;font-size:12px;margin-top:6px;line-height:1.45}.note{background:#fff3d8;border-left:4px solid #c78217;padding:12px 16px;border-radius:4px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px;margin:22px 0}article{background:white;border:1px solid #dee6ee;border-radius:10px;padding:16px}article strong{display:block;font-size:29px;margin:9px 0}article span{font-size:14px}.distributions{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.distribution{background:white;border-radius:10px;padding:12px 16px;max-height:300px;overflow:auto}.distribution td:last-child{text-align:right}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0 12px}label{font-size:13px}input,select,button{font:inherit;background:white;border:1px solid #bbcbd9;border-radius:6px;padding:8px}input{min-width:250px}label select{margin-left:5px}.table-wrap{overflow:auto;background:white;border:1px solid #dce5ec;border-radius:10px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:11px 10px;border-bottom:1px solid #e5ebf0;vertical-align:top}th{background:#eaf0f6;white-space:nowrap;position:sticky;top:0}td.identity{min-width:240px;max-width:380px;overflow-wrap:anywhere}td.reason{min-width:180px;max-width:280px;overflow-wrap:anywhere}.badge{display:inline-block;padding:3px 7px;border-radius:5px;white-space:nowrap}.ok{background:#e1f2e9;color:#206348}.review{background:#fff0d6;color:#8a601a}.links{min-width:90px}.links a{display:block;margin-bottom:7px}a{color:#176795}tr[hidden]{display:none}button{cursor:pointer}.footer{margin:18px 0;color:#61758a;font-size:13px}@media(max-width:600px){body{padding:12px}h1{font-size:23px}}
 </style></head><body><main>
-<p class="muted">CLOSE GRIPPER / BATCH REVIEW</p><h1>真实 episode · 夹爪候选曲线审阅</h1>
+<p class="muted">CLOSE GRIPPER / BATCH REVIEW</p><h1>真实 episode · 夹爪开度曲线审阅</h1>
+<p>同步审阅页和曲线图对比原始实测开度与候选目标开度，纵轴统一为0～1（0 = 全闭，1 = 全开）。</p>
 <p class="note">本页没有人工参考，不能据此报告准确率、召回率或训练收益。模型成功仅表示调用及结构化解析成功。候选曲线不等于有效训练标签；未选中的张开事件、未触发的持续持物片段不算完成检查。</p>
 <div class="cards">__CARDS__</div>
 <div class="distributions">__DISTRIBUTIONS__</div>

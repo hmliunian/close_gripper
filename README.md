@@ -1,6 +1,6 @@
 # close_gripper
 
-从左右从臂开度与同侧腕部图像生成独立夹爪训练目标，保留实际观测与原时间轴。算法以 [PLAN.md](PLAN.md) 为准，工程约束见 [BOUNDARIES.md](BOUNDARIES.md)，当前验证见 [VALIDATION.md](VALIDATION.md)。
+从左右从臂实测开度与同侧腕部图像生成独立的夹爪目标开度（0～1），保留实际观测与原时间轴。目标指令与实测开度的区别、算法及未完成范围以 [PLAN.md](PLAN.md) 为准，工程约束见 [BOUNDARIES.md](BOUNDARIES.md)，当前验证见 [VALIDATION.md](VALIDATION.md)。
 
 已实现趋势检测、LeRobot v3 只读加载、Qwen 视觉适配、闭合与张开的端点拟合、原速延伸对照、同步图片与曲线审阅页、独立目标 sidecar 和本地训练适配函数。模型或合成结果只生成候选；正常释放策略仍需审阅，不标为有效训练标签。
 
@@ -20,7 +20,7 @@ python3 -m venv .venv
 .venv/bin/python -m close_gripper demo --output runs/my_demo
 ```
 
-打开 `runs/my_demo/review.html`，切换 episode，拖动时间滑块。`curves.png` 可直接查看或分享。示例涵盖左侧误开、右侧正常释放、双侧同时误开、空夹和未触发；全部标明合成来源，橙线是候选，绿色仅绘制有效目标。
+打开 `runs/my_demo/review.html`，切换 episode，拖动时间滑块。`curves.png` 可直接查看或分享。纵轴和逐帧数值均为0～1的夹爪开度，灰线为实测开度，橙线为候选目标指令，绿色仅绘制有效目标。示例涵盖左侧误开、右侧正常释放、双侧同时误开、空夹和未触发；全部标明合成来源。
 
 本次已生成的可移植示例：[曲线图](examples/synthetic_curves.png)、[交互审阅页](examples/synthetic_review.html)。闭合与张开均保留原起止时刻，将闭合终点和张开起点映射到0；蓝色虚线保留旧原速闭合延伸对照。正常释放仍只生成候选。闭合默认 `closing_policy: "fixed_timing"`，配置 `"original_speed"` 可复现旧的延伸方案。
 
@@ -96,4 +96,4 @@ actions = apply_gripper_targets(original_actions, targets, valid)
 
 根目录 `batch_review.html` 提供任务／侧别／状态筛选，逐条链接同步腕部画面和曲线；`case_results.json` 与 `summary.json` 分别保存逐条结果及汇总。模型解析成功、类别、数值回退、候选变化、有效训练目标变化和服务返回用量分别统计，不把调用成功率当作视觉准确率。失败用量未返回时保持未知。
 
-已完成100条真实episode、91种任务的检查：[统计图](examples/real100_summary.png)、[详细验证记录](VALIDATION.md#100-条真实-episode-的固定配置检查)。实际逐条审阅页保留在本地 `runs/20261103_real100_qwen/batch_review.html`；真实图像和完整响应不提交Git。
+已完成100条真实episode、91种任务的检查：[统计图](examples/real100_summary.png)、[详细验证记录](VALIDATION.md#100-条真实-episode-的固定配置检查)。最新按0～1开度展示的逐条审阅页位于本地 `runs/20261103_real100_opening_review/batch_review.html`，由原批次缓存重绘；原结果保留在 `runs/20261103_real100_qwen/`。真实图像和完整响应不提交Git。

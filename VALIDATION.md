@@ -85,3 +85,11 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
 交付入口：本地 `runs/20261103_real100_qwen/batch_review.html` 可按任务、左右侧、类别与回退原因筛选，并逐条查看同步腕部证据和曲线。汇总图与JSON见[统计图](examples/real100_summary.png)、[统计数据](reports/20261103_real100_summary.json)。实际候选局部放大为run内 `case007_curve_detail.png`，原图证据为 `case007_evidence.png`。真实图片、完整模型响应与密钥均未纳入Git。
 
 完成证据：独立审阅 `audit_final.json` 和 `artifact_verification.json` 核对100条精确候选ID、侧别、同侧图像、输入摘要与标签不变，所有请求使用同一个实现摘要；本轮离线入口与pytest均122项通过、0跳过。仅在计算结束后修正PNG过长标题并重绘展示，未改变模型响应、算法结果或本批统计。仍无人工参考、真实准确率或训练效果验证。
+
+## GUI 开度展示核对
+
+对照 `Untitled.md` 与数据转换代码确认：输入9/19维及独立目标字段均为归一化夹爪开度。原审阅图把数值乘95后标成 `Width (mm)`；现将HTML、PNG和逐帧读数统一为0～1，并明确标注实测开度、候选目标开度和有效目标开度。语义及未完成范围见 PLAN。
+
+新审阅入口为 `runs/20261103_real100_opening_review/batch_review.html`。使用缓存重绘100条真实样本，复制4361张已有证据图片；本次模型请求0次。`render_summary.json` 记录源JSON摘要，重绘前后摘要一致，HTML内原值、候选值、目标值与有效标记逐一对应原结果。原批次的100条模型结论和候选变化数量保持不变。
+
+合成示例重绘于 `runs/20261103_opening_units/`，并同步到 `examples/`。静态图已目视核对0～1坐标及闭合／释放两端的原始与候选曲线。执行 `.venv/bin/python -B scripts/check.py`：122项通过、0跳过，包含HTML脚本语法与已有业务契约；`git diff --check` 退出0。本次仅验证展示与数值保留，未新增真实VLM、人工参考或训练效果验证，未运行完整浏览器自动化。
