@@ -82,3 +82,16 @@ actions = apply_gripper_targets(original_actions, targets, valid)
 按子集和任务分层并确定性选取。没有原始 episode 对应关系的样本标为 `unassigned`，不能当作无泄漏留出集。左右、误开、释放、遮挡等语义覆盖需要实际审阅，工具不会从任务名推造参考标签。
 
 当前不执行全量数据派生、不修改外部训练仓库、不发布 `-gripcmd` 版本。发布仍须遵循原需求的发布前确认。
+
+## 冻结清单的真实批次检查
+
+```sh
+.venv/bin/python -m close_gripper batch \
+  --manifest runs/20261103_real100_selection/manifest.json \
+  --config configs/real100.json --workers 4 --qwen \
+  --api-key-file qwen_api.txt --output runs/my_real100
+```
+
+清单需包含每条episode的缓存相对路径、完整输入摘要、准确候选ID和侧别。运行前核对缓存与候选，避免两侧同时张开时选错侧。每条episode只检查清单指定的一个代表事件，不将其余事件算作已检查。最大4个并发，每条最多1次真实请求、0重试；认证失败后阻止排队任务继续请求。去掉 `--qwen` 可只运行数值与报告流程。
+
+根目录 `batch_review.html` 提供任务／侧别／状态筛选，逐条链接同步腕部画面和曲线；`case_results.json` 与 `summary.json` 分别保存逐条结果及汇总。模型解析成功、类别、数值回退、候选变化、有效训练目标变化和服务返回用量分别统计，不把调用成功率当作视觉准确率。失败用量未返回时保持未知。

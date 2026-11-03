@@ -75,6 +75,10 @@ def process_episode(episode, run_dir, config, decisions=None, client=None, candi
         if client is None:
             continue
         selection = config.get("candidate_starts")
+        selected_ids = config.get("candidate_ids")
+        if selected_ids is not None and candidate["candidate_id"] not in selected_ids:
+            issues.append({"candidate_id":candidate["candidate_id"], "reason":"not_selected_for_visual_review"})
+            continue
         if selection is not None and candidate["start"] not in selection:
             issues.append({"candidate_id":candidate["candidate_id"], "reason":"not_selected_for_visual_review"})
             continue
@@ -118,7 +122,7 @@ def process_episode(episode, run_dir, config, decisions=None, client=None, candi
     return record
 
 
-def finish_run(run_dir, records, config):
+def finish_run(run_dir, records, config, quiet=False):
     cfg = public_config(config)
     dump(run_dir / "config.json", cfg)
     digest = hashlib.sha256(json.dumps(cfg, sort_keys=True).encode()).hexdigest()
@@ -145,7 +149,8 @@ def finish_run(run_dir, records, config):
                    review="review.html", plot=plot.name if plot else None)
     summary["implementation_sha256"] = hashlib.sha256(b"".join(p.name.encode()+p.read_bytes() for p in sorted((WORKSPACE / "close_gripper").glob("*.py")))).hexdigest()
     dump(run_dir / "summary.json", summary)
-    print(json.dumps(summary, ensure_ascii=False))
+    if not quiet:
+        print(json.dumps(summary, ensure_ascii=False))
     return summary
 
 

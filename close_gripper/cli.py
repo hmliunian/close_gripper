@@ -22,6 +22,13 @@ def main(argv=None):
     sample.add_argument("--dataset", action="append", required=True)
     sample.add_argument("--limit", type=int, default=48)
     sample.add_argument("--output", required=True)
+    batch = sub.add_parser("batch", help="按冻结清单逐episode检查一个代表事件")
+    batch.add_argument("--manifest", required=True)
+    batch.add_argument("--output", required=True)
+    batch.add_argument("--config")
+    batch.add_argument("--workers", type=int, default=4)
+    batch.add_argument("--qwen", action="store_true")
+    batch.add_argument("--api-key-file")
     args = parser.parse_args(argv)
     try:
         if args.command == "demo":
@@ -29,6 +36,13 @@ def main(argv=None):
             config = default_config()
             directory = create_run(args.output)
             records = [process_episode(ep, directory, config, decisions=ds) for ep,ds in examples()]
+        elif args.command == "batch":
+            from .batch import run_batch
+            config = json.loads(Path(args.config).read_text()) if args.config else {}
+            if args.api_key_file:
+                config["api_key_file"] = args.api_key_file
+            run_batch(args.manifest, args.output, config=config, workers=args.workers, call_model=args.qwen)
+            return 0
         elif args.command == "sample":
             from .sampling import build_manifest
             directory = create_run(args.output, args.dataset)
