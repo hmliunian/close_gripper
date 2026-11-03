@@ -74,12 +74,14 @@ def write_plot(run_dir, records):
     fig, axes = plt.subplots(count, 2, figsize=(13, 3 * count), squeeze=False)
     for row, record in enumerate(records):
         ep, result = record["episode"], record["result"]
+        index = ep.get("identity", {}).get("episode_index")
+        label = f"Episode {index}" if index is not None else str(ep["episode_id"]).rsplit("/", 1)[-1]
         for col, side in enumerate(("left", "right")):
             ax = axes[row, col]
             ax.plot(ep["timestamps"], [s[(9,19)[col]] * 95 for s in ep["state"]], color="#526577", lw=2, label="Original")
             ax.plot(ep["timestamps"], [s[col] * 95 for s in result.get("preview_target", result["target"])], color="#e59420", ls="--", lw=2, label="Review candidate")
             ax.plot(ep["timestamps"], [s[col] * 95 if result["valid"][i][col] else float("nan") for i,s in enumerate(result["target"])], color="#12826c", lw=1, label="Accepted target (valid only)")
-            ax.set(title=f'{ep["episode_id"]} / {side}', xlabel="Episode time (s)", ylabel="Width (mm)", ylim=(-3, 100))
+            ax.set(title=f'{label} / {side}', xlabel="Episode time (s)", ylabel="Width (mm)", ylim=(-3, 100))
             ax.grid(alpha=.2)
             for comp in result.get("closing_comparisons", []):
                 old_policy = result.get("config", {}).get("closing_policy") == "original_speed"

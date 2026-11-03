@@ -95,3 +95,5 @@ actions = apply_gripper_targets(original_actions, targets, valid)
 清单需包含每条episode的缓存相对路径、完整输入摘要、准确候选ID和侧别。运行前核对缓存与候选，避免两侧同时张开时选错侧。每条episode只检查清单指定的一个代表事件，不将其余事件算作已检查。最大4个并发，每条最多1次真实请求、0重试；认证失败后阻止排队任务继续请求。去掉 `--qwen` 可只运行数值与报告流程。
 
 根目录 `batch_review.html` 提供任务／侧别／状态筛选，逐条链接同步腕部画面和曲线；`case_results.json` 与 `summary.json` 分别保存逐条结果及汇总。模型解析成功、类别、数值回退、候选变化、有效训练目标变化和服务返回用量分别统计，不把调用成功率当作视觉准确率。失败用量未返回时保持未知。
+
+已完成100条真实episode、91种任务的检查：[统计图](examples/real100_summary.png)、[详细验证记录](VALIDATION.md#100-条真实-episode-的固定配置检查)。实际逐条审阅页保留在本地 `runs/20261103_real100_qwen/batch_review.html`；真实图像和完整响应不提交Git。
