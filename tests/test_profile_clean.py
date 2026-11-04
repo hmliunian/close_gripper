@@ -141,8 +141,10 @@ class ProfileRuleContracts(unittest.TestCase):
         result = generate_profile_targets(episode(values), c)
         qualified = [c for c in result["candidates"] if c["matched"]]
         self.assertEqual([(c["start"], c["end"]) for c in qualified], [(1, 8)])
-        # Numerical qualification does not fabricate a missing closing edge.
-        self.assertEqual(result["events"][-1]["reason"], "missing_aligned_closing_boundary")
+        event, = applied(result)
+        self.assertIsNone(event["closing_start"])
+        self.assertIn("closing:no_observed_boundary", event["transition_issues"])
+        self.assertEqual([row[1] for row in result["rule_target"]][1:], [0.] * 8)
 
     def test_timestamp_gap_cannot_combine_two_short_holds(self):
         times = [i / 10 for i in range(6)] + [1. + i / 10 for i in range(6)]
@@ -211,21 +213,23 @@ class ProfileRuleContracts(unittest.TestCase):
                                  dict(outside="outside_closed_bands", unknown="unknown_task",
                                       disabled="profile_not_automatic")[kind])
 
-    def test_actual_closing_end_is_not_moved_to_a_tolerated_earlier_band_sample(self):
+    def test_qualified_hold_anchor_is_not_shortened_by_closing_alignment(self):
         values = [.8, .5, .21, .2] + [.2] * 6
         result = generate_profile_targets(episode(values), catalog())
         event, = applied(result)
         self.assertEqual(event["start"], 2)
-        self.assertEqual((event["contact_frame"], event["confirmation_frame"]), (3, 9))
-        self.assertGreater(result["rule_target"][2][1], 0.)
+        self.assertEqual((event["contact_frame"], event["confirmation_frame"]), (2, 8))
+        self.assertEqual(event["observed_closing_end"], 3)
+        self.assertEqual(result["rule_target"][2][1], 0.)
         self.assertEqual(result["rule_target"][3][1], 0.)
 
-    def test_release_alignment_rechecks_minimum_holding_duration(self):
+    def test_release_alignment_cannot_veto_a_qualified_six_tenths_hold(self):
         result = generate_profile_targets(episode([.2] * 6 + [.21, .8]), catalog())
-        self.assertFalse(applied(result))
-        self.assertEqual(result["events"][0]["reason"], "insufficient_holding_duration_after_boundary_alignment")
+        event, = applied(result)
+        self.assertEqual((event["hold_start"], event["hold_end"], event["release_start"]), (0, 6, 6))
+        self.assertEqual([row[1] for row in result["rule_target"][:7]], [0.] * 7)
 
-    def test_aligned_confirmation_must_itself_be_stable_across_merged_windows(self):
+    def test_qualified_overlapping_windows_survive_transition_alignment(self):
         c = catalog()
         c["tasks"][0]["sides"]["right"]["closed_bands"] = [
             dict(id="drift", lower=.20, center=.225, upper=.25)]
@@ -234,11 +238,9 @@ class ProfileRuleContracts(unittest.TestCase):
         candidate, = [p for p in result["candidates"] if p["matched"]]
         self.assertEqual([(w["start"], w["end"]) for w in candidate["matched_windows"]],
                          [(2, 8), (4, 15)])
-        # The actual closing end is frame 3, and 3..9 spans 0.025, although
-        # each original overlapping witness was stable. Do not move contact.
-        self.assertFalse(applied(result))
-        self.assertEqual(result["events"][0]["reason"], "unstable_confirmation_after_boundary_alignment")
-        self.assertEqual(result["rule_target"], result["target"])
+        event, = applied(result)
+        self.assertEqual((event["hold_start"], event["hold_end"]), (2, 15))
+        self.assertEqual([row[1] for row in result["rule_target"][2:]], [0.] * 14)
 
     def test_larger_release_endpoint_is_preserved_above_local_open_anchor(self):
         c = catalog()
@@ -248,17 +250,22 @@ class ProfileRuleContracts(unittest.TestCase):
         self.assertEqual(event["release_end"], 9)
         self.assertEqual(result["rule_target"][-1][1], .95)
 
-    def test_unresolved_exit_and_unreliable_speed_preserve_observations(self):
+    def test_short_release_is_fitted_and_unreliable_transition_does_not_cancel_hold(self):
+        result = generate_profile_targets(episode([.2] * 8 + [.23, .23]), catalog())
+        event, = applied(result)
+        self.assertEqual((event["release_start"], event["release_end"]), (7, 8))
+        self.assertEqual([row[1] for row in result["rule_target"][:8]], [0.] * 8)
+        self.assertEqual(result["rule_target"][-1][1], .23)
         scenarios = [
-            (episode([.2] * 8 + [.23, .23]), "unresolved_release_boundary"),
-            (episode([.8] + [.2] * 8, [0.] + [.01 + i / 10 for i in range(8)]), "unreliable_motion_speed"),
+            (episode([.8] + [.2] * 8, [0.] + [.01 + i / 10 for i in range(8)]), "closing:unreliable_motion_speed"),
         ]
         for ep, reason in scenarios:
             with self.subTest(reason=reason):
                 result = generate_profile_targets(ep, catalog())
-                self.assertFalse(applied(result))
-                self.assertEqual(result["rule_target"], result["target"])
-                self.assertEqual(result["events"][0]["reason"], reason)
+                event, = applied(result)
+                self.assertIn(reason, event["transition_issues"])
+                self.assertEqual(result["rule_target"][0][1], .8)
+                self.assertEqual([row[1] for row in result["rule_target"][1:]], [0.] * 8)
 
     def test_invalid_data_or_minimum_hold_override_are_rejected(self):
         for value in (float("nan"), True, -.1, 1.1):
@@ -276,42 +283,83 @@ class ProfileRuleContracts(unittest.TestCase):
         result = generate_profile_targets(episode(values), c)
         event, = applied(result)
         self.assertEqual((event["hold_start"], event["release_start"], event["release_end"]), (0, 8, 10))
-        self.assertEqual(event["release_rule_id"], "local")
-        self.assertAlmostEqual(event["release_motion_min_delta"], .032)
+        self.assertIsNone(event["release_rule_id"])
+        self.assertAlmostEqual(event["release_motion_min_delta"], .006000001)
         self.assertAlmostEqual(result["rule_target"][9][1], .199 * (.179 - .164) / (.199 - .164))
         self.assertEqual(result["rule_target"][10:], [[0., v] for v in values[10:]])
         self.assertEqual(result["config"]["motion_min_delta"], .04)
         self.assertEqual(result["config"]["motion_noise"], .003)
         self.assertEqual(c, original)
         c["tasks"][0]["sides"]["right"]["release_rules"] = []
-        unchanged = generate_profile_targets(episode(values), c)
-        self.assertFalse(applied(unchanged))
-        self.assertEqual(unchanged["events"][0]["reason"], "unresolved_release_boundary")
+        without_local_rule = generate_profile_targets(episode(values), c)
+        self.assertEqual(without_local_rule["rule_target"], result["rule_target"])
 
-    def test_small_release_is_not_borrowed_by_another_closed_mode_or_closing(self):
+    def test_small_transitions_work_without_borrowing_other_mode_evidence(self):
         c = local_release_catalog()
         p = c["tasks"][0]["sides"]["right"]
         p["closed_bands"].append(dict(id="other", lower=.101, center=.104, upper=.107,
                                      source_ids=["a", "b"], reviewed_source_count=2, open_band_ids=["other_open"]))
         p["open_bands"].append(dict(id="other_open", lower=.138, center=.141, upper=.144, source_ids=["a"]))
         p["free_bands"].append(dict(id="other_free", lower=.138, center=.141, upper=.144))
-        # Other mode's excursion is large enough for the learned local .032,
-        # but smaller than .04 and does not have that mode's release evidence.
         result = generate_profile_targets(episode([.104] * 9 + [.12, .139, .141]), c)
-        self.assertFalse(applied(result))
-        self.assertEqual(result["rule_target"], result["target"])
-        # A small closing remains governed by the unchanged global .04 rule.
+        event, = applied(result)
+        self.assertIsNone(event["release_rule_id"])
+        self.assertEqual(event["release_end"], 10)
         result = generate_profile_targets(episode([.199, .179] + [.164] * 9), c)
-        self.assertFalse(applied(result))
-        self.assertIn("missing_aligned_closing_boundary", [e["reason"] for e in result["events"]])
+        event, = applied(result)
+        self.assertEqual(event["closing_start"], 0)
+        self.assertEqual([row[1] for row in result["rule_target"][2:]], [0.] * 9)
 
-    def test_local_release_cannot_change_noise_or_use_an_unobserved_open_reference(self):
+    def test_release_endpoint_can_be_below_reference_without_changing_noise(self):
         values = [.164] * 9 + [.179, .195, .197]
         result = generate_profile_targets(episode(values), local_release_catalog())
-        self.assertFalse(applied(result))
-        self.assertEqual(result["events"][0]["reason"], "unresolved_release_boundary")
+        event, = applied(result)
+        self.assertEqual(event["release_end"], 10)
+        self.assertFalse(event["release_reference_gate_applied"])
+        self.assertEqual(result["rule_target"][-1][1], .197)
         with self.assertRaisesRegex(ValueError, "unchanged motion_noise"):
             generate_profile_targets(episode([.164] * 8), local_release_catalog(), dict(motion_noise=.001))
+
+    def test_3093_shaped_hold_maps_to_zero_and_preserves_release_times(self):
+        c = catalog()
+        p = c["tasks"][0]["sides"]["right"]
+        p["closed_bands"] = [dict(id="ladle", lower=.153, center=.156, upper=.1601)]
+        p["open_bands"] = [dict(id="reference", lower=.7848, center=.79, upper=.80)]
+        values = [.156] * 42 + [.179, .516, .694, .735, .744, .746, .738]
+        result = generate_profile_targets(episode(values), c)
+        event, = applied(result)
+        self.assertEqual((event["hold_start"], event["hold_end"], event["release_start"], event["release_end"]), (0, 41, 41, 46))
+        self.assertEqual(result["rule_target"][18][1], 0.)
+        self.assertEqual(result["rule_target"][46:], [[0., v] for v in values[46:]])
+        self.assertAlmostEqual(result["rule_target"][43][1], .744 * (.516 - .156) / (.744 - .156))
+
+    def test_unobserved_release_keeps_qualified_hold_and_records_transition_issue(self):
+        result = generate_profile_targets(episode([.2] * 8 + [.23, .23]), catalog(), dict(motion_noise=.035))
+        event, = applied(result)
+        self.assertEqual([row[1] for row in result["rule_target"][:8]], [0.] * 8)
+        self.assertIsNone(event["release_end"])
+        self.assertIn("release:no_observed_boundary", event["transition_issues"])
+
+    def test_short_noisy_or_outside_windows_do_not_become_holds(self):
+        for values in ([.2] * 6, [.1] * 20, [.18, .22] * 10):
+            result = generate_profile_targets(episode(values), catalog())
+            self.assertFalse(applied(result))
+            self.assertEqual(result["rule_target"], result["target"])
+
+    def test_overlapping_transition_never_overwrites_another_qualified_hold(self):
+        c = catalog()
+        c["tasks"][0]["sides"]["right"]["closed_bands"].append(
+            dict(id="next", lower=.24, center=.25, upper=.26))
+        values = [.2] * 8 + [.21, .22, .23, .24, .25] + [.25] * 8
+        result = generate_profile_targets(episode(values), c)
+        self.assertEqual(len(applied(result)), 2)
+        for candidate in result["candidates"]:
+            if candidate["matched"]:
+                for i in range(candidate["start"], candidate["end"] + 1):
+                    self.assertEqual(result["rule_target"][i][1], 0.)
+                    self.assertEqual(result["preview_phase"][i][1], "hold")
+                    self.assertTrue(result["rule_applied_mask"][i][1])
+        self.assertGreater(result["rule_target"][10][1], 0.)
 
     def test_same_value_semantic_conflict_is_explicit_and_never_generates_a_curve(self):
         c = local_release_catalog()

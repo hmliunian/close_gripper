@@ -1,0 +1,91 @@
+{
+  "status": "complete",
+  "rule_version": "task-profile-rule-v3-hold-first",
+  "catalog_sha256": "d8d684cafcf12f418d6f73d8af21594feb9f5b2c5530ffadebaf62f3a291d696",
+  "manifest_sha256": "54e4f613b78499fb222cba99e516b7bfd6420e61580ca5ada096bc34d93bec1f",
+  "implementation_sha256": "709d7563e83719ebb25e000aef271308706947ad36c2cb5f87d1294c77f6978f",
+  "full_source_scope": true,
+  "enabled_tasks": 105,
+  "skipped_tasks": 45,
+  "completed_shards": 1961,
+  "datasets": 7,
+  "previous": {
+    "episodes": 125236,
+    "selected_episodes": 102577,
+    "frames": 15041374,
+    "changed_episodes": 5681,
+    "changed_frames": 152692,
+    "applied_intervals": 6172
+  },
+  "current": {
+    "episodes": 125236,
+    "selected_episodes": 102577,
+    "frames": 15041374,
+    "changed_episodes": 12998,
+    "changed_frames": 315645,
+    "applied_intervals": 14307
+  },
+  "releases": {
+    "drawer": {
+      "episodes": 16965,
+      "selected_episodes": 16965,
+      "frames": 1439605,
+      "changed_episodes": 1541,
+      "changed_frames": 39635,
+      "applied_intervals": 1587
+    },
+    "priority": {
+      "episodes": 20586,
+      "selected_episodes": 14528,
+      "frames": 912352,
+      "changed_episodes": 3890,
+      "changed_frames": 89708,
+      "applied_intervals": 4484
+    },
+    "remaining": {
+      "episodes": 87685,
+      "selected_episodes": 71084,
+      "frames": 12689417,
+      "changed_episodes": 7567,
+      "changed_frames": 186302,
+      "applied_intervals": 8236
+    }
+  },
+  "all_qualified_intervals_zero": 14307,
+  "audit_status": "PASS",
+  "audit_failures": 0,
+  "audit_path": "runs/20261104_profile_hold_first_full_audit_v1/verification.json",
+  "audit_sha256": "1277a0cc2012293ce8d93987347dbf92ae811dedb3214ce4d3d2ac771f082d0a",
+  "bulk_run": "runs/20261104_profile_hold_first_full_v1",
+  "gui_source": "runs/20261104_profile_hold_first_gui_source_v1",
+  "gui_tasks": 105,
+  "gui_episodes": 210,
+  "gui_changed_episodes_from_observation": 55,
+  "gui_comparison": "runs/20261104_profile_hold_first_work_v1/gui_comparison.json",
+  "case_3093": {
+    "episode_id": "PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1/3093",
+    "frame": 18,
+    "original": 0.15568052232265472,
+    "target": 0.0,
+    "events": [
+      {
+        "hold_start": 0,
+        "hold_end": 41,
+        "release_start": 41,
+        "release_end": 46,
+        "transition_issues": []
+      }
+    ]
+  },
+  "offline_tests": 366,
+  "offline_test_log": "runs/20261104_profile_hold_first_work_v1/offline_final.log",
+  "evaluation_only": true,
+  "training_annotations_promoted": false,
+  "new_visual_judgments": 0,
+  "publication_ready": false,
+  "limitations": [
+    "Task bands are unchanged; this is a numerical rule rerun, not independent grasp-semantic validation.",
+    "Bulk output is data-only staging; GUI reads the original allowlisted videos.",
+    "Previous independent media delivery and ORION loader evidence belong to the old run."
+  ]
+}

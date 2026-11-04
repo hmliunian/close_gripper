@@ -65,6 +65,7 @@ def write_report(run_dir, records):
                          comparisons=result.get("release_comparisons", []),
                          closing_comparisons=result.get("closing_comparisons", []),
                          workflow=result.get("workflow", "opening_review"),
+                         rule_version=result.get("rule_version"),
                          phase=result.get("preview_phase", []) if rule else result.get("phase", []),
                          source=result.get("preview_source", []) if rule else result.get("source", []),
                          rule_applied_mask=result.get("rule_applied_mask", []),
@@ -121,7 +122,7 @@ $('ruleSummary').textContent=sides.join('。');$('intervals').replaceChildren();
 for(const event of rows){const start=event.status==='applied'&&Number.isInteger(event.modified_start)?event.modified_start:(event.start??event.hold_start),end=event.status==='applied'&&Number.isInteger(event.modified_end)?event.modified_end:(event.end??event.hold_end);
 const row=document.createElement('div');row.className='interval';row.dataset.side=event.side;row.dataset.status=event.status;const text=document.createElement('span');text.textContent=`${event.side==='left'?'左':'右'}侧 · ${event.status==='applied'?'已应用':'未应用'} · ${reasonNames[event.reason]||event.reason||'未提供原因'}`;
 if(Number.isInteger(start)&&Number.isInteger(end)&&start>=0&&end<r.t.length){const jump=document.createElement('button');jump.className='interval-jump';jump.dataset.start=start;jump.dataset.end=end;jump.textContent=`跳到 ${r.t[start].toFixed(2)}–${r.t[end].toFixed(2)} s`;jump.onclick=()=>{stopPlayback();seekTo(r.t[start])};row.append(jump)}
-row.append(text);const detail=document.createElement('small');detail.textContent=`帧 ${start??'—'}–${end??'—'}${Number.isInteger(event.changed_frames)?` · 改动 ${event.changed_frames} 帧`:''}`;row.append(detail);$('intervals').append(row)}
+row.append(text);const detail=document.createElement('small');detail.textContent=`帧 ${start??'—'}–${end??'—'}${Number.isInteger(event.changed_frames)?` · 改动 ${event.changed_frames} 帧`:''}`;if(event.transition_issues?.length)detail.textContent+=' · 部分过渡未拟合，合格稳定段已归零';row.append(detail);$('intervals').append(row)}
 if(!rows.length)$('intervals').textContent='本条记录没有符合任务开度区间和稳定时间要求的区间。'}
 function line(values,col,accepted=false){let active=false;return values.map((v,i)=>{if(accepted&&!r.valid[i][col]){active=false;return ''}let op=active?'L':'M';active=true;return op+(55+930*(r.t[i]-r.t[0])/(r.t.at(-1)-r.t[0]||1)).toFixed(2)+','+(190-v[col]*160).toFixed(2)}).join(' ')}
 function comparisonValues(c){return r.closing_policy==='original_speed'?c.fixed_timing:c.original_speed}
@@ -173,6 +174,8 @@ $('rate').onchange=()=>{videoEntries.forEach(entry=>entry.video.playbackRate=+$(
     note = ("按任务开度规则生成，待审阅。橙线为本次规则处理后的开度；视频用于逐条核对实际抓放。"
             if task_profile else "绿色为通过视觉证据与数值规则校验的目标，可含 model 自动生成来源；不等于人工真值。橙色为候选。覆盖统计区分已检查、拒绝和未检查；合成示例不作为训练标签。"
             if full_cycle else "橙色为待复核候选；绿色仅为通过当前契约的目标。合成示例只验证数学行为。此旧版张开事件流程的释放策略尚未批准，含释放事件不进入有效训练标签。真实模型判断不等于人工参考。")
+    if task_profile and all(r["result"].get("rule_version") == "task-profile-rule-v3-hold-first" for r in records):
+        note += " 当前规则：在任务夹持区间内稳定至少0.6秒即归零；两端沿原曲线拟合，不要求张到固定参考开度。"
     (run_dir / "review.html").write_text(page.replace("__MODE_NOTE__", note).replace("__DATA__", encoded), encoding="utf-8")
     return run_dir / "review.html"
 

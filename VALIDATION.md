@@ -1,6 +1,64 @@
 # 实现与验证记录
 
-更新日期：2026-11-04。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录稳定平台的语义复核与新版规则试跑，再保留此前证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
+更新日期：2026-11-04。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录当前配置的全量数值处理核验，再保留此前证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
+
+## 稳定夹持优先：全量重跑与原GUI更新（当前）
+
+按用户确认的稳定夹持优先方案，生成方法改为 `task-profile-rule-v3-hold-first`，业务细则见 PLAN。仍使用原105任务配置、全部1,961个源分片及原GUI固定样本，没有重新采样或合并配置区间。配置 SHA256 为 `d8d684cafcf12f418d6f73d8af21594feb9f5b2c5530ffadebaf62f3a291d696`，完整范围摘要为 `54e4f613b78499fb222cba99e516b7bfd6420e61580ca5ada096bc34d93bec1f`，本次业务包摘要为 `709d7563e83719ebb25e000aef271308706947ad36c2cb5f87d1294c77f6978f`。全量产物为 `runs/20261104_profile_hold_first_full_v1/`；以前的运行均保留。
+
+| 发布版 | 原始 episode | 执行规则 | 跳过未启用任务 | 数值改变 episode | 改变帧数 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| priority | 20,586 | 14,528 | 6,058 | 3,890 | 89,708 |
+| remaining | 87,685 | 71,084 | 16,601 | 7,567 | 186,302 |
+| drawer | 16,965 | 16,965 | 0 | 1,541 | 39,635 |
+| 合计 | 125,236 | 102,577 | 22,659 | 12,998 | 315,645 |
+
+105任务执行规则，45任务在派生表中原值透传，候选及修改数均0。14,307个合格夹持区间全部应用，独立核验逐一确认其完整稳定段为0；旧方法为6,172个应用区间、5,681条变化episode／152,692变化帧。本次358,331个短候选及219,518个仍需区间视觉判断的候选保留原值，未算作成功处理。
+
+统一离线入口 `.venv/bin/python -B scripts/check.py` **退出0，366项通过、0跳过**，日志为 `runs/20261104_profile_hold_first_work_v1/offline_final.log`。新增契约覆盖3093形态、小幅张开、缺少过渡、重叠过渡与合格稳定段不可被覆盖；独立审计另有篡改目标且更新文件摘要仍须失败的检查。真实小批次9分片／515条episode和全量1,961分片／125,236条episode的独立数值核验均 **PASS、0失败**，确认15,041,374帧的原列、索引、时间戳、无效侧及未选任务保持。
+
+实际执行的生成和核验命令如下，均退出0；完整日志在 `runs/20261104_profile_hold_first_work_v1/`：
+
+```sh
+.venv/bin/python -B scripts/process_profile_dataset.py --manifest runs/20261104_profile_105_pilot_scope_v1/manifest.json --catalog configs/task_gripper_profiles.json --workers 4 --output runs/20261104_profile_hold_first_pilot_v1
+.venv/bin/python -B scripts/verify_profile_dataset.py --run runs/20261104_profile_hold_first_pilot_v1 --output runs/20261104_profile_hold_first_pilot_audit_v1 --workers 4
+.venv/bin/python -B -m close_gripper.cli profile-clean --manifest runs/20261104_task_profile_verified_inputs_v1/manifest.json --profiles configs/task_gripper_profiles.json --workers 4 --output runs/20261104_profile_hold_first_examples_v1
+.venv/bin/python -B scripts/process_profile_dataset.py --manifest runs/20261104_profile_105_scope_v1/manifest.json --catalog configs/task_gripper_profiles.json --workers 4 --output runs/20261104_profile_hold_first_full_v1
+.venv/bin/python -B scripts/verify_profile_dataset.py --run runs/20261104_profile_hold_first_full_v1 --output runs/20261104_profile_hold_first_full_audit_v1 --workers 4
+.venv/bin/python -B runs/20261104_profile_105_gui_extract_tool_v2/extract_from_bulk.py --bulk-run runs/20261104_profile_hold_first_full_v1 --reference-run runs/20261104_profile_hold_first_examples_v1 --output runs/20261104_profile_hold_first_gui_source_v1
+.venv/bin/python -B scripts/render_video_review.py --source-run runs/20261104_profile_hold_first_gui_source_v1 --output runs/20261104_profile_hold_first_video_gui_v1
+.venv/bin/python -B scripts/serve_review.py --run runs/20261104_profile_hold_first_video_gui_v1 --port 8766
+node runs/20261104_profile_hold_first_browser_v1/verify_browser.cjs --url http://127.0.0.1:8766/review.html
+```
+
+服务命令持续运行，其余命令退出0。GUI仍在 **`http://127.0.0.1:8766/review.html`**，保留原105任务／210条、424个同侧视频引用。全量落盘的六个新增列与本次逐episode独立运行完全一致。对照旧GUI，210条的身份、状态、时间、视频与候选清单完全一致，其中25条的曲线发生变化，共548帧；当前55条相对实测值有数值改动。对照记录见 [gui_comparison.json](runs/20261104_profile_hold_first_work_v1/gui_comparison.json)。
+
+用户指出的 priority / baseline-v4-pushcart-right-v1 / **3093**：第18帧（1.80秒）右侧实测 `0.1556805223`，本次目标为 **0**；第0–41帧稳定段全部为0，释放拟合连接第41–46帧，保留第46帧实际张开端点。真实Chromium检查在原8766地址 **19项通过**，包括此数值、页面展示、任务筛选、时间拖动、连续视频解码、同侧双目、双臂同步和Range 206；JavaScript错误、失败请求及外部请求均0。证据为 [browser_verification.json](runs/20261104_profile_hold_first_browser_v1/attempt-003/browser_verification.json) 和 [3093截图](runs/20261104_profile_hold_first_browser_v1/attempt-003/spoon_3093_frame18_hold_zero.png)。首次启动被OS沙箱限制，升级执行后临时预览端口与最终8766端口均通过，失败记录保留。
+
+本次完成全量数值重跑、独立核验和原GUI更新；结果汇总见[重跑汇总](reports/20261104_hold_first_summary.json)、[逐任务对比](reports/20261104_hold_first_task_results.csv)和[全量核验](runs/20261104_profile_hold_first_full_audit_v1/verification.json)。输出仍为evaluation曲线，未新增视觉判断、训练有效标签或正式发布。当前全量目录是数值staging，GUI只读原视频；此前独立媒体副本及ORION loader结果属于旧运行，不能记为新版训练或完整媒体交付。逐episode语义质量、训练采用及训练效果仍待相应验收。
+
+## 旧方法v2的三版全量处理与再次核验
+
+此前用户要求用当前配置跑全部数据集，没有对应可用动作的跳过。检查发现 `runs/20261104_profile_105_full_eval_v1/` 已有完整全量结果，其配置 SHA256 与 `configs/task_gripper_profiles.json` 完全相同：`d8d684cafcf12f418d6f73d8af21594feb9f5b2c5530ffadebaf62f3a291d696`；业务包实现摘要与当时的v2实现一致。该次复用完成产物，并重新独立核验全部源数据、候选、曲线和任务统计，没有重跑生成。以下数字属于旧方法，当前v3重跑见上节；区间配置仍未合并。
+
+| 发布版 | 原始 episode | 执行规则 | 跳过未启用任务 | 数值改变 episode | 改变帧数 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| priority | 20,586 | 14,528 | 6,058 | 2,707 | 64,877 |
+| remaining | 87,685 | 71,084 | 16,601 | 2,425 | 70,796 |
+| drawer | 16,965 | 16,965 | 0 | 549 | 17,019 |
+| 合计 | 125,236 | 102,577 | 22,659 | 5,681 | 152,692 |
+
+105 个启用任务执行数值规则，45 个未启用任务的候选、规则应用和修改数均为0。三版7子集、1,961个Parquet、15,041,374帧全部保留原字段、行序和索引；跳过任务在派生结构中保留原值。实际应用6,172个区间，数值改变数量不代表抓持准确率；没有命中或被边界条件拒绝的范围不算清洗成功。
+
+本次实际执行以下命令，**退出0、PASS、0失败**，完整核验1,961个分片和125,236条episode：
+
+```sh
+.venv/bin/python -B scripts/verify_profile_dataset.py --run runs/20261104_profile_105_full_eval_v1 --output runs/20261104_profile_105_confirmation_audit_v1 --workers 4
+```
+
+完整数值复核见 [verification.json](runs/20261104_profile_105_confirmation_audit_v1/verification.json)，按任务的执行／跳过／修改统计见 [task_results.csv](runs/20261104_profile_105_confirmation_audit_v1/task_results.csv)，本次命令、摘要与产物路径见 [completion_summary.json](runs/20261104_profile_105_confirmation_audit_v1/completion_summary.json)。既有完整派生结构为 `runs/20261104_profile_105_delivery_v1/staging/` 下的三个 `-gripcmd` 发布版；本次另核对全部2,003份数值与支持文件的源／副本SHA一致。视频复制记录来自既有交付，本次未重新核验视频内容。
+
+新增曲线保存在 evaluation 字段，原有数据及训练目标保持原合同；本次未提升训练有效位、未新增视觉判断，亦未正式发布。完成的是当前配置全量数值处理及其核验，逐episode语义质量、训练采用与训练效果仍需另行验收。
 
 ## 稳定平台语义复核与逐值二源配置（当前）
 

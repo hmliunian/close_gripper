@@ -9,7 +9,7 @@ import shutil
 from .contracts import validate_episode
 from .cycles import cycle_config
 from .pipeline import create_run, dump, episode_fingerprint
-from .profile_clean import generate_profile_targets
+from .profile_clean import RULE_VERSION, generate_profile_targets
 from .report import write_report
 from .task_profiles import validate_catalog
 
@@ -45,7 +45,7 @@ def run_profile_clean(episodes, output, catalog, *, config=None, workers=4, inpu
     implementation_sha = hashlib.sha256(b"".join(p.name.encode() + p.read_bytes() for p in files)).hexdigest()
     dump(directory / "implementation.json", dict(sha256=implementation_sha, files=[p.name for p in files]))
     dump(directory / "task_profiles.json", catalog)
-    cfg = dict(workflow="task_profile_rule", evaluation_only=True, model_requests=0,
+    cfg = dict(workflow="task_profile_rule", rule_version=RULE_VERSION, evaluation_only=True, model_requests=0,
                catalog_version=catalog["version"], catalog_semantic_sha256=_digest(catalog),
                minimum_hold_s=catalog["minimum_hold_s"], numerical=numerical)
     dump(directory / "config.json", cfg)
@@ -70,7 +70,7 @@ def run_profile_clean(episodes, output, catalog, *, config=None, workers=4, inpu
         dump(child / "targets.json", dict(episode_id=identifier, identity=episode["identity"],
             episode_sha256=fingerprints[identifier], evidence_type="task_profile_rule",
             evaluation_only=True, grasp_semantics_verified=False,
-            method_version="task-profile-rule-v1", catalog_version=catalog["version"],
+            method_version=RULE_VERSION, catalog_version=catalog["version"],
             source_run=str(directory), timestamps=episode["timestamps"],
             frame_indices=episode.get("frame_indices", list(range(len(original)))),
             **{"annotation.gripper_target": result["target"],

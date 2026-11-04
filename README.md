@@ -2,7 +2,7 @@
 
 从从臂实测开度和同侧腕部图像生成完整的 **0～1夹爪目标开度曲线**：抓前稳定张开、闭合过渡、持物保持0、释放过渡。目标及最终交付以用户的 [Untitled.md](Untitled.md) 为准，实现方法见 [PLAN.md](PLAN.md)，工程边界见 [BOUNDARIES.md](BOUNDARIES.md)，实际证据与限制见 [VALIDATION.md](VALIDATION.md)。
 
-当前主入口是 `clean`，扫描完整 episode 的所有有效侧与候选周期。模型证据通过校验后可生成有效自动标签；有效不代表人工核验。原始观测保持不变，新目标独立保存。已实现小样本派生和隔离副本中的实际 ORION loader 接入；全量三版数据处理、人工质量验收和正式发布尚未完成。
+当前主入口是 `clean`，扫描完整 episode 的所有有效侧与候选周期。模型证据通过校验后可生成有效自动标签；有效不代表人工核验。原始观测保持不变，新目标独立保存。已实现小样本派生和隔离副本中的实际 ORION loader 接入；当前任务配置的三版全量数值规则处理及核验已完成，逐episode语义质量、训练采用和正式发布仍待验收，具体范围见 [VALIDATION](VALIDATION.md)。
 
 ## 安装与离线检查
 
@@ -20,7 +20,9 @@ python3 -m venv .venv
 
 [任务配置](configs/task_gripper_profiles.json)覆盖三个发布版的150个中文任务、151个有效侧别；105个任务有可用区间，45个未自动启用。逐任务区间和状态可查[配置表](reports/20261104_verified_task_profiles.csv)，实际试跑可查[268条例子](reports/20261104_verified_profile_examples.csv)和[交付汇总](reports/20261104_verified_task_profiles_summary.json)。规则见 PLAN，扫描与视觉复核的实际覆盖见 VALIDATION。
 
-当前曲线GUI为 `http://127.0.0.1:8766/review.html`（`runs/20261104_task_profile_verified_video_gui_v2/`），稳定平台证据GUI为 `http://127.0.0.1:8767/review.html`（`runs/20261104_task_profile_verified_evidence_gui_v2/`）。离线停止服务后，可用下述 `serve_review.py` 命令按相应目录重新启动。268条例子覆盖所有105个可用任务各两条，另保留原比较清单里的未启用任务；它们不是全部独立留出样本。
+当前曲线GUI为 `http://127.0.0.1:8766/review.html`（`runs/20261104_profile_hold_first_video_gui_v1/`），显示 `task-profile-rule-v3-hold-first` 全量重跑结果中的 **105任务／210条固定例子**。它与上次GUI的任务、episode、顺序和视频一致，每任务两例，直接读取全量落盘曲线；不是全部独立留出样本。稳定平台证据GUI仍为 `http://127.0.0.1:8767/review.html`（`runs/20261104_task_profile_verified_evidence_gui_v2/`）。离线停止服务后，可用下述 `serve_review.py` 命令按相应目录重新启动。
+
+最新全量输出在 `runs/20261104_profile_hold_first_full_v1/`，覆盖原三版7子集。运行范围、旧／新结果与独立核验见[重跑汇总](reports/20261104_hold_first_summary.json)和[150任务对比表](reports/20261104_hold_first_task_results.csv)。原268条例子保留作配置及方法对照，不是当前GUI的显示数量。
 
 ```sh
 .venv/bin/python -B -m close_gripper.task_profiles validate configs/task_gripper_profiles.json
@@ -41,6 +43,16 @@ python3 -m venv .venv
 ```
 
 生成结果在每条 `targets.json` 的 `evaluation.gripper_target` 与 `evaluation.gripper_rule_applied` 中。GUI显示原开度、新规则曲线、应用区间和拒绝原因，可按任务筛选，并同步播放同侧腕部视频。`annotation.gripper_target` 保持原观测、有效位为false，规则试跑不会自动成为训练标签。
+
+对已冻结的全部任务范围，使用流式入口逐源Parquet处理，避免为每条episode生成图片与大JSON。清单需包含完整源摘要、元数据、来源身份及任务选择；105个任务执行规则，其他任务保持原值，原表全列与索引保留：
+
+```sh
+.venv/bin/python -B scripts/process_profile_dataset.py --manifest /path/to/frozen_bulk_manifest.json --catalog configs/task_gripper_profiles.json --workers 4 --output runs/my_profile_bulk
+.venv/bin/python -B scripts/verify_profile_dataset.py --run runs/my_profile_bulk --manifest /path/to/frozen_bulk_manifest.json --output runs/my_profile_bulk_audit
+.venv/bin/python -B scripts/prepare_profile_staging.py --bulk-run runs/my_profile_bulk --output runs/my_profile_delivery
+```
+
+批处理保存新列、逐episode／事件审计Parquet、逐任务进度和回退汇总。交付入口复制派生Parquet、原支持元数据和源视频，准备三版 `-gripcmd` 目录；视频逐文件校验，输出仍为未发布的evaluation产物。`--video-mode source-reference` 可显式准备依赖原视频的本地结构，该模式不算独立媒体交付。抓前缺少逐episode视觉证据的范围保持原值，规则应用mask不替代训练有效位。
 
 复现数值扫描与配置构建的入口如下，实际校准使用的证据与输入摘要记录在配置中。构建所需的原始视觉审阅、完整模式成员映射和实验文件保留在本地 run，真实图片不进入 Git；没有这些证据不能仅凭数值统计重新生成视觉判断。
 
