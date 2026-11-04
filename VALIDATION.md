@@ -2,7 +2,40 @@
 
 更新日期：2026-11-04。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录当前配置的全量数值处理核验，再保留此前证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
 
-## 夹持区间合并并外扩0.01：全量重跑与GUI（当前）
+## 外扩0.02／0.03／0.04：全量参数对比与原GUI（当前）
+
+按用户要求分别测试每端外扩0.02、0.03、0.04，保留已完成的0.01作为基线。三档均从 `runs/20261104_profile_merged_catalog_v1/calibration_catalog.json` 独立派生，原配置SHA256为 `d8d684cafcf12f418d6f73d8af21594feb9f5b2c5530ffadebaf62f3a291d696`，没有累计加宽。稳定时长0.6秒、波动阈值0.02、空夹／冲突阻断及任务选择保持；业务包实现摘要均为 `6f8d92a49a76d8b3701e2a16bd5ac6306682e8cb3372c4cf721c895508c878c7`。已安装默认配置仍为0.01，字节未改。
+
+每档均使用原三版7子集、1,961分片、125,236条episode、15,041,374帧；105个启用任务共102,577条执行规则，45个未启用任务的22,659条保持原值。各档源身份、摘要和episode选择相同，未按开度命中筛选输入。命中指episode至少有一段合格夹持区间，分母为102,577，不代表整条episode都已标注。
+
+| 每端外扩 | 命中episode | 命中比例 | 比前一档新增 | 数值改变episode | 数值改变帧 | 应用夹持区间 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 0.01（基线） | 42,027 | 40.97% | — | 41,505 | 1,170,132 | 45,369 |
+| 0.02 | 47,154 | 45.97% | 5,127 | 46,573 | 1,338,559 | 51,378 |
+| 0.03 | 49,538 | 48.29% | 2,384 | 48,957 | 1,430,206 | 54,609 |
+| 0.04 | 51,061 | 49.78% | 1,523 | 50,480 | 1,491,824 | 56,864 |
+
+逐episode身份集合比较确认各档命中集合包含前一档，没有丢失原命中。0.01有522条应用后数值与原值相同，其余三档各581条。扩大仍增加覆盖，但相邻档新增数递减。汇总及路径见[四档报告](reports/20261104_margin_sweep_summary.json)、[汇总CSV](reports/20261104_margin_sweep_summary.csv)和[150任务CSV](reports/20261104_margin_sweep_tasks.csv)。
+
+三档各自完成9分片／515条小批次、268条逐episode参考运行及全量生成。小批次与全量的独立核验全部 **PASS、0失败**；每档全量核验覆盖全部1,961分片／125,236条，检查原列、索引、时间、未选任务、训练字段、新范围、全曲线及合格夹持段归零。全量落盘新增六列与独立逐episode运行在210条GUI样本上精确一致。核验分别见 [0.02](runs/20261104_profile_margin020_full_audit_v1/verification.json)、[0.03](runs/20261104_profile_margin030_full_audit_v1/verification.json)、[0.04](runs/20261104_profile_margin040_full_audit_v1/verification.json)。
+
+实际入口如下；逐步骤完整命令、退出码和耗时见 `runs/20261104_profile_margin_study_v1/progress.jsonl`，总日志为同目录 `study.log`，冻结输入为 `frozen_inputs.json`。服务持续运行，其余列出命令退出0；运行脚本拒绝覆盖已有实验，复现须使用新运行目录。
+
+```sh
+.venv/bin/python -B runs/20261104_profile_margin_study_v1/run_study.py
+.venv/bin/python -B runs/20261104_profile_margin_study_v1/build_comparison.py
+.venv/bin/python -B runs/20261104_profile_margin_study_v1/build_comparison.py --output runs/20261104_profile_margin_comparison_gui_v2 --skip-summary-export
+.venv/bin/python -B scripts/serve_review.py --run runs/20261104_profile_margin_comparison_gui_v2 --port 8766
+node runs/20261104_profile_margin_study_v1/verify_comparison.cjs --url http://127.0.0.1:8766/review.html
+```
+
+原地址 **`http://127.0.0.1:8766/review.html`** 现在提供四档切换，默认0.01；四档均保留原105任务／210条固定样本及424个同侧视频引用，相对原观测改变的展示样本分别为155、167、172、175条。切换参数保留筛选、搜索、episode、帧位置、倍速和相机。9596第21–29帧四档均归零，第30–32帧仍不满足新的完整稳定窗；扩大范围不改变该例结论。
+
+最终8766地址真实Chromium核验 **14项通过**，逐项检查全部840条参数版本记录的样本身份、原输入、时间、视频、夹持归零及训练无效位，并抽查9596和双臂例的实际视频解码、连续播放、同侧双目、曲线同步和Range 206。JavaScript错误、失败请求、外部请求均0；见[浏览器结果](runs/20261104_profile_margin_study_v1/browser-4/verification.json)和[0.03档9596截图](runs/20261104_profile_margin_study_v1/browser-4/margin030_9596_frame25.png)。首次浏览器检查发现切换参数后重建播放器会重置倍速，已修复并写入新的GUI目录v2；第二次检查修正了连续视频时钟与离散帧时刻混用的检查逻辑，精确拖帧检查仍保留。预览及最终地址均通过，失败记录与v1产物保留。
+
+本轮未修改业务包或正式配置，下节基线的375项离线测试不计为本轮重跑；本轮新增证据为三档真实生成与独立审计、对比页面浏览器核验、文档链接／语法检查。完成的是参数对比和GUI交付；数值命中率不是语义准确率，尚未补充新增区域的逐episode视觉真值、训练采用及效果。输出仍为evaluation数值曲线，未提升训练有效位、未新增视觉判断或正式发布。
+
+## 夹持区间合并并外扩0.01：全量重跑与GUI（基线）
 
 用户批准合并并适当扩大夹持区间。配置更新为 `task-profiles-20261104-merged-margin010-v4`，SHA256 `b9f412cce8c1c5d5edaaff5399bd3d53ac5390aa31763e077245be283a712d26`。279条原校准带及全部语义证据保留，派生138条实际匹配带；稳定0.6秒、波动0.02、105任务选择和45任务跳过均保持。范围推导规则见 PLAN，逐任务新旧范围见[配置对照](reports/20261104_merged_profile_bands.csv)。扩展部分明确标记为泛化，不冒充新增视觉证据。
 

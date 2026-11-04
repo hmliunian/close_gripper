@@ -1,0 +1,115 @@
+{
+  "status": "complete",
+  "rows": [
+    {
+      "margin": 0.01,
+      "matched_episodes": 42027,
+      "selected_episodes": 102577,
+      "matched_percent": 40.971172875010964,
+      "newly_matched_since_previous": 0,
+      "changed_episodes": 41505,
+      "changed_frames": 1170132,
+      "applied_intervals": 45369,
+      "already_zero_episodes": 522,
+      "gui_changed_episodes": 155,
+      "audit_failures": 0
+    },
+    {
+      "margin": 0.02,
+      "matched_episodes": 47154,
+      "selected_episodes": 102577,
+      "matched_percent": 45.96936935180401,
+      "newly_matched_since_previous": 5127,
+      "changed_episodes": 46573,
+      "changed_frames": 1338559,
+      "applied_intervals": 51378,
+      "already_zero_episodes": 581,
+      "gui_changed_episodes": 167,
+      "audit_failures": 0
+    },
+    {
+      "margin": 0.03,
+      "matched_episodes": 49538,
+      "selected_episodes": 102577,
+      "matched_percent": 48.29347709525527,
+      "newly_matched_since_previous": 2384,
+      "changed_episodes": 48957,
+      "changed_frames": 1430206,
+      "applied_intervals": 54609,
+      "already_zero_episodes": 581,
+      "gui_changed_episodes": 172,
+      "audit_failures": 0
+    },
+    {
+      "margin": 0.04,
+      "matched_episodes": 51061,
+      "selected_episodes": 102577,
+      "matched_percent": 49.77821538941478,
+      "newly_matched_since_previous": 1523,
+      "changed_episodes": 50480,
+      "changed_frames": 1491824,
+      "applied_intervals": 56864,
+      "already_zero_episodes": 581,
+      "gui_changed_episodes": 175,
+      "audit_failures": 0
+    }
+  ],
+  "episodes": 125236,
+  "selected_episodes": 102577,
+  "implementation_sha256": "6f8d92a49a76d8b3701e2a16bd5ac6306682e8cb3372c4cf721c895508c878c7",
+  "source_scope_identical": true,
+  "no_lost_matched_episodes": true,
+  "cohort_episodes": 210,
+  "cohort_tasks": 105,
+  "comparison_gui": "runs/20261104_profile_margin_comparison_gui_v2",
+  "comparison_url": "http://127.0.0.1:8766/review.html",
+  "baseline_config_unchanged": true,
+  "evaluation_only": true,
+  "training_annotations_promoted": false,
+  "new_visual_judgments": 0,
+  "variants": [
+    {
+      "margin": 0.01,
+      "bulk_run": "runs/20261104_profile_merged_full_v1",
+      "gui_source": "runs/20261104_profile_merged_gui_source_v1",
+      "video_gui": "runs/20261104_profile_merged_video_gui_v1",
+      "audit": "runs/20261104_profile_merged_full_audit_v1/verification.json"
+    },
+    {
+      "margin": 0.02,
+      "bulk_run": "runs/20261104_profile_margin020_full_v1",
+      "gui_source": "runs/20261104_profile_margin020_gui_source_v1",
+      "video_gui": "runs/20261104_profile_margin020_video_gui_v1",
+      "audit": "runs/20261104_profile_margin020_full_audit_v1/verification.json"
+    },
+    {
+      "margin": 0.03,
+      "bulk_run": "runs/20261104_profile_margin030_full_v1",
+      "gui_source": "runs/20261104_profile_margin030_gui_source_v1",
+      "video_gui": "runs/20261104_profile_margin030_video_gui_v1",
+      "audit": "runs/20261104_profile_margin030_full_audit_v1/verification.json"
+    },
+    {
+      "margin": 0.04,
+      "bulk_run": "runs/20261104_profile_margin040_full_v1",
+      "gui_source": "runs/20261104_profile_margin040_gui_source_v1",
+      "video_gui": "runs/20261104_profile_margin040_video_gui_v1",
+      "audit": "runs/20261104_profile_margin040_full_audit_v1/verification.json"
+    }
+  ],
+  "limitations": [
+    "Numeric matching coverage is not semantic accuracy.",
+    "No new episode-level visual reference or training-valid label promotion.",
+    "Each margin starts from the same calibration; known free/conflict ranges still block matching."
+  ],
+  "browser_verification": {
+    "path": "runs/20261104_profile_margin_study_v1/browser-4/verification.json",
+    "status": "passed",
+    "checks": 14,
+    "variant_records_verified": 840,
+    "javascript_errors": 0,
+    "failed_requests": 0,
+    "external_requests": 0
+  },
+  "source_inventory": "runs/20261104_profile_margin_comparison_gui_v2/source_inventory.json"
+}

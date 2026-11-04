@@ -20,9 +20,13 @@ python3 -m venv .venv
 
 [任务配置](configs/task_gripper_profiles.json)覆盖三个发布版的150个中文任务、151个有效侧别；105个任务有可用区间，45个未自动启用。当前版本为 `task-profiles-20261104-merged-margin010-v4`，实际匹配用 `matching_bands`，原 `closed_bands` 保留校准证据。逐任务新旧范围可查[合并外扩配置表](reports/20261104_merged_profile_bands.csv)；原校准带、证据及旧例子见[原配置表](reports/20261104_verified_task_profiles.csv)和[校准汇总](reports/20261104_verified_task_profiles_summary.json)。规则见 PLAN，扫描与视觉复核的实际覆盖见 VALIDATION。
 
-当前曲线GUI为 `http://127.0.0.1:8766/review.html`（`runs/20261104_profile_merged_video_gui_v1/`），显示合并外扩配置下 `task-profile-rule-v3-hold-first` 全量重跑的 **105任务／210条固定例子**，并展示当前任务实际匹配的开度范围。它与上次GUI的任务、episode、顺序和视频一致，每任务两例，直接读取全量落盘曲线；不是全部独立留出样本。稳定平台证据GUI仍为 `http://127.0.0.1:8767/review.html`（`runs/20261104_task_profile_verified_evidence_gui_v2/`）。离线停止服务后，可用下述 `serve_review.py` 命令按相应目录重新启动。
+当前曲线GUI为 `http://127.0.0.1:8766/review.html`（`runs/20261104_profile_margin_comparison_gui_v2/`），顶部可切换每端外扩 **0.01／0.02／0.03／0.04**，默认0.01。四档均显示 `task-profile-rule-v3-hold-first` 全量结果中的 **105任务／210条固定例子**，并展示当前任务实际匹配的开度范围；切换时保留任务、搜索、episode、帧位置、倍速及相机。样本身份、顺序、时间和视频一致，每任务两例，直接读取全量落盘曲线；不是全部独立留出样本。稳定平台证据GUI仍为 `http://127.0.0.1:8767/review.html`（`runs/20261104_task_profile_verified_evidence_gui_v2/`）。离线停止服务后，可用下述 `serve_review.py` 命令按相应目录重新启动。
 
-最新全量输出在 `runs/20261104_profile_merged_full_v1/`，覆盖原三版7子集。运行范围、旧／新结果与独立核验见[重跑汇总](reports/20261104_merged_profile_summary.json)和[150任务对比表](reports/20261104_merged_profile_task_results.csv)。原268条例子保留作配置及方法对照，不是当前GUI的显示数量。
+0.01基线全量输出在 `runs/20261104_profile_merged_full_v1/`，另三档分别在 `runs/20261104_profile_margin020_full_v1/`、`runs/20261104_profile_margin030_full_v1/`、`runs/20261104_profile_margin040_full_v1/`，均覆盖相同三版7子集。四档从同一原校准配置独立派生，没有累计加宽；本次试跑未改动已安装的0.01默认配置。完整分母、命中与数值改变统计及独立核验见[四档汇总](reports/20261104_margin_sweep_summary.json)、[汇总表](reports/20261104_margin_sweep_summary.csv)和[150任务对比表](reports/20261104_margin_sweep_tasks.csv)。原268条例子保留作配置及方法对照，不是当前GUI的显示数量。
+
+```sh
+.venv/bin/python -B scripts/serve_review.py --run runs/20261104_profile_margin_comparison_gui_v2 --port 8766
+```
 
 ```sh
 .venv/bin/python -B -m close_gripper.task_profiles validate configs/task_gripper_profiles.json
