@@ -1,8 +1,59 @@
 # 实现与验证记录
 
-更新日期：2026-11-04。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录按任务配置的试跑，再保留开度校准、完整周期及旧局部候选流程的实际证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
+更新日期：2026-11-04。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录稳定平台的语义复核与新版规则试跑，再保留此前证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
 
-## 133个任务各两条的规则曲线试跑
+## 稳定平台语义复核与逐值二源配置（当前）
+
+按用户要求检查稳定时间内是否实际夹持，4个agent使用Codex原生视觉复核三个发布版、150任务／151有效侧别。完整数值扫描沿用下节所述125,236条episode、772,042个至少0.6秒的稳定窗口；视觉检查覆盖全部 **2,377个数值模式的代表**，不把稳定、lower或接近0直接当作夹持。逐例查看平台首、中、末及上下文，保留持物、未持物、不确定和混合子段。
+
+最终 `runs/20261104_task_profile_second_sources_v2/normalization_final_v3/` 保存 **2,685条审阅记录／1,439个独立原始录制**，包括305条二源补证（该阶段123例补另一目），以及两条刷子诊断的边界补证。平台状态为held671、free1298、uncertain684、mixed32；不确定平台仍可能含已确认子段，不能把这些数直接当episode类别或模型准确率。实际帧和原图SHA、原始判断、同帧重看修订及双目证据分别保留；最终同帧语义冲突与合同错误均0，12,519个证据文件SHA核验通过。全部是模型证据，人工确认均false。
+
+原发布版全量模式外还有18,396个稳定窗口（2.3828%），归入4,722个数值尾桶；当前仅8个尾桶有代表复核、**4,714个仍未审**。代表复核不验证该模式全部成员窗口。叠衣服一条录制的信号与图像语义存在疑点：逐值核对原MCAP及实际图像时间后仍无法消歧，26条相关审阅记录排除数值校准；来源及精确episode身份进入运行回退，不能据此排除其他同编号episode。
+
+当前任务配置版本为 `task-profiles-20261104-all-modes-pointwise-two-source-v3`，SHA256 `d8d684cafcf12f418d6f73d8af21594feb9f5b2c5530ffadebaf62f3a291d696`。**105任务／106任务侧有279条可用带**；每个可用数值都由至少两个独立来源的实际持物子段支持。另3侧为已审样本不支持、42侧需继续视觉判断，合计45任务未自动启用；可用任务也只在其已校准区间匹配。3个二源检索请求没有第二来源，明确记为不足，没有复用原阳性源凑数。
+
+配置构建纠正了两处实质问题：局部held/free重叠只切除实际交集，保留其余有证据部分；连通带内只有一源覆盖的边缘不再借用整带来源数。缝隙刷实际持物约0.164，旧配置只覆盖约0.06；新版保留两种有支持的区间，并依据同源可见释放建立局部小幅释放规则，全局噪声、0.6秒确认和固定时序公式保持不变。
+
+独立几何审计 `runs/20261104_task_profile_catalog_audit_final_v3/report.json` **PASS，24,738项、0失败**：从保存的H/F帧、实际trace与子段重新计算持物带、逐值二源及真实交集，不导入builder；核对排除源未贡献，刷子约0.164可用、已知自由0.20269不可当持物，并验证13838整段f0..29被同一带包含。软件统一检查 `.venv/bin/python -B scripts/check.py` **328项通过、0跳过，退出0**，日志 `runs/20261104_task_profile_second_sources_v2/builder_pointwise_check_v1.log`；配置CLI校验退出0。
+
+实际规则运行 `runs/20261104_task_profile_verified_eval_v2/` **退出0**：保留原266条比较样本的缓存字节、身份与内容，另给新增可用任务“挂毛巾”补2个未参加V3校准的独立来源，共268条／134任务／14,803帧／270有效episode侧，所有105个可用任务均有两例。新增来源使用固定种子20261104，排除校准来源、同源优先最长裁剪，不按命中带选样。当前比较样本中73条已参加新版视觉校准（25条来源支持可用持物带），另195条未参加；其中原266的未校准部分为193条，不能再把全部266或268称为独立留出。
+
+本轮完整枚举251候选／122合格窗口，41区间应用、210候选拒绝。40条有规则应用，其中34条产生801帧实际变化，6条原数值无需变化；其余228条没有应用。拒绝分别为时长不足131、同值语义冲突需逐段视觉54、无对齐闭合边界6、对齐后时长不足1、释放边界不足18。原始观测、时间戳、行数、无效侧及训练目标全部保持，训练有效位全false；规则目标仍是独立evaluation字段，未生成正式训练标签。
+
+缝隙刷两条均应用、共改变58帧；挂毛巾两条均应用但原值已满足目标，变化0帧。第一次新版266试跑 `verified_eval_v1` 曾因13838开头几个点略超二源带而拒绝。保留该结果后，补齐此前已查看诊断录制的首中末双目证据形成V3；没有放宽噪声、来源要求或拟合边界，其余149任务配置与V2逐对象相等。
+
+独立落盘审计 `runs/20261104_task_profile_verified_eval_audit_v2/verification.json` **PASS，172,348项、0失败**：穷举原曲线窗口，核对全部候选／事件、0.6秒回填、固定时序公式、逐值二源、冲突拒绝、mask并集与原字段保留；211个源Parquet的SHA、大小与mtime均符合记录。二源材料另核验16,935项身份／图片／时间关联及241个涉及源Parquet与原census摘要一致，未写源数据。
+
+实际入口：
+
+```sh
+.venv/bin/python -B -m close_gripper.task_profiles validate configs/task_gripper_profiles.json
+.venv/bin/python -B -m close_gripper profile-clean --manifest runs/20261104_task_profile_verified_inputs_v1/manifest.json --profiles configs/task_gripper_profiles.json --workers 4 --output runs/20261104_task_profile_verified_eval_v2
+.venv/bin/python -B runs/20261104_all_mode_evaluation_audit_tools_v2/audit_output.py --run runs/20261104_task_profile_verified_eval_v2 --inputs runs/20261104_task_profile_verified_inputs_v1 --catalog configs/task_gripper_profiles.json --output runs/20261104_task_profile_verified_eval_audit_v2
+```
+
+这些输出目录已存在，复现应换新目录。执行记录是本次真实结果，不表示原数据全部稳定窗已完成语义审查，也不表示人审准确率、实际训练效果或三版全量派生已完成。按任务的区间与拒绝状态、逐条例子及GUI核验见本节交付表；旧结果与失败记录继续保留。
+
+| 交付 | 当前产物与核验 |
+| --- | --- |
+| 任务配置与状态 | [150任务／151侧的区间和原因表](reports/20261104_verified_task_profiles.csv)，包括105个自动任务及45个未启用任务 |
+| 实际逐条例子 | [268条应用／未应用与来源重叠表](reports/20261104_verified_profile_examples.csv)，所有105个自动任务各有两例 |
+| 机器可读汇总 | [配置、覆盖、运行与检查摘要](reports/20261104_verified_task_profiles_summary.json) |
+| 稳定平台证据GUI | [8767审阅页](http://127.0.0.1:8767/review.html)，目录 `runs/20261104_task_profile_verified_evidence_gui_v2/`；2685条记录、150任务、11,842个去重原图字节副本；图片摘要核对通过，新增外部模型请求0 |
+| 视频与曲线GUI | [8766审阅页](http://127.0.0.1:8766/review.html)，目录 `runs/20261104_task_profile_verified_video_gui_v2/`；268例、540个同侧视频引用，不复制源视频 |
+
+两套页面均完成真实Chromium检查：模式证据页 `runs/20261104_all_mode_browser_tools_v1/attempt-002/verification.json` **8项通过**；连续视频页 `runs/20261104_verified_video_browser_v1/attempt-001/browser_verification.json` **18项通过**。两者JavaScript错误、失败请求和外部请求均0。检查覆盖筛选、搜索、曲线／状态来源、视频真实解码、非零偏移、双臂同步、同侧双目切换、倍速及HTTP 206；另外核对缝隙刷两例的原始非零持物段与归零曲线、挂毛巾两例的无数值变化应用。实际目视复核两张刷子页面截图，未用截图检查代替逐episode语义真值。视频交互抽查范围与原始失败尝试分别保留，不声称540段均完整播放。
+
+当前服务入口如下；远程使用需转发服务器8766及8767端口。已运行的服务应继续复用，停止后才重新启动：
+
+```sh
+.venv/bin/python -B scripts/serve_review.py --run runs/20261104_task_profile_verified_video_gui_v2 --port 8766
+.venv/bin/python -B scripts/serve_review.py --run runs/20261104_task_profile_verified_evidence_gui_v2 --port 8767
+```
+
+二源材料首次准备因run内 `select.py` 遮蔽标准库而在导入阶段失败；改名后在新的v2目录按**完全相同冻结选样**恢复，305例材料全部成功，失败未记成视觉复核。一次联系图帧号疑虑经原样重绘及SHA核验解除，没有改源视频对齐；实际需要修正的语义均另存并重新派生子段，未覆盖原判断。
+
+## 首版：133个任务各两条的规则曲线试跑
 
 2026-11-04 用户授权开始按任务开度配置运行，并要求每个可用任务两条与视频GUI。新增 `profile-clean` 生成真实规则曲线；来源为 `task_profile_rule`，不调用模型，也不伪造逐episode视觉决定。结果中的 `evaluation.gripper_target` 保存新曲线；训练目标保持原观测、有效位为false，供本轮审阅后继续验证。
 

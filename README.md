@@ -18,7 +18,9 @@ python3 -m venv .venv
 
 ## 任务开合配置
 
-[任务配置](configs/task_gripper_profiles.json)覆盖三个发布版的150个中文任务、151个有效侧别；逐任务区间和状态可查[配置表](reports/20261103_task_profiles.csv)。规则见 PLAN，扫描与视觉复核的实际覆盖见 VALIDATION。
+[任务配置](configs/task_gripper_profiles.json)覆盖三个发布版的150个中文任务、151个有效侧别；105个任务有可用区间，45个未自动启用。逐任务区间和状态可查[配置表](reports/20261104_verified_task_profiles.csv)，实际试跑可查[268条例子](reports/20261104_verified_profile_examples.csv)和[交付汇总](reports/20261104_verified_task_profiles_summary.json)。规则见 PLAN，扫描与视觉复核的实际覆盖见 VALIDATION。
+
+当前曲线GUI为 `http://127.0.0.1:8766/review.html`（`runs/20261104_task_profile_verified_video_gui_v2/`），稳定平台证据GUI为 `http://127.0.0.1:8767/review.html`（`runs/20261104_task_profile_verified_evidence_gui_v2/`）。离线停止服务后，可用下述 `serve_review.py` 命令按相应目录重新启动。268条例子覆盖所有105个可用任务各两条，另保留原比较清单里的未启用任务；它们不是全部独立留出样本。
 
 ```sh
 .venv/bin/python -B -m close_gripper.task_profiles validate configs/task_gripper_profiles.json
@@ -44,8 +46,19 @@ python3 -m venv .venv
 
 ```sh
 .venv/bin/python -B scripts/survey_task_grippers.py --output runs/my_task_census --workers 4
-.venv/bin/python -B scripts/build_task_profiles.py --census /path/to/completed_census_with_mode_membership --scope /path/to/scope_and_aliases.json --reviews /path/to/normalized_native_reviews.json --output runs/my_task_catalog
+.venv/bin/python -B scripts/build_task_profiles.py --census /path/to/completed_census_with_mode_membership --scope /path/to/scope_and_aliases.json --reviews /path/to/normalized_native_reviews.json --mappings /path/to/exact_mode_sample_mappings.json --output runs/my_task_catalog
 ```
+
+新版规范化审阅输入使用 `close_gripper.mode_reviews.v1`，记录平台首、中、末和上下文的实际帧状态、可支持的 held/free 子段及来源。构建器保留逐模式状态、同值空夹冲突、独立来源数和局部释放证据。具体业务规则集中在 PLAN。
+
+可把已保存的稳定模式证据生成独立审阅页，按任务、数值角色和视觉状态筛选，查看原始开度曲线及对应帧：
+
+```sh
+.venv/bin/python -B scripts/render_mode_review.py --reviews /path/to/normalized_native_reviews.json --coverage /path/to/final_coverage_ledger.json --profiles configs/task_gripper_profiles.json --output runs/my_mode_review
+.venv/bin/python -B scripts/serve_review.py --run runs/my_mode_review --port 8767
+```
+
+模式页逐图核验摘要并复制原图字节，只展示既有判断；不运行清洗或新增视觉判断。
 
 ## 处理完整 episode
 

@@ -37,6 +37,17 @@ def episode(values=None, times=None):
                 identity={"source_metadata": {"source_tasks": ["拿起杯子"]}, "tasks": ["Pick up the cup."]})
 
 
+def all_mode_catalog():
+    c = catalog()
+    c.update(calibration_contract="all_modes_semantic_review_v2", minimum_positive_sources=2, evidence_noise=.003)
+    p = c["tasks"][0]["sides"]["right"]
+    p.update(calibration_contract=c["calibration_contract"], minimum_positive_sources=2, evidence_noise=.003,
+             interval_vision_bands=[], free_bands=[band("free", .8, 1.)], release_rules=[])
+    p["closed_bands"][0].update(source_ids=["a", "b"], reviewed_source_count=2, open_band_ids=["open"])
+    p["open_bands"][0].update(source_ids=["a"])
+    return c
+
+
 class TaskProfileContracts(unittest.TestCase):
     def test_exact_time_threshold_uses_seven_timestamps_and_backfills_start(self):
         ep = episode([.8] * 3 + [.2] * 8)
@@ -266,6 +277,51 @@ class TaskProfileContracts(unittest.TestCase):
         result = resolve_profile(c, ep, "right")
         result["profile"]["closed_bands"][0]["center"] = .99
         self.assertEqual((c, ep), snapshot)
+
+    def test_all_mode_source_denominators_cannot_count_duplicate_cases(self):
+        validate_catalog(all_mode_catalog())
+        for sources, count in ((["a"], 2), (["a", "a"], 2), (["a", "b"], 3)):
+            c = all_mode_catalog()
+            c["tasks"][0]["sides"]["right"]["closed_bands"][0].update(
+                source_ids=sources, reviewed_source_count=count)
+            with self.subTest(sources=sources), self.assertRaisesRegex(ValueError, "independent holding"):
+                validate_catalog(c)
+
+    def test_all_mode_rejects_closed_free_overlap_and_unlinked_open_references(self):
+        for kind in ("free_overlap", "interval_vision_overlap", "unknown_open", "unlinked_source"):
+            c = all_mode_catalog()
+            p = c["tasks"][0]["sides"]["right"]
+            if kind == "free_overlap":
+                p["free_bands"].append(band("empty_closed", .19, .21))
+            elif kind == "interval_vision_overlap":
+                p["interval_vision_bands"].append(band("ambiguous", .19, .21))
+            elif kind == "unknown_open":
+                p["closed_bands"][0]["open_band_ids"] = ["unknown"]
+            else:
+                p["open_bands"][0]["source_ids"] = ["unrelated"]
+            with self.subTest(kind=kind), self.assertRaises(ValueError):
+                validate_catalog(c)
+
+    def test_same_value_semantic_conflict_is_an_explicit_match_rejection(self):
+        c = all_mode_catalog()
+        p = c["tasks"][0]["sides"]["right"]
+        p.update(automatic_use=False, status="needs_review", closed_bands=[],
+                 interval_vision_bands=[band("ambiguous", .19, .21)])
+        r = match_hold_interval(c, episode(), "right", 0, 6)
+        self.assertEqual(r["reason"], "requires_interval_vision")
+        self.assertEqual(r["interval_vision_band_ids"], ["ambiguous"])
+        self.assertFalse(r["matched"])
+
+    def test_extensions_require_the_versioned_contract_without_changing_legacy_behavior(self):
+        c = catalog()
+        validate_catalog(c)
+        c["tasks"][0]["sides"]["right"]["release_rules"] = []
+        with self.assertRaisesRegex(ValueError, "all-mode contract"):
+            validate_catalog(c)
+        c = all_mode_catalog()
+        c["minimum_hold_s"] = .2
+        with self.assertRaisesRegex(ValueError, "frozen policy"):
+            validate_catalog(c)
 
     def test_read_only_cli_validation_inspection_and_matching(self):
         with tempfile.TemporaryDirectory() as tmp:

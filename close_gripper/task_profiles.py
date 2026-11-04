@@ -15,6 +15,7 @@ from .contracts import SIDE_INDICES, validate_episode
 SCHEMA = "close_gripper.task_profiles.v1"
 UNITS = "normalized_opening_0_1"
 PROFILE_STATUSES = {"numeric_only", "visual_reviewed", "needs_review", "unsupported"}
+CALIBRATION_CONTRACT = "all_modes_semantic_review_v2"
 _EPS = 1e-9
 
 
@@ -56,6 +57,95 @@ def _overlap(first, second):
     return max(first["lower"], second["lower"]) <= min(first["upper"], second["upper"])
 
 
+def _mode_profile(profile):
+    """Validate the stricter all-mode extension without weakening legacy v1."""
+    if profile.get("calibration_contract") != CALIBRATION_CONTRACT:
+        if "release_rules" in profile or "interval_vision_bands" in profile:
+            raise ValueError("semantic conflict and release rules require the all-mode contract")
+        return
+    if profile.get("minimum_positive_sources") != 2 or profile.get("evidence_noise") != .003:
+        raise ValueError("all-mode evidence requires two independent sources and unchanged motion noise")
+    closed, opened = profile["closed_bands"], profile["open_bands"]
+    free = _bands(profile, "free_bands")
+    ambiguous = _bands(profile, "interval_vision_bands")
+    open_by_id = {o["id"]: o for o in opened}
+    closed_by_id = {c["id"]: c for c in closed}
+    for band in closed:
+        sources = band.get("source_ids")
+        if (not isinstance(sources, list) or any(not _name(s) for s in sources)
+                or len(set(sources)) < 2 or len(sources) != len(set(sources))
+                or band.get("reviewed_source_count") != len(sources)):
+            raise ValueError("each automatic closed band requires two independent holding sources")
+        if any(_overlap(band, other) for other in ambiguous + free):
+            raise ValueError("usable closed band overlaps free or interval-vision evidence")
+        refs = band.get("open_band_ids")
+        if (not isinstance(refs, list) or not refs or any(not isinstance(i, str) for i in refs)
+                or len(set(refs)) != len(refs) or any(i not in open_by_id for i in refs)
+                or any(open_by_id[i]["lower"] <= band["upper"] for i in refs)):
+            raise ValueError("each closed band requires its own higher observed open references")
+        if any(not set(open_by_id[i].get("source_ids", [])).intersection(sources) for i in refs):
+            raise ValueError("open references must link to an observed source of their closed band")
+    for band in opened:
+        if not any(f["lower"] <= band["lower"] <= band["upper"] <= f["upper"] for f in free):
+            raise ValueError("open references must be contained in observed free evidence")
+    rules = profile.get("release_rules", [])
+    if not isinstance(rules, list):
+        raise ValueError("release_rules must be a list")
+    seen_ids, seen_bands = set(), set()
+    for rule in rules:
+        if not isinstance(rule, dict) or not _name(rule.get("id")) or rule["id"] in seen_ids:
+            raise ValueError("release rule requires a unique id")
+        seen_ids.add(rule["id"])
+        cid = rule.get("closed_band_id")
+        if not isinstance(cid, str) or cid not in closed_by_id or cid in seen_bands:
+            raise ValueError("release rule requires one unique usable closed band")
+        seen_bands.add(cid)
+        band = closed_by_id[cid]
+        refs = rule.get("open_band_ids")
+        if (not isinstance(refs, list) or not refs or any(not isinstance(i, str) for i in refs)
+                or len(set(refs)) != len(refs) or not set(refs) <= set(band["open_band_ids"])):
+            raise ValueError("release rule must use the closed band's observed open references")
+        delta = rule.get("motion_min_delta")
+        if (not _number(delta) or not .006 < delta <= .04 or rule.get("motion_noise") != .003
+                or rule.get("evaluation_only") is not True or rule.get("preserves_fixed_timing") is not True
+                or rule.get("threshold_policy") != "max_2noise_min_default_observed_excursion_minus_noise"):
+            raise ValueError("release rule must preserve noise, fixed timing and evidence-derived threshold")
+        evidence = rule.get("evidence")
+        if not isinstance(evidence, list) or not evidence:
+            raise ValueError("release rule requires same-episode held-to-free evidence")
+        sources, excursions = set(), []
+        for e in evidence:
+            if not isinstance(e, dict) or any(not _name(e.get(k)) for k in ("case_id", "source_id", "dataset_root")):
+                raise ValueError("release evidence requires original source identity")
+            if type(e.get("episode_index")) is not int or e["episode_index"] < 0:
+                raise ValueError("release evidence requires an original episode index")
+            indices = [e.get(k) for k in ("held_frame", "motion_start", "motion_end", "free_frame")]
+            if (any(type(i) is not int or i < 0 for i in indices)
+                    or not indices[0] <= indices[1] < indices[2] <= indices[3]):
+                raise ValueError("release evidence frames are not an ordered held-to-free transition")
+            values = [e.get(k) for k in ("held_opening", "start_opening", "end_opening", "free_opening")]
+            if any(not _number(v) or not 0 <= v <= 1 for v in values):
+                raise ValueError("release evidence openings must be finite normalized values")
+            held, start, end, freed = values
+            excursion = e.get("observed_excursion")
+            if (not _number(excursion) or abs(excursion - (end - start)) > _EPS
+                    or excursion + _EPS < delta or not band["lower"] <= held <= band["upper"]
+                    or not band["lower"] <= start <= band["upper"]
+                    or e.get("review_source") != "model" or e.get("confirmed") is not False):
+                raise ValueError("release evidence does not support this closed band and threshold")
+            e_refs = e.get("open_band_ids")
+            if (not isinstance(e_refs, list) or not e_refs or any(not isinstance(i, str) for i in e_refs)
+                    or not set(e_refs) <= set(refs)
+                    or not any(open_by_id[i]["lower"] <= freed <= open_by_id[i]["upper"]
+                               and end + _EPS >= open_by_id[i]["lower"] for i in e_refs)):
+                raise ValueError("release free evidence does not support the bound open reference")
+            sources.add(e["source_id"])
+            excursions.append(excursion)
+        expected = max(.006 + _EPS, min(.04, min(excursions) - .003))
+        if abs(delta - expected) > _EPS or rule.get("reviewed_source_count") != len(sources):
+            raise ValueError("release threshold or source denominator disagrees with evidence")
+
+
 def validate_catalog(catalog):
     """Validate the catalog without reading files or mutating the input.
 
@@ -73,6 +163,25 @@ def validate_catalog(catalog):
             raise ValueError(key + " must be positive and finite")
     if catalog["maximum_plateau_range"] > 1:
         raise ValueError("maximum_plateau_range must not exceed one")
+    if "calibration_contract" in catalog and catalog["calibration_contract"] != CALIBRATION_CONTRACT:
+        raise ValueError("unsupported calibration contract")
+    if catalog.get("calibration_contract") == CALIBRATION_CONTRACT:
+        frozen = dict(minimum_hold_s=.6, maximum_sample_gap_s=.15, maximum_plateau_range=.02,
+                      minimum_positive_sources=2, evidence_noise=.003)
+        if any(catalog.get(k) != v for k, v in frozen.items()):
+            raise ValueError("all-mode catalog calibration parameters must retain the frozen policy")
+    excluded = catalog.get("excluded_source_ids", [])
+    excluded_episodes = catalog.get("excluded_episode_identities", [])
+    if (not isinstance(excluded, list) or any(not _name(s) for s in excluded)
+            or len(excluded) != len(set(excluded))):
+        raise ValueError("excluded_source_ids must contain unique source identities")
+    if not isinstance(excluded_episodes, list):
+        raise ValueError("excluded_episode_identities must be a list")
+    for item in excluded_episodes:
+        if (not isinstance(item, dict) or item.get("source_id") not in excluded
+                or not _name(item.get("dataset_root")) or type(item.get("episode_index")) is not int
+                or item["episode_index"] < 0):
+            raise ValueError("excluded episode identity requires an excluded source and exact release identity")
     tasks = catalog.get("tasks")
     if not isinstance(tasks, list) or not tasks:
         raise ValueError("catalog requires a nonempty task list")
@@ -101,6 +210,10 @@ def validate_catalog(catalog):
             if any(type(v) is not int or v < 0 for v in profile["counts"].values()):
                 raise ValueError("profile counts must be nonnegative integers")
             closed, opened = _bands(profile, "closed_bands"), _bands(profile, "open_bands")
+            if (catalog.get("calibration_contract") == CALIBRATION_CONTRACT
+                    and profile.get("calibration_contract") != CALIBRATION_CONTRACT):
+                raise ValueError("all-mode catalog requires all-mode side profiles")
+            _mode_profile(profile)
             if not profile["automatic_use"]:
                 continue
             if profile["status"] != "visual_reviewed":
@@ -177,6 +290,18 @@ def resolve_profile(catalog, episode, side):
     identity = episode.get("identity")
     if not isinstance(identity, dict):
         return _reject("missing_task_identity", side=side)
+    source_metadata = identity.get("source_metadata", {})
+    direct_ids = [identity.get("source_id")]
+    if isinstance(source_metadata, dict):
+        direct_ids.extend(source_metadata.get(k) for k in ("source_id", "source_episode_id", "original_episode_id"))
+    excluded = catalog.get("excluded_source_ids", [])
+    excluded_id = next((i for i in direct_ids if isinstance(i, str) and i in excluded), None)
+    if excluded_id is None:
+        excluded_id = next((e["source_id"] for e in catalog.get("excluded_episode_identities", [])
+            if identity.get("dataset_root") == e["dataset_root"]
+            and type(identity.get("episode_index")) is int and identity["episode_index"] == e["episode_index"]), None)
+    if excluded_id is not None:
+        return _reject("source_alignment_uncertain", side=side, source_id=excluded_id)
     label, origin = _task_labels(identity)
     if label is None:
         return _reject(origin, side=side)
@@ -209,7 +334,7 @@ def match_hold_interval(catalog, episode, side, start, end):
     profile = resolved["profile"]
     base.update(task=resolved["task"], catalog_version=catalog["version"],
                 profile_status=profile["status"], review_source=profile["provenance"].get("review_source"))
-    if not profile["automatic_use"]:
+    if not profile["automatic_use"] and not profile.get("interval_vision_bands"):
         return _reject("profile_not_automatic", **base)
     try:
         validate_episode(episode)
@@ -231,6 +356,12 @@ def match_hold_interval(catalog, episode, side, start, end):
         return _reject("timestamp_gap", **base)
     if high - low > catalog["maximum_plateau_range"] + _EPS:
         return _reject("unstable_plateau", **base)
+    conflicts = [b["id"] for b in profile.get("interval_vision_bands", [])
+                 if max(low, b["lower"]) <= min(high, b["upper"])]
+    if conflicts:
+        return _reject("requires_interval_vision", interval_vision_band_ids=conflicts, **base)
+    if not profile["automatic_use"]:
+        return _reject("profile_not_automatic", **base)
     matching = [b for b in profile["closed_bands"] if b["lower"] <= low and high <= b["upper"]]
     if len(matching) != 1:
         return _reject("outside_single_closed_band", **base)

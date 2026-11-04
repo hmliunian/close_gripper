@@ -31,7 +31,44 @@ def applied(result):
     return [e for e in result["events"] if e["status"] == "applied"]
 
 
+def local_release_catalog():
+    c = catalog()
+    c.update(calibration_contract="all_modes_semantic_review_v2", minimum_positive_sources=2, evidence_noise=.003)
+    p = c["tasks"][0]["sides"]["right"]
+    p.update(calibration_contract=c["calibration_contract"], minimum_positive_sources=2, evidence_noise=.003,
+        closed_bands=[dict(id="hold", lower=.161, center=.164, upper=.167,
+                          source_ids=["a", "b"], reviewed_source_count=2, open_band_ids=["open"])],
+        open_bands=[dict(id="open", lower=.198, center=.201, upper=.204, source_ids=["a"])],
+        free_bands=[dict(id="free", lower=.198, center=.201, upper=.204)], interval_vision_bands=[],
+        release_rules=[dict(id="local", closed_band_id="hold", open_band_ids=["open"],
+            motion_min_delta=.032, motion_noise=.003,
+            threshold_policy="max_2noise_min_default_observed_excursion_minus_noise",
+            evaluation_only=True, preserves_fixed_timing=True, reviewed_source_count=1,
+            evidence=[dict(case_id="viewed-a", source_id="a", dataset_root="/synthetic", episode_index=0,
+                held_frame=8, free_frame=11, motion_start=8, motion_end=10,
+                held_opening=.164, free_opening=.201, start_opening=.164, end_opening=.199,
+                observed_excursion=.035, open_band_ids=["open"], review_source="model", confirmed=False)])])
+    return c
+
+
 class ProfileRuleContracts(unittest.TestCase):
+    def test_known_misaligned_source_is_rejected_by_source_or_exact_release_identity(self):
+        c = catalog()
+        c.update(excluded_source_ids=["bad-source"], excluded_episode_identities=[
+            dict(source_id="bad-source", dataset_root="/release/a", episode_index=12)])
+        for by_source in (True, False):
+            ep = episode([.2] * 8)
+            if by_source:
+                ep["identity"]["source_metadata"]["source_episode_id"] = "bad-source"
+            else:
+                ep["identity"].update(dataset_root="/release/a", episode_index=12)
+            result = generate_profile_targets(ep, c)
+            self.assertEqual(result["coverage"]["right"]["reason"], "source_alignment_uncertain")
+            self.assertEqual(applied(result), [])
+            self.assertFalse(any(any(row) for row in result["rule_applied_mask"]))
+        ep["identity"]["dataset_root"] = "/release/other"
+        self.assertTrue(applied(generate_profile_targets(ep, c)))
+
     def test_full_cycle_preserves_motion_times_and_actual_open_endpoint(self):
         values = [.8, .8, .6, .4, .2] + [.2] * 8 + [.4, .6, .8, .8]
         result = generate_profile_targets(episode(values), catalog())
@@ -231,6 +268,77 @@ class ProfileRuleContracts(unittest.TestCase):
                 generate_profile_targets(ep, catalog())
         with self.assertRaisesRegex(ValueError, "agree with the task catalog"):
             generate_profile_targets(episode([.2] * 7), catalog(), dict(minimum_hold_s=.2))
+
+    def test_evidence_bound_small_release_keeps_original_fixed_times(self):
+        values = [.164] * 9 + [.179, .199, .201, .201]
+        c = local_release_catalog()
+        original = copy.deepcopy(c)
+        result = generate_profile_targets(episode(values), c)
+        event, = applied(result)
+        self.assertEqual((event["hold_start"], event["release_start"], event["release_end"]), (0, 8, 10))
+        self.assertEqual(event["release_rule_id"], "local")
+        self.assertAlmostEqual(event["release_motion_min_delta"], .032)
+        self.assertAlmostEqual(result["rule_target"][9][1], .199 * (.179 - .164) / (.199 - .164))
+        self.assertEqual(result["rule_target"][10:], [[0., v] for v in values[10:]])
+        self.assertEqual(result["config"]["motion_min_delta"], .04)
+        self.assertEqual(result["config"]["motion_noise"], .003)
+        self.assertEqual(c, original)
+        c["tasks"][0]["sides"]["right"]["release_rules"] = []
+        unchanged = generate_profile_targets(episode(values), c)
+        self.assertFalse(applied(unchanged))
+        self.assertEqual(unchanged["events"][0]["reason"], "unresolved_release_boundary")
+
+    def test_small_release_is_not_borrowed_by_another_closed_mode_or_closing(self):
+        c = local_release_catalog()
+        p = c["tasks"][0]["sides"]["right"]
+        p["closed_bands"].append(dict(id="other", lower=.101, center=.104, upper=.107,
+                                     source_ids=["a", "b"], reviewed_source_count=2, open_band_ids=["other_open"]))
+        p["open_bands"].append(dict(id="other_open", lower=.138, center=.141, upper=.144, source_ids=["a"]))
+        p["free_bands"].append(dict(id="other_free", lower=.138, center=.141, upper=.144))
+        # Other mode's excursion is large enough for the learned local .032,
+        # but smaller than .04 and does not have that mode's release evidence.
+        result = generate_profile_targets(episode([.104] * 9 + [.12, .139, .141]), c)
+        self.assertFalse(applied(result))
+        self.assertEqual(result["rule_target"], result["target"])
+        # A small closing remains governed by the unchanged global .04 rule.
+        result = generate_profile_targets(episode([.199, .179] + [.164] * 9), c)
+        self.assertFalse(applied(result))
+        self.assertIn("missing_aligned_closing_boundary", [e["reason"] for e in result["events"]])
+
+    def test_local_release_cannot_change_noise_or_use_an_unobserved_open_reference(self):
+        values = [.164] * 9 + [.179, .195, .197]
+        result = generate_profile_targets(episode(values), local_release_catalog())
+        self.assertFalse(applied(result))
+        self.assertEqual(result["events"][0]["reason"], "unresolved_release_boundary")
+        with self.assertRaisesRegex(ValueError, "unchanged motion_noise"):
+            generate_profile_targets(episode([.164] * 8), local_release_catalog(), dict(motion_noise=.001))
+
+    def test_same_value_semantic_conflict_is_explicit_and_never_generates_a_curve(self):
+        c = local_release_catalog()
+        p = c["tasks"][0]["sides"]["right"]
+        p.update(automatic_use=False, status="needs_review", closed_bands=[], release_rules=[],
+                 interval_vision_bands=[dict(id="ambiguous", lower=.161, center=.164, upper=.167)])
+        result = generate_profile_targets(episode([.164] * 8), c)
+        self.assertFalse(applied(result))
+        self.assertEqual(result["rule_target"], result["target"])
+        self.assertEqual(result["coverage"]["right"]["reason"], "requires_interval_vision")
+        event, = result["events"]
+        self.assertEqual(event["qualification_reason"], "requires_interval_vision")
+        self.assertEqual(event["interval_vision_band_id"], "ambiguous")
+        self.assertFalse(event["matched"])
+
+    def test_forged_local_release_evidence_is_rejected_before_processing(self):
+        changes = [dict(motion_noise=.002), dict(motion_min_delta=.01), dict(reviewed_source_count=2)]
+        for changeset in changes:
+            c = local_release_catalog()
+            c["tasks"][0]["sides"]["right"]["release_rules"][0].update(changeset)
+            with self.subTest(changes=changeset), self.assertRaises(ValueError):
+                generate_profile_targets(episode([.164] * 8), c)
+        c = local_release_catalog()
+        evidence = c["tasks"][0]["sides"]["right"]["release_rules"][0]["evidence"][0]
+        evidence["free_frame"] = 5
+        with self.assertRaisesRegex(ValueError, "ordered held-to-free"):
+            generate_profile_targets(episode([.164] * 8), c)
 
 
 if __name__ == "__main__":

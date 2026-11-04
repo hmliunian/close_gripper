@@ -33,7 +33,7 @@
 | `pipeline.py`、`clean.py` | 历史流程／完整 episode 编排、共享预算、输入与实现快照、覆盖、任务统计及报告 | 不复制数值算法、不绕过证据校验、不默认发布 |
 | `batch.py`、`batch_report.py` | 有界批次执行、身份核验、任务统计与汇总审阅 | 区分代表事件实验和完整 episode 处理，分开统计未检查与回退 |
 | `report.py`、`sampling.py` | 展示原始／目标开度、覆盖和来源；建立可追溯样本清单 | 展示和取样不能代替人工参考或算法验收 |
-| `review_server.py`、`scripts/render_video_review.py`、`scripts/serve_review.py` | 连续腕部视频与曲线同步、独立展示目录、只读媒体清单及 HTTP Range | 视频绑定有效侧、相机和原时间偏移；只服务清单中的视频与展示目录内文件，不改原数值或源视频，不开放任意外部路径 |
+| `review_server.py`、`scripts/render_video_review.py`、`scripts/render_mode_review.py`、`scripts/serve_review.py` | 连续腕部视频与曲线同步、稳定模式证据展示、独立展示目录、只读媒体清单及 HTTP Range | 视频绑定有效侧、相机和原时间偏移；模式页只展示保存的帧状态与原曲线，逐图校验摘要并复制原字节；只服务清单中的视频与展示目录内文件，不改原数值或源视频，不开放任意外部路径 |
 | `training.py` 及实际 loader 接入 | 新动作目标与原观测分离、维度和时间网格合同 | 本地适配函数不等同于外部实际 loader 已接入 |
 | `export.py`、`scripts/verify_orion_loader.py` | 独立派生、元数据、标签 sidecar 与摘要、隔离 loader 补丁和真实 batch 验证 | 不原地修改源发布版或外部训练仓库，正式发布与本地准备分开 |
 | `scripts/replay_clean_run.py`、`scripts/verify_clean_run.py` | 同候选的零调用数值重放、独立落盘产物核验 | 核验原输入／实现／证据摘要；旧请求与新请求分计，复用不作为独立效果评估 |

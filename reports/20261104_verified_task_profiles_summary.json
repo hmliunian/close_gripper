@@ -1,0 +1,1076 @@
+{
+  "schema": "close_gripper.verified_task_profiles_delivery.v1",
+  "catalog_version": "task-profiles-20261104-all-modes-pointwise-two-source-v3",
+  "catalog_sha256": "d8d684cafcf12f418d6f73d8af21594feb9f5b2c5530ffadebaf62f3a291d696",
+  "scope": {
+    "tasks": 150,
+    "task_sides": 151,
+    "release_episode_rows": 125236,
+    "release_frames": 15041374,
+    "reviewed_cases": 2685,
+    "review_source": "model"
+  },
+  "automatic_tasks": 105,
+  "automatic_task_sides": 106,
+  "automatic_closed_bands": 279,
+  "disabled_tasks": [
+    "关冰箱抽屉",
+    "关冰箱门",
+    "关冰箱门抽屉",
+    "关垃圾桶",
+    "关床箱储物柜",
+    "关推拉门",
+    "关洗碗机",
+    "关洗碗机门",
+    "在垃圾桶里插入莴苣",
+    "在架子上挂背包",
+    "在架子上挂蓝色棉帽",
+    "在椅子上挂裤子",
+    "开储物柜门",
+    "开冰箱抽屉",
+    "开冰箱门",
+    "开床箱储物盖",
+    "开移门",
+    "打开垃圾桶",
+    "打开推拉门",
+    "拿起一袋鸡蛋",
+    "拿起杯子",
+    "拿起汤勺",
+    "拿起玻璃清洁剂",
+    "拿起白糖罐子",
+    "拿起篮筐",
+    "拿起精致料酒",
+    "拿起耗油",
+    "拿起蓝色短袖",
+    "拿起裙子",
+    "拿起鞋子",
+    "挂一袋鸡蛋",
+    "挂围巾",
+    "挂帽子",
+    "挂手套",
+    "挂抹布",
+    "挂毛毯",
+    "挂毯子",
+    "挂粉色毛巾",
+    "挂红色短袖",
+    "挂蓝色牛仔外套",
+    "挂蓝色衣服",
+    "挂领带",
+    "挂黄色围裙",
+    "插入吸管",
+    "擦拭桌子"
+  ],
+  "profile_statuses": {
+    "unsupported": 3,
+    "needs_review": 42,
+    "visual_reviewed": 106
+  },
+  "numeric_mode_review_states": {
+    "free_supported": 1491,
+    "uncertain": 267,
+    "held_supported": 430,
+    "requires_interval_vision": 164,
+    "numeric_source_uncertain": 21,
+    "held_and_free_separable": 4
+  },
+  "visual_reviews": {
+    "records": 2685,
+    "unique_original_sources": 1439,
+    "interval_semantics": {
+      "free": 1298,
+      "uncertain": 684,
+      "held": 671,
+      "mixed": 32
+    },
+    "source": "model",
+    "method": "codex_native_vision",
+    "human_confirmed": false,
+    "secondary_source_cases": 305,
+    "secondary_source_recordings": 289,
+    "supplemental_stereo_cases": 123,
+    "additional_known_brush_source_cases": 1,
+    "full_dataset_visually_reviewed": false
+  },
+  "coverage": {
+    "numeric_modes_total": 2377,
+    "numeric_modes_with_reviewed_representative": 2377,
+    "unassigned_buckets_total": 4722,
+    "unassigned_buckets_with_reviewed_representative": 8,
+    "unassigned_buckets_unreviewed": 4714,
+    "reviewed_records": 2685,
+    "excluded_source_reviewed_records": 26,
+    "numeric_source_uncertain_units": 21,
+    "full_dataset_visually_reviewed": false,
+    "unit_representative_review_does_not_verify_all_population_windows": true
+  },
+  "unassigned_stable_windows": 18396,
+  "unassigned_window_fraction": 0.02382771921734828,
+  "calibration_source_overlap": {
+    "summary": {
+      "evaluation_episodes": 266,
+      "overlap_with_current_visual_calibration_sources": 73,
+      "overlap_with_accepted_closed_band_sources": 25,
+      "nonoverlap_with_current_visual_calibration_sources": 193,
+      "frozen_manifest_original_calibration_overlap_field_is_historical": true
+    },
+    "rows": [
+      {
+        "task": "关抽屉",
+        "source_id": "575064c260365cfc95fc2c08f6257733",
+        "episode_index": 880,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-scope139-20261026-b39c35c5-remaining-en-flu-tool-v4-idletrim3-drawer-accepted-durclean/pushcart-right-v1",
+        "reviewed_case_ids": [
+          "545c2b2d42960f94"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "关闭抽屉",
+        "source_id": "10c4915dcdcfbd4ca65cb7c1623c7eb8",
+        "episode_index": 11923,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-remaining-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "4ad77302f7412af2"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "关闭橱柜门",
+        "source_id": "f1ddff687812436c5e06926610073fad",
+        "episode_index": 46606,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-remaining-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "d51719873420e346"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "在垃圾桶里插入莴苣",
+        "source_id": "a4602fce07d5a560cd905895e6f95aee",
+        "episode_index": 1707,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "a924e119cc0c7f62"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "在架子上挂背包",
+        "source_id": "54aa2471fdc83e3ac25c20526ff3be81",
+        "episode_index": 11569,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "f1e6e31b25aba858",
+          "a1957d1e2511c993"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "在架子上挂蓝色棉帽",
+        "source_id": "311a69105b160e66f91b9c7e30f58fe8",
+        "episode_index": 13404,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "7d460e4a6dd06dac"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "在椅子上挂衣服",
+        "source_id": "464cc5604ddbec42ea3a062ac1107665",
+        "episode_index": 15035,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "5c5201f397d7866c"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "在椅子上挂裤子",
+        "source_id": "630ba0412d7ea4a42b789d8c205c44e0",
+        "episode_index": 14298,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "14dc35891d84d3d5",
+          "f74e9ab93fe90608"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "在炒锅里插入打蛋器",
+        "source_id": "a40b70af41f09279ec2df69bf2181b9b",
+        "episode_index": 16044,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "a30a98c982799800"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "在电饭煲里插入白色饭勺",
+        "source_id": "e78b14eeffaa3d4c635e4f1100f04421",
+        "episode_index": 12093,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "48eeddf95df04134",
+          "5e05b8768c610252"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "在蒸笼里面插包子",
+        "source_id": "f291b8df648f0d8d541965b179f93a4f",
+        "episode_index": 3320,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "b63a762a64fbd799",
+          "027bbea9b48bb02c"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "在蒸笼里面插包子",
+        "source_id": "d0137aee0dbb671576ea9db62c93ee04",
+        "episode_index": 3724,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "9f0ce8d2d0361bdb"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "在锅里插入汤勺",
+        "source_id": "6339eb16551cdef9089db2837a0d951c",
+        "episode_index": 6542,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "437ee4c6f3c096ad"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "在锅里插入汤勺",
+        "source_id": "3a24a777fba1e066ea64f2e85e215aed",
+        "episode_index": 3093,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "07a346d6a8ac17b3"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "打开橱柜门",
+        "source_id": "ab3879f21e61a19c30a7f5eba0cefb5e",
+        "episode_index": 58200,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-remaining-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "403bc058d7163363"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿莴苣",
+        "source_id": "20135f9cc774724c5bff1e380e596e30",
+        "episode_index": 2088,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/incremental-20261028-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "d7923e24e91d5099"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿衣服",
+        "source_id": "5cd3e8e6cde0e795ef31bd833bff1255",
+        "episode_index": 4178,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "27b013a51f423eb2"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起儿童筷子",
+        "source_id": "b007f9654e5d4d4fdc4a58d513ce3e2c",
+        "episode_index": 339,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/incremental-20261028-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "935cd64bae360454"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起儿童筷子",
+        "source_id": "0259b5977fc1d4d1c62eb4fb907b2665",
+        "episode_index": 233,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/incremental-20261028-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "d349bb2f1eea11d0"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起刷子",
+        "source_id": "6b6d27ce9474d7461bb96ddf48ec5c8b",
+        "episode_index": 9596,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "dadff7c22889989b"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起刷子",
+        "source_id": "ee9b0f4155ef2fe23dcff1dc1a96314a",
+        "episode_index": 683,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "49fb8e6e3204dc83",
+          "58b1dfe36d28c518"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起小熊玩偶",
+        "source_id": "e5f25ccb6fa6f609ea19230f91cb63a3",
+        "episode_index": 2937,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "bef6a0dcebaa193d",
+          "344f3417b7c09c33",
+          "08dfbf992087f166"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起浴巾",
+        "source_id": "569c890893118312b038c319730930bc",
+        "episode_index": 6795,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "1a3de383c2edab69"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起湿巾",
+        "source_id": "fc7460f7a3745c2ec5bb9339199aa076",
+        "episode_index": 6814,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "811f3aacf4bda678"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起牙刷",
+        "source_id": "d56548c0b5f36a4d61ca831a153f7833",
+        "episode_index": 16725,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "4859cf92de6462e4",
+          "d458b55eb98f1c88",
+          "9443f07510797405"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起牙刷",
+        "source_id": "c6953035c3d197274534747d24ac2766",
+        "episode_index": 4220,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "06590be7b12a8c02",
+          "ede20ad2a85ed1dd"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起皮带",
+        "source_id": "bdcf7b15c5eff628b3242a80ea04f047",
+        "episode_index": 2427,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/incremental-20261028-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "2a8d284f60f4a402",
+          "e2c7b90b8b0d5324",
+          "4c07a514483b1fd5"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起盛饭勺",
+        "source_id": "f9ebbf32c9a2ba75b3039f6e0573f9bd",
+        "episode_index": 1492,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/incremental-20261028-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "094906b7400dca2c",
+          "617180b71f324de6"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起篮筐",
+        "source_id": "f3f5abedf13efaf64081bbb3c877ad00",
+        "episode_index": 1353,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/incremental-20261028-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "efc3ea28a0eee996",
+          "ef234eca58f01f78"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起红色汽车模型",
+        "source_id": "5ebc3ca661588d4dea94ba76f2a1a096",
+        "episode_index": 9193,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "71fbafdc64cf6afc"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起老陈醋",
+        "source_id": "cc37e2d58fe8e3ef3ca9cd479e5c9904",
+        "episode_index": 10021,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "5e9534a1a2d1a8d4",
+          "991abb93a856e084"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起花瓶",
+        "source_id": "441ebe57285037f257246d739d929a21",
+        "episode_index": 313,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/incremental-20261027-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "3c178b9ac1bd5e1f"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起蓝色短袖",
+        "source_id": "ef2414a2c7df605df0776f9b4705f88c",
+        "episode_index": 95,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/incremental-20261028-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "16e7f15364f070b4",
+          "33dc67d889902a41",
+          "6ae92948e8f2aa67"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起蓝色短袖",
+        "source_id": "3c613765a6bd58bd1da375c90ef491ca",
+        "episode_index": 548,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/incremental-20261028-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "e1c9f0f2fec14e07",
+          "0bce8259542c9a6e",
+          "fb3f90383f7608c2"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起辣椒油",
+        "source_id": "3214069e1bde03dbc4c3ed657ea317dd",
+        "episode_index": 8310,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "ff8eab68be06f09b"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起闹钟",
+        "source_id": "05839adc2096a59d7d1ea122d57e9a52",
+        "episode_index": 15437,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "846a37dc895a7298"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起香皂",
+        "source_id": "91417219a04da91396c8ad9fce171cba",
+        "episode_index": 14253,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "88c3dbd94964400d"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿起黄色老虎玩偶",
+        "source_id": "a99a9ea82ef0e6e9a3bd24f7e1079b43",
+        "episode_index": 9514,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "95cd19c62efdb61b",
+          "9ea2562bcb2b1b9d"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "拿遥控器",
+        "source_id": "cba16d9e2469811edd55aad8d3c0b892",
+        "episode_index": 6642,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "01eb5b4501a6c013",
+          "2976d6df787a5b2a",
+          "0efd29b695611c8a",
+          "6647ba2b1830d250"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂书包",
+        "source_id": "76d5b8e4bdc1b3b046a31fb7af496322",
+        "episode_index": 3772,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "a2ec23434b372699"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂书包",
+        "source_id": "50a3e0b4d8961f55a7b09a813afabfe8",
+        "episode_index": 6083,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "1e7638bd5c812c00",
+          "d195bbd0d5c0e04c"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂围裙",
+        "source_id": "1404c757f54108f1eab43af8b45b5f2a",
+        "episode_index": 553,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "e89b83905efaee63",
+          "41e48d5edebbbcfc"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂帽子",
+        "source_id": "e8305e6ac2b655bb638f167fed53e15a",
+        "episode_index": 6449,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "ef03a8cb74326447"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂抹布",
+        "source_id": "c257029f3114b538d1f8ef208c0f88e3",
+        "episode_index": 9292,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "6deddd41336d8c80"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂棕色衣服",
+        "source_id": "97ff9848223f3dcf825c631c07c91d6f",
+        "episode_index": 1670,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "54c85348afa0e29d"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂白色长袖衬衫",
+        "source_id": "e44447e2aea27ddb1851b7c57da15365",
+        "episode_index": 9718,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "985727ecea75b158"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂白色长袖衬衫",
+        "source_id": "643ba43d5137572caa74069b5f7bcb90",
+        "episode_index": 16096,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "c77eb72ce6eef3ab"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂粉色帽子",
+        "source_id": "692ad7bf6ecbdbe61511f8322afb2954",
+        "episode_index": 15776,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "db074f55687c6cd5"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂粉色帽子",
+        "source_id": "6975d0fc59d2d5eb1446942e53424c49",
+        "episode_index": 7357,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "ae16dd6bbfcbeb10"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂红色短袖",
+        "source_id": "44f24ac9118f1b162d6b996a1ef1087a",
+        "episode_index": 14802,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "337734156184199e"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂袜子",
+        "source_id": "3cc094b769e184c852447fb2404f563a",
+        "episode_index": 11372,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "bdb7121b4d21be4b"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂袜子",
+        "source_id": "c5187cb9df62bab0bb5b14a505df364c",
+        "episode_index": 930,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "a292f946900b0a8e"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂裤子",
+        "source_id": "db0fbd77275d4d7f53d641729de47a58",
+        "episode_index": 4377,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "ddd2a041431a1edc",
+          "944127e005de52a2"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "挂雨伞",
+        "source_id": "1886db4cb76596ee3d76cb8976449285",
+        "episode_index": 3979,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "bba5ff93e2c8020a",
+          "c6dd2a26432662b1"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入儿童筷子",
+        "source_id": "25938c8ab1dca94a30370f6c68ce4fa1",
+        "episode_index": 2552,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "8e4006cd66f4d206"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入儿童筷子",
+        "source_id": "7cd6b184924f3e0aabbbee44ae7a3037",
+        "episode_index": 1619,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "31b282e85cbef026",
+          "c380eb8d402dd28e"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入勺子",
+        "source_id": "19c98f272dd4fe0a8df1194d615c3e91",
+        "episode_index": 8098,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "9881cbba9bc1bd42"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入叉子",
+        "source_id": "d8268547c3577ef765a172a340950821",
+        "episode_index": 3593,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "4aec303271a0c5d5"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入夹子",
+        "source_id": "47f82f8d0e5329db0cfcd7d2fc0ab6cf",
+        "episode_index": 10367,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "49ea424e106dce3c",
+          "360890bd08105298"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入打蛋器",
+        "source_id": "c2cef5609c6e7ce5bfbb97ac55044262",
+        "episode_index": 12860,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "b50619714a6c7d32",
+          "24b16c5614fb2919"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入按摩锤",
+        "source_id": "1f130813ea6f4ccfab7c257ba4d45c39",
+        "episode_index": 14377,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "5315e1cc64f78b2e"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入按摩锤",
+        "source_id": "653ea890ca1d0b958e81a2f00832646c",
+        "episode_index": 14893,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "7ecd796c7cd01ff7"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入木头锅铲",
+        "source_id": "b44df57015e37d36bf9de53cca2ea35a",
+        "episode_index": 10351,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "c79bed3671e946b3",
+          "fe16348c0000089b",
+          "22ae95fcbc8f3a67"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入缝隙刷",
+        "source_id": "02b3136abc0e489521ff289f828980dd",
+        "episode_index": 13838,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "brush_13838_initial_hold_v1"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入缝隙刷",
+        "source_id": "2f930b5e7e16cc8fd102a00fca456741",
+        "episode_index": 1012,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "375a7ae4a2265d3a",
+          "brush_1012_static_0_24_v1"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入铁擀面杖",
+        "source_id": "00c3c7a41d05e1c6f4781e25c7dbc391",
+        "episode_index": 11011,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "1c93b546dfe99ee2"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入铁擀面杖",
+        "source_id": "770edd962eed964d902c32fabef0e61c",
+        "episode_index": 778,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "38bb4eda6f3eb193"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入饭勺",
+        "source_id": "3d14711c560a4ea9d042ed15140fe74a",
+        "episode_index": 380,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "69aae6422b30239b"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入饭勺",
+        "source_id": "0684f2ea7303ac2e1cdd1dc35c7d965b",
+        "episode_index": 9155,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "7c0bb14d31ffa5a1"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "插入黑笔",
+        "source_id": "aa5f0f8091895e0e73c4ba310e3a2ff3",
+        "episode_index": 10139,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "ff7372c7128e535d"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "擦拭桌子",
+        "source_id": "26eddeafdde5e7c0ef3f28f4100dd46a",
+        "episode_index": 12765,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-remaining-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "7867336fc79db53a"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "旋转烤箱火力旋钮",
+        "source_id": "b2892ba04ea9dc05926a23dc2f2d2b12",
+        "episode_index": 18795,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-remaining-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "77f8e2cbdb272689"
+        ],
+        "accepted_closed_support": false,
+        "known_alignment_exclusion": false
+      },
+      {
+        "task": "盖上锅盖",
+        "source_id": "110b11c942668a46b265e41bcef88488",
+        "episode_index": 42675,
+        "dataset_root": "/gpfs/jiuquyun/datasets/PRETRAIN_DATA/PushCart-CollectSite-20261029-remaining-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1",
+        "reviewed_case_ids": [
+          "06db206baec1d098",
+          "0ec7dbb6412f823b"
+        ],
+        "accepted_closed_support": true,
+        "known_alignment_exclusion": false
+      }
+    ],
+    "inputs": {
+      "runs/20261104_task_profiles_two_per_task_inputs_v1/manifest.json": "44062d8f77956d1f1aeff55ab4ca9cd9b2c9f9209af0eaca3ecb05ae76faba2d",
+      "runs/20261104_task_profile_second_sources_v2/normalization_final_v3/reviews.json": "dae22ee25f2c2fa93cf68c92de111208e9b35963c5940afe1b8921824717e7cb",
+      "runs/20261104_task_profile_second_sources_v2/catalog_final_v3/task_gripper_profiles.json": "d8d684cafcf12f418d6f73d8af21594feb9f5b2c5530ffadebaf62f3a291d696"
+    }
+  },
+  "evaluation": {
+    "run": "runs/20261104_task_profile_verified_eval_v2",
+    "input_manifest_sha256": "488174d81a89ed23026fd8aaa7a21dcf493070cfc5fd977c5fc782041e3603c4",
+    "episodes": 268,
+    "tasks": 134,
+    "original_fixed_examples": 266,
+    "added_hang_towel_examples": 2,
+    "all_enabled_tasks_have_two_examples": true,
+    "changed_episodes": 34,
+    "changed_frames": 801,
+    "applied_episodes": 40,
+    "applied_intervals": 41,
+    "unchanged_numeric_episodes": 234,
+    "applied_without_numeric_change": 6,
+    "rejection_reasons": {
+      "insufficient_holding_duration": 131,
+      "requires_interval_vision": 54,
+      "missing_aligned_closing_boundary": 6,
+      "insufficient_holding_duration_after_boundary_alignment": 1,
+      "unresolved_release_boundary": 18
+    },
+    "side_outcomes": {
+      "numerically_unchanged": 178,
+      "profile_rejected": 52,
+      "rule_applied": 40
+    },
+    "unchanged_side_reasons": {
+      "insufficient_holding_duration": 26,
+      "requires_interval_vision": 29,
+      "outside_closed_bands": 101,
+      "profile_not_automatic": 52,
+      "matched_intervals_rejected_at_boundaries": 22
+    },
+    "brush": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 58,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "added_hang_towel": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "numerical_totals": {
+      "candidates": 251,
+      "events": 251,
+      "qualifying_windows": 122,
+      "applied_events": 41,
+      "rejected_events": 210,
+      "rule_applied_frame_sides": 1087,
+      "changed_frames": 801,
+      "changed_episodes": 34,
+      "frames": 14803,
+      "episode_sides": 270
+    },
+    "independent_semantic_holdout": false,
+    "calibration_overlap_sources": 73,
+    "evaluation_only": true,
+    "original_training_targets_preserved": true,
+    "training_valid_all_false": true,
+    "fixed_timing_fitting_preserved": true,
+    "actual_external_model_requests": 0
+  },
+  "verification": {
+    "offline_tests": 328,
+    "offline_check_exit_code": 0,
+    "offline_check_log": "runs/20261104_task_profile_second_sources_v2/builder_pointwise_check_v1.log",
+    "geometry": {
+      "path": "runs/20261104_task_profile_catalog_audit_final_v3/report.json",
+      "sha256": "eb9b9e1dfb6a28e7d4db872c42b13cea686b23a5ed04c38010cbe3f170d75821",
+      "checks": 24738,
+      "status": "PASS"
+    },
+    "saved_results": {
+      "path": "runs/20261104_task_profile_verified_eval_audit_v2/verification.json",
+      "sha256": "a2e8b4902cc540b92ddd3788753be2c507084b7636062462cd76d40df2ef7de8",
+      "checks": 172348,
+      "status": "PASS",
+      "source_parquet_files_verified": 211
+    },
+    "mode_browser": {
+      "path": "runs/20261104_all_mode_browser_tools_v1/attempt-002/verification.json",
+      "sha256": "f70f96606fff8c36b6c14264009835576c21c3ac6c67999e64fa6c0ea3279e83",
+      "checks": 8,
+      "status": "passed"
+    },
+    "video_browser": {
+      "path": "runs/20261104_verified_video_browser_v1/attempt-001/browser_verification.json",
+      "sha256": "90ad0674f608539e8a27cc71d7211684ef541592ee2a35e8a79d61c84a60dba0",
+      "checks": 18,
+      "status": "passed"
+    }
+  },
+  "guis": {
+    "evidence": "http://127.0.0.1:8767/review.html",
+    "curves": "http://127.0.0.1:8766/review.html",
+    "evidence_run": "runs/20261104_task_profile_verified_evidence_gui_v2",
+    "video_run": "runs/20261104_task_profile_verified_video_gui_v2"
+  },
+  "historical_attempts": {
+    "material_preparation_provenance": "runs/20261104_task_profile_second_sources_v2/normalization_final_v3/material_preparation_provenance.json",
+    "intermediate_266_run": "runs/20261104_task_profile_verified_eval_v1",
+    "reason_for_later_run": "First rerun rejected brush13838 at the band boundary; appended actually reviewed original source evidence, changed no fitting or noise, audited complete initial span, then reran into new output."
+  },
+  "limitations": [
+    "Mode representatives and selected original sources do not verify all stable windows or all episodes.",
+    "Unreviewed tail buckets, ambiguous visuals and missing independent support are not successful cleaning.",
+    "Numeric evaluation targets remain separate from training labels; no new training or full release publication."
+  ]
+}

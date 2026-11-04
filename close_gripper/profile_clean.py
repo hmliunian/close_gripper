@@ -13,7 +13,7 @@ from .cycles import _motions, cycle_config
 from .task_profiles import resolve_profile, validate_catalog
 
 
-RULE_VERSION = "task-profile-rule-v1"
+RULE_VERSION = "task-profile-rule-v2"
 RULE_SOURCE = "task_profile_rule"
 _EPS = 1e-9
 
@@ -79,7 +79,8 @@ def _candidates(episode, side, profile, catalog):
     times = episode["timestamps"]
     candidates = []
     for block in _blocks(times, catalog["maximum_sample_gap_s"]):
-        for band in profile["closed_bands"]:
+        for band in profile["closed_bands"] + profile.get("interval_vision_bands", []):
+            requires_vision = band in profile.get("interval_vision_bands", [])
             matched, short = [], []
             for a, b in _stable_windows(values, band, *block, catalog["maximum_plateau_range"]):
                 window = dict(start=a, end=b, duration_s=times[b] - times[a],
@@ -99,13 +100,18 @@ def _candidates(episode, side, profile, catalog):
                     groups[-1].append(window)
                 else:
                     groups.append([window])
-            candidates.extend(_candidate(episode, side, band, block, group, True) for group in groups)
+            for group in groups:
+                candidate = _candidate(episode, side, band, block, group, True)
+                if requires_vision:
+                    candidate.update(matched=False, qualification_reason="requires_interval_vision",
+                                     interval_vision_band_id=band["id"])
+                candidates.append(candidate)
             candidates.extend(_candidate(episode, side, band, block, [window], False,
                                          "insufficient_holding_duration") for window in short)
     return sorted(candidates, key=lambda c: (c["start"], c["end"], c["closed_band_id"]))
 
 
-def _fit(episode, candidate, profile, cfg, motions, maximum_plateau_range):
+def _fit(episode, candidate, profile, cfg, motions, maximum_plateau_range, release_motions=None):
     """Use the existing cycle motion boundaries and fixed-timing phase formulas.
 
     The visual cycle generator deliberately cannot be called here: its decision
@@ -125,9 +131,17 @@ def _fit(episode, candidate, profile, cfg, motions, maximum_plateau_range):
     else:
         return None, "missing_aligned_closing_boundary"
 
-    open_threshold = min(o["lower"] for o in profile["open_bands"] if o["lower"] > band["upper"])
-    openings = [m for m in motions if m["direction"] > 0 and contact <= m["start"] <= b < m["end"]
-                and values[m["end"]] >= open_threshold]
+    open_by_id = {o["id"]: o for o in profile["open_bands"]}
+    refs = band.get("open_band_ids", [o["id"] for o in profile["open_bands"] if o["lower"] > band["upper"]])
+    open_threshold = min(open_by_id[i]["lower"] for i in refs)
+    possible = list(motions) + list(release_motions or [])
+    openings = []
+    for motion in possible:
+        reference_ids = motion.get("release_open_band_ids", refs)
+        threshold = min(open_by_id[i]["lower"] for i in reference_ids)
+        if (motion["direction"] > 0 and contact <= motion["start"] <= b < motion["end"]
+                and values[motion["end"]] + _EPS >= threshold):
+            openings.append(dict(motion, open_reference_lower=threshold))
     opening = min(openings, key=lambda m: (m["start"], m["end"]), default=None)
     hold_end = opening["start"] if opening else b
     if times[hold_end] - times[contact] + _EPS < cfg["minimum_hold_s"]:
@@ -169,7 +183,10 @@ def _fit(episode, candidate, profile, cfg, motions, maximum_plateau_range):
         release_start=opening["start"] if opening else None,
         release_end=opening["end"] if opening else None,
         confirmation_frame=confirmation, confirmation_time=times[confirmation],
-        initial_or_cropped_hold=cs is None, open_reference_lower=open_threshold,
+        initial_or_cropped_hold=cs is None,
+        open_reference_lower=opening["open_reference_lower"] if opening else open_threshold,
+        release_rule_id=opening.get("release_rule_id") if opening else None,
+        release_motion_min_delta=opening.get("release_motion_min_delta", cfg["motion_min_delta"]) if opening else None,
         cropped_start_by_timestamp_gap=cs is None and candidate["block_start"] > 0,
         cropped_end_by_timestamp_gap=not opening and end == candidate["block_end"] and end < len(values) - 1), None
 
@@ -217,18 +234,31 @@ def generate_profile_targets(episode, catalog, config=None):
         profile = resolved["profile"]
         coverage[side].update(task=resolved["task"], profile_status=profile["status"],
                               automatic_use=profile["automatic_use"])
-        if not profile["automatic_use"]:
+        if not profile["automatic_use"] and not profile.get("interval_vision_bands"):
             coverage[side]["reason"] = "profile_not_automatic"
             side_status[side] = "profile_rejected"
             continue
-        found = _candidates(episode, side, profile, catalog)
+        scanned_profile = profile if profile["automatic_use"] else dict(profile, closed_bands=[])
+        found = _candidates(episode, side, scanned_profile, catalog)
         candidates.extend(found)
         blocks = list(_blocks(times, catalog["maximum_sample_gap_s"]))
         values = [s[state_index] for s in episode["state"]]
-        motions = {}
+        motions, local_release_motions = {}, {}
+        for release_rule in profile.get("release_rules", []):
+            if cfg["motion_noise"] != release_rule["motion_noise"]:
+                raise ValueError("task-local release rule requires unchanged motion_noise")
         for a, b in blocks:
             local = _motions(values[a:b + 1], times[a:b + 1], cfg)
             motions[a] = [dict(m, start=m["start"] + a, end=m["end"] + a) for m in local]
+            for release_rule in profile.get("release_rules", []):
+                local_cfg = dict(cfg, motion_min_delta=release_rule["motion_min_delta"])
+                local = _motions(values[a:b + 1], times[a:b + 1], local_cfg)
+                local_release_motions[(a, release_rule["closed_band_id"])] = [
+                    dict(m, start=m["start"] + a, end=m["end"] + a,
+                         release_rule_id=release_rule["id"],
+                         release_motion_min_delta=release_rule["motion_min_delta"],
+                         release_open_band_ids=release_rule["open_band_ids"])
+                    for m in local if m["direction"] > 0]
         coverage[side].update(complete_numeric_scan=True, candidates=len(found),
             matched_intervals=sum(c["matched"] for c in found),
             matched_windows=sum(len(c["matched_windows"]) for c in found),
@@ -242,7 +272,8 @@ def generate_profile_targets(episode, catalog, config=None):
             if not candidate["matched"]:
                 continue
             fitted, reason = _fit(episode, candidate, profile, cfg, motions[candidate["block_start"]],
-                                  catalog["maximum_plateau_range"])
+                catalog["maximum_plateau_range"],
+                local_release_motions.get((candidate["block_start"], candidate["closed_band_id"])))
             if fitted is None:
                 event["reason"] = reason
             else:
@@ -282,6 +313,7 @@ def generate_profile_targets(episode, catalog, config=None):
             changed_frames=sum(abs(row[col] - original[i][col]) > 1e-12 for i, row in enumerate(rule)))
         if coverage[side]["complete_numeric_scan"]:
             coverage[side]["reason"] = ("rule_targets_generated" if applied else
+                "requires_interval_vision" if any(e["reason"] == "requires_interval_vision" for e in selected) else
                 "matched_intervals_rejected_at_boundaries" if coverage[side]["matched_intervals"] else
                 "insufficient_holding_duration" if selected else "outside_closed_bands")
             side_status[side] = "rule_applied" if applied else "numerically_unchanged"
