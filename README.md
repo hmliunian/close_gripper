@@ -30,6 +30,16 @@ python3 -m venv .venv
 
 这些命令只读取配置和输入，输出 JSON。`match` 返回是否满足任务开度带和0.6秒稳定条件、原平台起点及确认帧；它不生成目标、不调用模型，当前 `clean` 尚未消费该任务配置。
 
+用户批准按任务配置试跑时，可用 `profile-clean` 对冻结清单生成完整审阅曲线，再绑定连续视频：
+
+```sh
+.venv/bin/python -B -m close_gripper profile-clean --manifest /path/to/frozen_manifest.json --profiles configs/task_gripper_profiles.json --workers 4 --output runs/my_profile_evaluation
+.venv/bin/python -B scripts/render_video_review.py --source-run runs/my_profile_evaluation --output runs/my_profile_video_review
+.venv/bin/python -B scripts/serve_review.py --run runs/my_profile_video_review --port 8766
+```
+
+生成结果在每条 `targets.json` 的 `evaluation.gripper_target` 与 `evaluation.gripper_rule_applied` 中。GUI显示原开度、新规则曲线、应用区间和拒绝原因，可按任务筛选，并同步播放同侧腕部视频。`annotation.gripper_target` 保持原观测、有效位为false，规则试跑不会自动成为训练标签。
+
 复现数值扫描与配置构建的入口如下，实际校准使用的证据与输入摘要记录在配置中。构建所需的原始视觉审阅、完整模式成员映射和实验文件保留在本地 run，真实图片不进入 Git；没有这些证据不能仅凭数值统计重新生成视觉判断。
 
 ```sh

@@ -18,6 +18,12 @@ def main(argv=None):
     clean.add_argument("--max-requests", type=int)
     clean.add_argument("--workers", type=int, default=1)
     clean.add_argument("--reviews", help="按episode_id索引的人工/模型证据封套")
+    profile = sub.add_parser("profile-clean", help="按任务开度配置生成审阅曲线；不调用模型")
+    profile.add_argument("--manifest", required=True)
+    profile.add_argument("--profiles", required=True)
+    profile.add_argument("--output", required=True)
+    profile.add_argument("--config")
+    profile.add_argument("--workers", type=int, default=4)
     run = sub.add_parser("run", help="读取实际episode；默认只检测，--qwen才调用模型")
     run.add_argument("--dataset", required=True)
     run.add_argument("--episode", type=int, action="append", required=True)
@@ -40,7 +46,20 @@ def main(argv=None):
     batch.add_argument("--api-key-file")
     args = parser.parse_args(argv)
     try:
-        if args.command == "clean":
+        if args.command == "profile-clean":
+            from .clean import load_clean_manifest
+            from .profile_run import run_profile_clean
+            catalog = json.loads(Path(args.profiles).read_text())
+            config = json.loads(Path(args.config).read_text()) if args.config else None
+            summary = run_profile_clean(load_clean_manifest(args.manifest), args.output, catalog,
+                config=config, workers=args.workers, input_paths=[args.manifest, args.profiles])
+            print(json.dumps(dict(status=summary["status"], episodes=len(summary["episodes"]),
+                tasks=len(summary["tasks"]), changed_episodes=summary["changed_episodes"],
+                changed_frames=summary["changed_frames"], applied_intervals=summary["applied_intervals"],
+                actual_requests=0), ensure_ascii=False))
+            print(f"Review: {Path(args.output).resolve() / 'review.html'}")
+            return 0
+        elif args.command == "clean":
             from .clean import load_clean_manifest, run_clean
             config = json.loads(Path(args.config).read_text()) if args.config else {}
             if args.api_key_file:

@@ -1,6 +1,35 @@
 # 实现与验证记录
 
-日期：2026-11-03。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录任务开度校准，再保留完整周期阶段及旧局部候选流程的实际证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
+更新日期：2026-11-04。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录按任务配置的试跑，再保留开度校准、完整周期及旧局部候选流程的实际证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
+
+## 133个任务各两条的规则曲线试跑
+
+2026-11-04 用户授权开始按任务开度配置运行，并要求每个可用任务两条与视频GUI。新增 `profile-clean` 生成真实规则曲线；来源为 `task_profile_rule`，不调用模型，也不伪造逐episode视觉决定。结果中的 `evaluation.gripper_target` 保存新曲线；训练目标保持原观测、有效位为false，供本轮审阅后继续验证。
+
+冻结输入为 `runs/20261104_task_profiles_two_per_task_inputs_v1/manifest.json`：133任务各两个不同来源，共266条episode、266个独立录制、14,729帧、268个有效episode侧。排除全部301个开度校准来源，交集0；随机种子20261104，不按是否命中夹持带筛选。相同来源在不同发布版中的裁剪先取最长，再对来源随机抽样。发布版分布为priority202、remaining57、drawer7，未发生加载失败或缺同侧视频。
+
+实际运行 `runs/20261104_task_profiles_two_per_task_eval_v1/` **退出0**：完整枚举389候选、280个合格稳定窗口；215个区间应用、174个候选明确拒绝。186条episode生成规则应用区间，其中168条有数值变化、共4,246帧；18条的规则应用未产生数值变化。其余80条未应用。按任务计，63任务的两条均改变、42任务有一条改变、28任务两条均未改变。数值改动数不是抓持准确率；本轮没有逐条视觉真值。
+
+174个拒绝候选分别为：稳定时间不足115、释放边界不明确45、闭合边界未对齐6、边界对齐后持物时间不足4、相互冲突4。没有应用的80个有效episode侧分别为：边界条件未通过39、未进入配置开度带27、稳定时长不足14。全部例子保留在GUI和[逐条结果表](reports/20261104_task_profile_two_per_task_results.csv)，没有只展示成功样本。
+
+独立审核 `runs/20261104_task_profiles_two_per_task_audit_v1/verification.json` **PASS，163,440项检查、0失败**：从原曲线穷举窗口并核对全部候选／事件；逐项核验真实接触起点、0.6秒稳定确认、同带持物、固定时序公式、区间外与无效侧保留、原20维state／时间戳／行数、训练目标未提升及应用mask。210个源Parquet重新计算SHA256、大小、mtime，全部未变。没有修改源视频或源发布版。
+
+执行命令：
+
+```sh
+.venv/bin/python -B scripts/check.py
+.venv/bin/python -B -m close_gripper profile-clean --manifest runs/20261104_task_profiles_two_per_task_inputs_v1/manifest.json --profiles configs/task_gripper_profiles.json --workers 4 --output runs/20261104_task_profiles_two_per_task_eval_v1
+```
+
+统一离线检查 **305项通过、0跳过，退出0**，日志 `runs/20261104_task_profiles_two_per_task_checks_v1/offline_check.log`；真实运行日志为同目录 `evaluation.log`。实现快照在运行中未变，SHA256为 `9e35611a00df923182061a5b274ea8283dfc013f6a35877b3989dc66c20fce3c`。开发中补充了实际接触时刻后移后的确认窗稳定性回归，避免只重算时长而错误确认跨漂移区间。
+
+连续视频GUI为 `runs/20261104_task_profiles_two_per_task_gui_v1/`，536个同侧源视频引用、266例全部保留；没有复制视频字节。`scripts/serve_review.py` 在本机8766端口提供审阅页面及媒体Range，请访问 `http://127.0.0.1:8766/review.html`（远程使用时转发服务器8766端口）。
+
+实际Chromium核验 `runs/20261104_task_profile_video_browser_v1/attempt-003/browser_verification.json` **16项通过**：266条／133任务元数据、每任务两例筛选、搜索恢复、规则曲线显示、区间跳转、非零视频偏移、真实像素解码与播放推进、HTTP 206、切换episode停止旧视频、双臂同步、两侧各自双目切换和倍速。页面JavaScript错误、失败请求、外部请求均0；连续视频播放抽查非零偏移例和双臂例，未声称536段均完整播放。截图为同目录 `bilateral_rule_curves.png`。
+
+首次浏览器启动因OS沙箱限制失败，升级执行后实际启动；第二次检查脚本因对SVG使用`innerText`失败，修为`textContent`后第三次全部通过，原失败记录保留。两次均未发生页面JavaScript错误，也没有因此重跑或更改规则生成结果。
+
+完整数值和展示交付见[汇总](reports/20261104_task_profile_two_per_task_summary.json)。本次是规则曲线试跑，不是全量派生发布或训练效果验收。
 
 ## 任务开度配置：全量统计与原生视觉校准
 

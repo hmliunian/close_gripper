@@ -1,0 +1,1251 @@
+{
+  "schema": "close_gripper.profile_two_per_task_delivery.v1",
+  "date": "2026-11-04",
+  "branch": "feat/task-gripper-profiles-20261103",
+  "workflow": "task_profile_rule",
+  "evaluation_only": true,
+  "input_selection": {
+    "status": "PASS",
+    "expected_tasks": 133,
+    "expected_episodes": 266,
+    "selected_tasks": 133,
+    "selected_episodes": 266,
+    "frozen_tasks": 133,
+    "frozen_episodes": 266,
+    "unique_sources": 266,
+    "task_side_pairs": 134,
+    "episode_sides": 268,
+    "all_tasks_have_two_episodes": true,
+    "all_task_sides_have_two_episodes": true,
+    "calibration_cases": 302,
+    "excluded_calibration_sources": 301,
+    "calibration_overlap": 0,
+    "failed_episodes": 0,
+    "insufficient_tasks": 0,
+    "episodes_missing_side_video": 0,
+    "unique_parquet_files_verified": 210,
+    "changed_parquet_files": 0,
+    "total_frames": 14729,
+    "releases": {
+      "remaining": 57,
+      "drawer": 7,
+      "priority": 202
+    },
+    "valid_side_patterns": {
+      "right": 264,
+      "left+right": 2
+    },
+    "selection_uses_band_matching": false,
+    "load_clean_manifest_verified": true,
+    "elapsed_seconds": 5.10448431968689,
+    "manifest_sha256": "44062d8f77956d1f1aeff55ab4ca9cd9b2c9f9209af0eaca3ecb05ae76faba2d"
+  },
+  "processing": {
+    "status": "complete",
+    "workflow": "task_profile_rule",
+    "evaluation_only": true,
+    "grasp_semantics_verified": false,
+    "actual_requests": 0,
+    "usage_reported_requests": 0,
+    "source_data_changed": false,
+    "observation_fingerprints_preserved": true,
+    "training_target_unchanged": true,
+    "review": "review.html",
+    "implementation_sha256": "9e35611a00df923182061a5b274ea8283dfc013f6a35877b3989dc66c20fce3c",
+    "implementation_changed_during_run": false,
+    "config_sha256": "90d787d538e5b4a812ce14aa90f1edc34fe1e42c3f5a150b4beb68549a220eed",
+    "catalog_version": "task-profiles-20261103-v1",
+    "catalog_semantic_sha256": "038d33acaf327fbdfd843a5c03ee468ad3e77923847e7796524a86d097476650",
+    "changed_episodes": 168,
+    "applied_episodes": 186,
+    "changed_frames": 4246,
+    "applied_intervals": 215,
+    "rejection_reasons": {
+      "insufficient_holding_duration": 115,
+      "unresolved_release_boundary": 45,
+      "missing_aligned_closing_boundary": 6,
+      "insufficient_holding_duration_after_boundary_alignment": 4,
+      "overlapping_incompatible_profile_cycles": 4
+    },
+    "side_outcomes": {
+      "rule_applied": 188,
+      "numerically_unchanged": 80
+    },
+    "unchanged_side_reasons": {
+      "matched_intervals_rejected_at_boundaries": 39,
+      "outside_closed_bands": 27,
+      "insufficient_holding_duration": 14
+    },
+    "evaluation_scope": "all_valid_sides_and_task_profile_matching_intervals",
+    "generated_curve_field": "evaluation.gripper_target",
+    "generated_mask_field": "evaluation.gripper_rule_applied"
+  },
+  "tasks": {
+    "关床头柜": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 31,
+      "applied_intervals": 1,
+      "rejected_intervals": 2
+    },
+    "关微波炉": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 3
+    },
+    "关房门": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 1
+    },
+    "关抽屉": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 1,
+      "changed_frames": 40,
+      "applied_intervals": 3,
+      "rejected_intervals": 5
+    },
+    "关推拉移门": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 29,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "关洗碗机门": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 36,
+      "applied_intervals": 1,
+      "rejected_intervals": 3
+    },
+    "关淋浴房移门": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 1
+    },
+    "关烤箱门": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 21,
+      "applied_intervals": 4,
+      "rejected_intervals": 8
+    },
+    "关衣柜": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 4
+    },
+    "关闭抽屉": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 4
+    },
+    "关闭橱柜门": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 0
+    },
+    "叠衣服": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 262,
+      "applied_intervals": 21,
+      "rejected_intervals": 29
+    },
+    "在垃圾桶里插入莴苣": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 87,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "在架子上挂背包": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 41,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "在架子上挂蓝色棉帽": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 3
+    },
+    "在椅子上挂衣服": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 1,
+      "changed_frames": 17,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "在椅子上挂裤子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 50,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "在炒锅里插入打蛋器": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 69,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "在电饭煲里插入白色饭勺": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 58,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "在电饭煲里插入饭勺": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 31,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "在蒸笼里面插包子": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 28,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "在锅里插入汤勺": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 88,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "开床头柜": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 1,
+      "changed_frames": 8,
+      "applied_intervals": 3,
+      "rejected_intervals": 5
+    },
+    "开微波炉": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 3
+    },
+    "开房门": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 23,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "开抽屉": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 0
+    },
+    "开洗碗机": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 19,
+      "applied_intervals": 2,
+      "rejected_intervals": 4
+    },
+    "开淋浴房移门": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 9,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "开烤箱门": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 1
+    },
+    "开移门": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 3
+    },
+    "开衣柜": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 2
+    },
+    "微波炉旋钮打开": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 1,
+      "changed_frames": 5,
+      "applied_intervals": 2,
+      "rejected_intervals": 5
+    },
+    "打开抽屉": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 32,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "打开推拉门": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 29,
+      "applied_intervals": 1,
+      "rejected_intervals": 0
+    },
+    "打开橱柜门": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 0
+    },
+    "把刀插进锅里": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 25,
+      "applied_intervals": 1,
+      "rejected_intervals": 2
+    },
+    "拉开抽屉": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 30,
+      "applied_intervals": 3,
+      "rejected_intervals": 5
+    },
+    "拿丝瓜": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 37,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿山药": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 36,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿茄子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 37,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿莴苣": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 37,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿衣服": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 42,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起一袋鸡蛋": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 22,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "拿起儿童筷子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 39,
+      "applied_intervals": 3,
+      "rejected_intervals": 2
+    },
+    "拿起刷子": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 2
+    },
+    "拿起口红": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 42,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起吸管": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 26,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "拿起围巾": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 40,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起小熊玩偶": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 39,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起护发素": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 35,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起杯子": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 20,
+      "applied_intervals": 1,
+      "rejected_intervals": 0
+    },
+    "拿起毛巾": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 13,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "拿起汤勺": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 48,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起浴巾": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 21,
+      "applied_intervals": 1,
+      "rejected_intervals": 0
+    },
+    "拿起海绵擦": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 31,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "拿起湿巾": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 21,
+      "applied_intervals": 1,
+      "rejected_intervals": 4
+    },
+    "拿起牙刷": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 31,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起牙膏": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 47,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "拿起玩偶兔子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 34,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "拿起白糖罐子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 32,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起皮带": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 19,
+      "applied_intervals": 1,
+      "rejected_intervals": 0
+    },
+    "拿起盛饭勺": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 39,
+      "applied_intervals": 2,
+      "rejected_intervals": 2
+    },
+    "拿起积木": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 30,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起篮子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 49,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起篮筐": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 56,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "拿起精致料酒": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 40,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起糕点": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 74,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起红色汽车模型": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 47,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "拿起老陈醋": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 47,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起耗油": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 48,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起芒果": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 43,
+      "applied_intervals": 2,
+      "rejected_intervals": 3
+    },
+    "拿起花瓶": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 20,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "拿起芹菜": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 1
+    },
+    "拿起菜刀": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 37,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起蓝色短袖": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 20,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "拿起蓝色笔盖的马克笔": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 44,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起薄盐生抽": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 46,
+      "applied_intervals": 2,
+      "rejected_intervals": 2
+    },
+    "拿起袜子": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 19,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "拿起裙子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 42,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起订书机": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 40,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起车载香熏": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 29,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起辣椒油": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 45,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "拿起闹钟": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 52,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起鞋子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 50,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起香皂": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 37,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起魔方": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 41,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿起黄色老虎玩偶": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 37,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "拿遥控器": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 41,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "挂一袋鸡蛋": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "挂书包": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 31,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "挂围巾": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 1,
+      "changed_frames": 65,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "挂围裙": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "挂帽子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "挂手套": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "挂抹布": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 1,
+      "changed_frames": 5,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "挂棕色衣服": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 2
+    },
+    "挂毯子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 68,
+      "applied_intervals": 2,
+      "rejected_intervals": 5
+    },
+    "挂白色长袖衬衫": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 35,
+      "applied_intervals": 3,
+      "rejected_intervals": 1
+    },
+    "挂皮带": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 35,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "挂粉色帽子": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 2
+    },
+    "挂粉色毛巾": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 101,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "挂红色短袖": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 28,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "挂蓝色牛仔外套": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 43,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "挂蓝色衣服": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "挂袜子": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 2
+    },
+    "挂裤子": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 22,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "挂雨伞": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 39,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "插入儿童筷子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 49,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "插入刷子": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 2
+    },
+    "插入勺子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "插入叉子": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 5,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "插入吸管": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 2,
+      "rejected_intervals": 1
+    },
+    "插入夹子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 98,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "插入打蛋器": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 60,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "插入按摩锤": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 27,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "插入木头锅铲": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 48,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "插入水果刀": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 37,
+      "applied_intervals": 1,
+      "rejected_intervals": 0
+    },
+    "插入盛饭勺": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 25,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "插入筷子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 52,
+      "applied_intervals": 2,
+      "rejected_intervals": 2
+    },
+    "插入缝隙刷": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 0
+    },
+    "插入芹菜": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 29,
+      "applied_intervals": 1,
+      "rejected_intervals": 2
+    },
+    "插入茄子": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 34,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "插入菜刀": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 28,
+      "applied_intervals": 1,
+      "rejected_intervals": 3
+    },
+    "插入遥控器": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 31,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "插入铁擀面杖": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 62,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "插入饭勺": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 2,
+      "changed_frames": 66,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "插入黑笔": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 21,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    },
+    "揭开锅盖": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 33,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "擦拭桌子": {
+      "episodes": 2,
+      "applied_episodes": 2,
+      "changed_episodes": 1,
+      "changed_frames": 53,
+      "applied_intervals": 2,
+      "rejected_intervals": 0
+    },
+    "旋转烤箱火力旋钮": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 43,
+      "applied_intervals": 1,
+      "rejected_intervals": 3
+    },
+    "橱柜门关闭": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 24,
+      "applied_intervals": 1,
+      "rejected_intervals": 2
+    },
+    "橱柜门打开": {
+      "episodes": 2,
+      "applied_episodes": 0,
+      "changed_episodes": 0,
+      "changed_frames": 0,
+      "applied_intervals": 0,
+      "rejected_intervals": 3
+    },
+    "盖上锅盖": {
+      "episodes": 2,
+      "applied_episodes": 1,
+      "changed_episodes": 1,
+      "changed_frames": 59,
+      "applied_intervals": 1,
+      "rejected_intervals": 1
+    }
+  },
+  "task_changed_episode_counts": {
+    "0": 28,
+    "1": 42,
+    "2": 63
+  },
+  "independent_numerical_audit": {
+    "status": "PASS",
+    "assertions": 163440,
+    "failures": [],
+    "totals": {
+      "candidates": 389,
+      "events": 389,
+      "qualifying_windows": 280,
+      "applied_events": 215,
+      "rejected_events": 174,
+      "rule_applied_frame_sides": 6666,
+      "changed_frames": 4246,
+      "changed_episodes": 168,
+      "frames": 14729,
+      "episode_sides": 268
+    },
+    "source_files_verified": 210,
+    "scope": "Numerical interval completeness and saved-output contracts only; no visual grasp truth or training quality claim.",
+    "path": "runs/20261104_task_profiles_two_per_task_audit_v1/verification.json"
+  },
+  "video_gui": {
+    "schema": "close_gripper_video_review_v1",
+    "status": "complete",
+    "presentation_only": true,
+    "source_run": "/gpfs/jiuquyun/home/xuran/xuran_projects/close_gripper/runs/20261104_task_profiles_two_per_task_eval_v1",
+    "source_summary_sha256": "125b07230d5c480120595a48d408069a42fbc6a7e096fe3c1e68d6c75a2f55c7",
+    "episodes": 266,
+    "video_references": 536,
+    "unique_source_videos": 536,
+    "copied_evidence_images": 0,
+    "copied_source_files": 1865,
+    "source_artifacts_unchanged": true,
+    "video_bytes_copied": 0,
+    "model_requests": 0,
+    "algorithm_executions": 0,
+    "note": "Presentation of saved labels and existing source videos only; no new model, numerical cleaning, or training result",
+    "media_manifest_sha256": "9f15e7b30d48098bb3d1171cbf9b1266444ad3eab6fa38a8d5f2c79b1541d6bc",
+    "display_manifest_sha256": "2f03597cca9eeb816645ca6331a09404dc94cdaa653739f855819a5078e4897c",
+    "source_inventory_sha256": "286221a2e840a8fe1b84a04e769aa9e1944c4cac2d59b965b8f0fd04c9033a83",
+    "review": "review.html",
+    "renderer_sha256": "45c2df4f014b165d2161be3719c99be50961c05e10deccb368e3189b6e21deeb",
+    "render_tool_sha256": "ec89f19ca31a617e3c4fecfd0cf4d832ed639facbf18bcf378998614270cf9a6"
+  },
+  "browser_verification": {
+    "status": "passed",
+    "checks": 16,
+    "check_names": [
+      "all_266_records_133_tasks_and_rule_provenance",
+      "task_filter_two_episodes",
+      "search_and_empty_state_restore",
+      "rule_curve_visible_with_false_training_mask",
+      "jump_to_applied_interval",
+      "nonzero_camera_offset_seek",
+      "actual_decoded_video_pixels",
+      "decoded_video_advances_curve",
+      "episode_end_seek",
+      "actual_media_range_206",
+      "episode_switch_stops_old_media",
+      "bilateral_video_curve_sync",
+      "rate_changes_both_arms",
+      "same_side_stereo_switch",
+      "same_side_stereo_switch",
+      "fold_clothes_task_two_bilateral_episodes"
+    ],
+    "browser": "153.0.8010.0",
+    "javascript_errors": [],
+    "failed_requests": [],
+    "external_requests": [],
+    "path": "runs/20261104_task_profile_video_browser_v1/attempt-003/browser_verification.json",
+    "scope": [
+      "All record metadata and curves checked; real video playback sampled on nonzero-offset and bilateral episodes.",
+      "This verifies presentation, not the per-episode grasp semantics or rule quality."
+    ],
+    "screenshot": "runs/20261104_task_profile_video_browser_v1/attempt-003/bilateral_rule_curves.png",
+    "earlier_attempts": {
+      "attempt-001": "Chromium blocked by OS sandbox before page load; rerun outside sandbox after approval.",
+      "attempt-002": "Verification script used innerText on an SVG node; corrected to textContent without changing the GUI."
+    }
+  },
+  "service_url": "http://127.0.0.1:8766/review.html",
+  "offline_checks": {
+    "command": ".venv/bin/python -B scripts/check.py",
+    "exit_code": 0,
+    "tests_passed": 305,
+    "tests_skipped": 0,
+    "log": "runs/20261104_task_profiles_two_per_task_checks_v1/offline_check.log"
+  },
+  "artifacts": {
+    "inputs": "runs/20261104_task_profiles_two_per_task_inputs_v1",
+    "evaluation": "runs/20261104_task_profiles_two_per_task_eval_v1",
+    "gui": "runs/20261104_task_profiles_two_per_task_gui_v1",
+    "audit": "runs/20261104_task_profiles_two_per_task_audit_v1",
+    "results_csv": "reports/20261104_task_profile_two_per_task_results.csv"
+  },
+  "changes_are_not_grasp_accuracy": true,
+  "source_data_changed": false,
+  "training_labels_promoted": false
+}

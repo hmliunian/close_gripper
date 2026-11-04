@@ -43,6 +43,34 @@ class ReportTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     write_report(tmp, [record])
 
+    def test_task_rule_curve_is_preserved_without_claiming_verified_targets(self):
+        record = self.video_record()
+        result = record["result"]
+        original = [[row[9], row[19]] for row in record["episode"]["state"]]
+        preview = copy.deepcopy(original)
+        preview[5][1] = 0.
+        mask = [[False, i == 5] for i in range(len(original))]
+        result.update(workflow="task_profile_rule", target=original,
+                      preview_target=preview, valid=[[False, False] for _ in original],
+                      rule_applied_mask=mask, evaluation_only=True, grasp_semantics_verified=False,
+                      preview_phase=[["unchanged", "hold"] for _ in original],
+                      preview_source=[["none", "task_profile_rule"] for _ in original])
+        record["episode"]["identity"]["source_metadata"] = {"source_tasks": ["拿杯子"]}
+        snapshot = copy.deepcopy(record)
+        with tempfile.TemporaryDirectory() as tmp:
+            page = write_report(tmp, [record]).read_text()
+        value = json.loads(page.split("const records=", 1)[1].split(";let r, timer;", 1)[0])[0]
+        self.assertEqual(value["task"], "拿杯子")
+        self.assertEqual(value["preview"], preview)
+        self.assertEqual(value["target"], original)
+        self.assertEqual(value["rule_applied_mask"], mask)
+        self.assertEqual(value["phase"], result["preview_phase"])
+        self.assertTrue(value["evaluation_only"])
+        self.assertFalse(value["grasp_semantics_verified"])
+        self.assertIn("按任务开度规则生成，待审阅", page)
+        self.assertNotIn("绿色为通过视觉证据与数值规则校验的目标", page)
+        self.assertEqual(record, snapshot)
+
     def test_closing_comparison_is_available_under_both_policies(self):
         episode, decisions = examples()[1]
         candidates = detect_candidates(episode)
