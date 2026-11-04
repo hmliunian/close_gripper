@@ -1,0 +1,136 @@
+{
+  "status": "complete",
+  "catalog_version": "task-profiles-20261104-merged-margin010-v4",
+  "matching_policy": {
+    "mode": "merge_expand_excluding_free_v1",
+    "expansion_margin": 0.01,
+    "pointwise_semantics_verified": false
+  },
+  "old_catalog_sha256": "d8d684cafcf12f418d6f73d8af21594feb9f5b2c5530ffadebaf62f3a291d696",
+  "new_catalog_sha256": "b9f412cce8c1c5d5edaaff5399bd3d53ac5390aa31763e077245be283a712d26",
+  "source_scope_identical": true,
+  "original_calibration_semantically_identical": true,
+  "implementation_sha256": "6f8d92a49a76d8b3701e2a16bd5ac6306682e8cb3372c4cf721c895508c878c7",
+  "manifest_sha256": "1330dbe25f3f7cd32cc2c5e60e073c487569e8419b37ac690a8bf14fbdbf326a",
+  "enabled_tasks": 105,
+  "skipped_tasks": 45,
+  "calibrated_bands": 279,
+  "matching_bands": 138,
+  "previous": {
+    "episodes": 125236,
+    "selected_episodes": 102577,
+    "frames": 15041374,
+    "changed_episodes": 12998,
+    "changed_frames": 315645,
+    "applied_intervals": 14307
+  },
+  "current": {
+    "episodes": 125236,
+    "selected_episodes": 102577,
+    "frames": 15041374,
+    "changed_episodes": 41505,
+    "changed_frames": 1170132,
+    "applied_intervals": 45369
+  },
+  "releases": {
+    "drawer": {
+      "episodes": 16965,
+      "selected_episodes": 16965,
+      "frames": 1439605,
+      "changed_episodes": 7492,
+      "changed_frames": 219637,
+      "applied_intervals": 8208
+    },
+    "priority": {
+      "episodes": 20586,
+      "selected_episodes": 14528,
+      "frames": 912352,
+      "changed_episodes": 11262,
+      "changed_frames": 278484,
+      "applied_intervals": 11840
+    },
+    "remaining": {
+      "episodes": 87685,
+      "selected_episodes": 71084,
+      "frames": 12689417,
+      "changed_episodes": 22751,
+      "changed_frames": 672011,
+      "applied_intervals": 25321
+    }
+  },
+  "completed_shards": 1961,
+  "audit_status": "PASS",
+  "audit_failures": 0,
+  "audit_path": "runs/20261104_profile_merged_full_audit_v1/verification.json",
+  "audit_sha256": "5536f14841c191363e3be97c514b5ca52003aef9502b9142d067c6831e47f73b",
+  "gui_episodes": 210,
+  "gui_tasks": 105,
+  "gui_previous_changed_episodes": 55,
+  "gui_current_changed_episodes": 155,
+  "bulk_run": "runs/20261104_profile_merged_full_v1",
+  "gui_source": "runs/20261104_profile_merged_gui_source_v1",
+  "gui_run": "runs/20261104_profile_merged_video_gui_v1",
+  "url": "http://127.0.0.1:8766/review.html",
+  "case_9596": {
+    "episode_id": "PushCart-CollectSite-20261029-priority-en-flu-tool-v6-idletrim1-accepted-durclean/baseline-v4-pushcart-right-v1/9596",
+    "frame25_original": 0.12375190854072571,
+    "frame25_target": 0.0,
+    "zero_stable_frames": [
+      21,
+      29
+    ],
+    "matching_bands": [
+      {
+        "basis_closed_band_ids": [
+          "closed_01",
+          "closed_04",
+          "closed_07",
+          "closed_10"
+        ],
+        "id": "matching_00",
+        "lower": 0.015773980215191843,
+        "upper": 0.18106511580944062
+      }
+    ],
+    "events": [
+      {
+        "hold_start": 21,
+        "hold_end": 29,
+        "modified_start": 10,
+        "modified_end": 29,
+        "transition_issues": [
+          "release:no_observed_boundary"
+        ]
+      }
+    ]
+  },
+  "case_3093_frame18_target": 0,
+  "offline_tests": 375,
+  "offline_log": "runs/20261104_profile_band_expansion_work_v1/offline_final.log",
+  "evaluation_only": true,
+  "new_visual_judgments": 0,
+  "training_annotations_promoted": false,
+  "publication_ready": false,
+  "limitations": [
+    "Generalized matching spans are not newly verified visual evidence.",
+    "Free/conflicting ranges and disabled tasks remain excluded; increased modification counts are not accuracy.",
+    "Numeric data staging and GUI source-video references do not constitute a new independent media delivery or training-effect validation."
+  ],
+  "rule_applied_episodes": 42027,
+  "applied_already_zero_episodes": 522,
+  "applied_fraction_of_selected": 0.4097117287501097,
+  "episode_coverage_counts": {
+    "all_episodes": 125236,
+    "selected_episodes": 102577,
+    "applied_changed": 41505,
+    "outside_current_bands": 14378,
+    "short_in_current_bands": 21466,
+    "needs_interval_vision": 24705,
+    "skipped_episodes": 22659,
+    "applied_already_zero": 522,
+    "other": 1
+  },
+  "episode_coverage_report": "runs/20261104_profile_band_expansion_work_v1/coverage_reasons.json",
+  "browser_verification": "runs/20261104_profile_merged_browser_v1/attempt-002/browser_verification.json",
+  "browser_checks": 20
+}

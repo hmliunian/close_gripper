@@ -11,6 +11,7 @@ import copy
 from .contracts import SIDE_INDICES, validate_episode
 from .cycles import _motions, cycle_config
 from .task_profiles import resolve_profile, validate_catalog
+from .profile_bands import matching_closed_bands
 
 
 RULE_VERSION = "task-profile-rule-v3-hold-first"
@@ -79,7 +80,7 @@ def _candidates(episode, side, profile, catalog):
     times = episode["timestamps"]
     candidates = []
     for block in _blocks(times, catalog["maximum_sample_gap_s"]):
-        for band in profile["closed_bands"] + profile.get("interval_vision_bands", []):
+        for band in matching_closed_bands(profile) + profile.get("interval_vision_bands", []):
             requires_vision = band in profile.get("interval_vision_bands", [])
             matched, short = [], []
             for a, b in _stable_windows(values, band, *block, catalog["maximum_plateau_range"]):
@@ -222,6 +223,10 @@ def generate_profile_targets(episode, catalog, config=None):
             side_status[side] = "profile_rejected"
             continue
         scanned_profile = profile if profile["automatic_use"] else dict(profile, closed_bands=[])
+        if catalog.get("matching_policy"):
+            coverage[side].update(matching_policy=catalog["matching_policy"],
+                matching_bands=[{k: b[k] for k in ("id", "lower", "upper", "basis_closed_band_ids")}
+                                for b in matching_closed_bands(scanned_profile)])
         found = _candidates(episode, side, scanned_profile, catalog)
         candidates.extend(found)
         blocks = list(_blocks(times, catalog["maximum_sample_gap_s"]))

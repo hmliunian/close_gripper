@@ -126,7 +126,7 @@ def _project_catalog(catalog, task_name):
             if task["task"] == task_name:
                 keep = {"calibration_contract", "status", "automatic_use", "minimum_positive_sources",
                         "positive_source_support_policy", "evidence_noise", "closed_bands", "open_bands",
-                        "free_bands", "interval_vision_bands", "release_rules", "counts", "provenance"}
+                        "free_bands", "interval_vision_bands", "release_rules", "counts", "provenance", "matching_bands"}
                 p = {k: copy.deepcopy(v) for k, v in profile.items() if k in keep}
                 p["provenance"] = {k: v for k, v in p["provenance"].items() if k != "case_ids"}
             else:

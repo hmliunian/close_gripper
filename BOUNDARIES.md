@@ -29,6 +29,7 @@
 | `core.py`、`cycles.py` | 历史局部候选与完整周期数值定位、平台与过渡拟合、按证据生成目标及回退 | 不读凭据、不访问网络、不依赖主臂逐帧值；算法规则只在 PLAN 定义 |
 | `task_profiles.py`、`scripts/survey_task_grippers.py`、`scripts/build_task_profiles.py` | 全发布数值扫描、视觉校准证据与模式关联、任务配置校验／解析／数值匹配 | 扫描只读；新产物写入独立 run；原生视觉记录标为模型来源；数值匹配不生成标签、不绕过完整周期证据或自动发布 |
 | `profile_clean.py`、`profile_run.py`、CLI `profile-clean` | 根据任务配置生成完整数值审阅曲线，保存输入／配置／实现快照和任务统计 | 规则曲线使用独立 evaluation 字段；原观测和训练目标合同保持；不伪造逐episode视觉决定，不发布派生数据 |
+| `profile_bands.py`、`scripts/expand_task_profile_bands.py` | 从校准带推导实际匹配范围，保存原配置和范围对照 | 泛化范围与原视觉校准证据分开；不更改来源、任务启用状态或把新增取值声称为视觉真值 |
 | `profile_bulk.py`、`scripts/process_profile_dataset.py` | 按冻结任务范围和源分片流式生成数值曲线、逐episode／事件审计及任务进度 | 完整源SHA及原列／行序核验；未选任务和无效侧原值保留；不生成模型判断、不提升训练有效位 |
 | `scripts/prepare_profile_staging.py`、`scripts/verify_profile_dataset.py` | 准备全索引派生结构、支持元数据与独立媒体，独立核验规则和交付 | 新run输出；原meta／mask关联保留；显式媒体引用不能算独立副本；正式发布、语义质量和训练效果分别验收 |
 | `vision.py`、`cycle_vision.py` | Qwen 传输、局部／完整周期提示词、响应与证据校验、用量和错误记录 | 不让模型输出冒充人工确认，不从图像测量毫米值 |

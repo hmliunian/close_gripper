@@ -48,6 +48,35 @@ def canonical(value):
                                      allow_nan=False).encode()).hexdigest()
 
 
+def matching_bands_oracle(profile, margin):
+    """Group anchors separated by blockers, then clip each padded envelope.
+
+    This oracle works from anchor adjacency rather than the generator's
+    complement-of-blockers construction and imports no runtime band helper.
+    """
+    if not profile["automatic_use"]:
+        return []
+    blockers = [b for key in ("free_bands", "interval_vision_bands", "open_bands")
+                for b in profile.get(key, [])]
+    anchors = sorted(profile["closed_bands"], key=lambda b: (b["lower"], b["upper"], b["id"]))
+    groups = []
+    for band in anchors:
+        if groups and not any(groups[-1][-1]["upper"] < b["upper"]
+                              and b["lower"] < band["lower"] for b in blockers):
+            groups[-1].append(band)
+        else:
+            groups.append([band])
+    output = []
+    for group in groups:
+        low, high = group[0]["lower"], max(b["upper"] for b in group)
+        left = max([0.] + [math.nextafter(b["upper"], math.inf) for b in blockers if b["upper"] < low])
+        right = min([1.] + [math.nextafter(b["lower"], -math.inf) for b in blockers if b["lower"] > high])
+        lo, hi = max(left, low-margin), min(right, high+margin)
+        output.append(dict(id=f"matching_{len(output):02d}", lower=lo, upper=hi, center=(lo+hi)/2,
+                           basis_closed_band_ids=[b["id"] for b in group], pointwise_semantics_verified=False))
+    return output
+
+
 class Audit:
     def __init__(self, failure_limit=200):
         self.checks = Counter()
@@ -365,6 +394,13 @@ def verify_episode(episode, arrays, metadata, candidates, events, catalog, audit
         check(config["closing_policy"] == config["release_policy"] == "fixed_timing",
               "fixed_timing_config", identity)
         profile = profile if profile["automatic_use"] else dict(profile, closed_bands=[])
+        if catalog.get("matching_policy"):
+            policy = catalog["matching_policy"]
+            expected_bands = profile.get("matching_bands", [])
+            check(coverage.get("matching_policy") == policy and coverage.get("matching_bands") == [
+                {k:b[k] for k in ("id", "lower", "upper", "basis_closed_band_ids")} for b in expected_bands],
+                "runtime_generalized_matching_policy", [identity, side])
+            profile = dict(profile, closed_bands=expected_bands)
         values = [row[col] for row in original]
         found = candidates_oracle(times, values, profile, catalog)
         check(coverage.get("complete_numeric_scan") is True
@@ -506,9 +542,26 @@ def verify_catalog(catalog, audit):
     audit.check(catalog["minimum_hold_s"] == .6 and catalog["maximum_sample_gap_s"] == .15
                 and catalog["maximum_plateau_range"] == .02, "frozen_hold_policy")
     count = 0
+    policy = catalog.get("matching_policy")
+    if policy is not None:
+        margin = policy.get("expansion_margin")
+        audit.check(set(policy) == {"mode", "expansion_margin", "pointwise_semantics_verified"}
+                    and policy.get("mode") == "merge_expand_excluding_free_v1"
+                    and policy.get("pointwise_semantics_verified") is False
+                    and type(margin) in (int, float) and math.isfinite(margin) and 0 <= margin <= .05,
+                    "declared_generalization_not_new_visual_evidence")
     excluded = set(catalog.get("excluded_source_ids", []))
     for task in catalog["tasks"]:
         for side, profile in task["sides"].items():
+            if policy is not None:
+                expected = matching_bands_oracle(profile, policy["expansion_margin"])
+                audit.check(profile.get("matching_bands", []) == expected,
+                            "independent_merged_padded_ranges", [task["task"], side])
+                blockers = [b for key in ("free_bands", "interval_vision_bands", "open_bands")
+                            for b in profile.get(key, [])]
+                for band in profile.get("matching_bands", []):
+                    audit.check(not any(max(band["lower"], b["lower"]) <= min(band["upper"], b["upper"])
+                                        for b in blockers), "matching_range_excludes_free_and_conflicts", [task["task"], side, band["id"]])
             spans = [(e["source_id"], max(0., h["lower"] - catalog["evidence_noise"]),
                       min(1., h["upper"] + catalog["evidence_noise"]))
                      for e in profile.get("semantic_evidence", []) if e["numeric_calibration_eligible"]

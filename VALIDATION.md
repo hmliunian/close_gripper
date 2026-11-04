@@ -2,7 +2,47 @@
 
 更新日期：2026-11-04。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录当前配置的全量数值处理核验，再保留此前证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
 
-## 稳定夹持优先：全量重跑与原GUI更新（当前）
+## 夹持区间合并并外扩0.01：全量重跑与GUI（当前）
+
+用户批准合并并适当扩大夹持区间。配置更新为 `task-profiles-20261104-merged-margin010-v4`，SHA256 `b9f412cce8c1c5d5edaaff5399bd3d53ac5390aa31763e077245be283a712d26`。279条原校准带及全部语义证据保留，派生138条实际匹配带；稳定0.6秒、波动0.02、105任务选择和45任务跳过均保持。范围推导规则见 PLAN，逐任务新旧范围见[配置对照](reports/20261104_merged_profile_bands.csv)。扩展部分明确标记为泛化，不冒充新增视觉证据。
+
+全量运行 `runs/20261104_profile_merged_full_v1/` 使用与上一版相同的三版7子集、1,961分片、125,236条episode和15,041,374帧。新冻结清单仅变更配置绑定与生成时间，全部源身份、摘要、任务和episode选择逐项一致。清单 SHA256 为 `1330dbe25f3f7cd32cc2c5e60e073c487569e8419b37ac690a8bf14fbdbf326a`，业务包摘要为 `6f8d92a49a76d8b3701e2a16bd5ac6306682e8cb3372c4cf721c895508c878c7`。
+
+| 发布版 | 执行规则 episode | 上一版数值改变 | 本次数值改变 | 本次改变帧数 |
+| --- | ---: | ---: | ---: | ---: |
+| priority | 14,528 | 3,890 | 11,262 | 278,484 |
+| remaining | 71,084 | 7,567 | 22,751 | 672,011 |
+| drawer | 16,965 | 1,541 | 7,492 | 219,637 |
+| 合计 | 102,577 | 12,998 | 41,505 | 1,170,132 |
+
+**42,027条episode命中规则**（启用任务数据的40.97%，全部原始episode的33.56%），其中41,505条有数值改动，522条应用后仍与原值相同。共应用45,369个合格夹持区间。剩余60,550条启用任务episode未应用：14,378条未进入匹配带、21,466条带内连续稳定时间不足、24,705条含需区间视觉判断的原因、1条来源对齐疑点。上述原因按episode互斥归类，冲突视觉原因优先；没有把带内短段等同于原曲线完全没有稳定段。另22,659条属于45个未启用任务，全部原值保留。[覆盖统计](runs/20261104_profile_band_expansion_work_v1/coverage_reasons.json)保留完整分母与任务分布。
+
+离线入口 `.venv/bin/python -B scripts/check.py` **退出0、375项通过、0跳过**，日志为 `runs/20261104_profile_band_expansion_work_v1/offline_final.log`。新增检查覆盖合并空隙、外扩边缘、空夹／冲突阻断、禁用侧、9596形态、原证据不变、禁止累计扩展，以及批处理投影和独立核验实际消费新范围。首次检查中新增全量审计夹具仍是legacy格式，补齐合成all-mode证据合同后通过；没有放宽真实配置校验。新匹配范围由独立实现复算，原279条校准带仍按原逐值双来源证据核验。
+
+真实小批次9分片／515条及全量1,961分片／125,236条的独立核验均 **PASS、0失败**，包括原列、索引、时间、未选任务、原训练字段、新范围、全曲线及全部合格夹持段归零。生成、核验和展示的实际命令如下；日志在 `runs/20261104_profile_band_expansion_work_v1/`，服务命令持续运行，其余命令退出0：
+
+```sh
+.venv/bin/python -B scripts/expand_task_profile_bands.py --catalog configs/task_gripper_profiles.json --margin 0.01 --version task-profiles-20261104-merged-margin010-v4 --output runs/20261104_profile_merged_catalog_v1
+.venv/bin/python -B scripts/process_profile_dataset.py --manifest runs/20261104_profile_merged_pilot_scope_v1/manifest.json --catalog runs/20261104_profile_merged_catalog_v1/task_profiles.json --workers 4 --output runs/20261104_profile_merged_pilot_v1
+.venv/bin/python -B scripts/verify_profile_dataset.py --run runs/20261104_profile_merged_pilot_v1 --output runs/20261104_profile_merged_pilot_audit_v1 --workers 4
+.venv/bin/python -B -m close_gripper.cli profile-clean --manifest runs/20261104_task_profile_verified_inputs_v1/manifest.json --profiles runs/20261104_profile_merged_catalog_v1/task_profiles.json --workers 4 --output runs/20261104_profile_merged_examples_v1
+.venv/bin/python -B scripts/process_profile_dataset.py --manifest runs/20261104_profile_merged_scope_v1/manifest.json --catalog configs/task_gripper_profiles.json --workers 4 --output runs/20261104_profile_merged_full_v1
+.venv/bin/python -B scripts/verify_profile_dataset.py --run runs/20261104_profile_merged_full_v1 --output runs/20261104_profile_merged_full_audit_v1 --workers 4
+.venv/bin/python -B runs/20261104_profile_105_gui_extract_tool_v2/extract_from_bulk.py --bulk-run runs/20261104_profile_merged_full_v1 --reference-run runs/20261104_profile_merged_examples_v1 --output runs/20261104_profile_merged_gui_source_v1
+.venv/bin/python -B scripts/render_video_review.py --source-run runs/20261104_profile_merged_gui_source_v1 --output runs/20261104_profile_merged_video_gui_v1
+.venv/bin/python -B scripts/serve_review.py --run runs/20261104_profile_merged_video_gui_v1 --port 8766
+node runs/20261104_profile_merged_browser_v1/verify_browser.cjs --url http://127.0.0.1:8766/review.html
+```
+
+第一条命令运行时配置仍是原校准版；原输入字节保存在 `runs/20261104_profile_merged_catalog_v1/calibration_catalog.json`，复现时应使用该原版本和新的输出目录，不能给已扩展版本累计加宽。通过小批次后，新配置已安装到 `configs/task_gripper_profiles.json`。
+
+原GUI地址 **`http://127.0.0.1:8766/review.html`** 已切到 `runs/20261104_profile_merged_video_gui_v1/`。固定105任务／210条样本和424个同侧视频引用保持；相对原观测有变化的样本从55条增加到155条。全量落盘新增六列与本轮逐episode运行精确一致；新旧GUI间119条曲线不同，共2,565帧，原输入、视频及时间均相同。页面增加实际夹持开度范围显示。
+
+9596（拿起刷子）现在使用 **0.01577398–0.18106512** 匹配范围，第21–29帧稳定段归零，闭合拟合从第10帧连接至第21帧；第25帧实测0.12375191、目标0。第30–32帧未满足新的完整稳定窗，仍保留原值，没有声称整个尾段均已归零。3093第18帧仍为0。真实Chromium在最终8766地址 **20项通过**，含9596数值与范围展示、3093回归、视频解码／同步、筛选和Range 206，JavaScript错误、失败请求与外部请求均0。结果见 [浏览器核验](runs/20261104_profile_merged_browser_v1/attempt-002/browser_verification.json)及[9596截图](runs/20261104_profile_merged_browser_v1/attempt-002/brush_9596_frame25_expanded_hold_zero.png)。
+
+本次完成配置外扩、全量数值重跑、独立核验和原GUI更新；[汇总](reports/20261104_merged_profile_summary.json)、[任务对比](reports/20261104_merged_profile_task_results.csv)、[全量核验](runs/20261104_profile_merged_full_audit_v1/verification.json)可复查。数值覆盖提升不等于语义准确率提升，训练有效位仍未启用；原数据、历史运行和证据保留。当前产物仍为evaluation数值staging与只读源视频展示，尚未新增语义真值、独立媒体交付、训练效果或正式发布。
+
+## 稳定夹持优先：全量重跑与原GUI更新（上一版）
 
 按用户确认的稳定夹持优先方案，生成方法改为 `task-profile-rule-v3-hold-first`，业务细则见 PLAN。仍使用原105任务配置、全部1,961个源分片及原GUI固定样本，没有重新采样或合并配置区间。配置 SHA256 为 `d8d684cafcf12f418d6f73d8af21594feb9f5b2c5530ffadebaf62f3a291d696`，完整范围摘要为 `54e4f613b78499fb222cba99e516b7bfd6420e61580ca5ada096bc34d93bec1f`，本次业务包摘要为 `709d7563e83719ebb25e000aef271308706947ad36c2cb5f87d1294c77f6978f`。全量产物为 `runs/20261104_profile_hold_first_full_v1/`；以前的运行均保留。
 

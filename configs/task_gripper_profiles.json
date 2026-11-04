@@ -1,6 +1,6 @@
 {
   "schema": "close_gripper.task_profiles.v1",
-  "version": "task-profiles-20261104-all-modes-pointwise-two-source-v3",
+  "version": "task-profiles-20261104-merged-margin010-v4",
   "units": "normalized_opening_0_1",
   "minimum_hold_s": 0.6,
   "maximum_sample_gap_s": 0.15,
@@ -3068,7 +3068,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -4169,7 +4170,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -6398,7 +6400,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -6707,7 +6710,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -13059,7 +13063,22 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.07819141846895218,
+              "upper": 0.17675763714313508,
+              "center": 0.12747452780604362,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_06",
+                "closed_09"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -13243,7 +13262,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -23381,7 +23401,95 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.053939584910869594,
+              "upper": 0.16249107170104982,
+              "center": 0.1082153283059597,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_03",
+                "closed_05"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.19717423272132872,
+              "upper": 0.2854803414344787,
+              "center": 0.2413272870779037,
+              "basis_closed_band_ids": [
+                "closed_08",
+                "closed_11",
+                "closed_13"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_02",
+              "lower": 0.2914803414344788,
+              "upper": 0.29480167341232294,
+              "center": 0.2931410074234009,
+              "basis_closed_band_ids": [
+                "closed_14"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_03",
+              "lower": 0.3778659219741821,
+              "upper": 0.40985049915313715,
+              "center": 0.39385821056365966,
+              "basis_closed_band_ids": [
+                "closed_18",
+                "closed_20"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_04",
+              "lower": 0.46760977196693426,
+              "upper": 0.4976939768791198,
+              "center": 0.48265187442302704,
+              "basis_closed_band_ids": [
+                "closed_23",
+                "closed_25"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_05",
+              "lower": 0.50369397687912,
+              "upper": 0.5092526884078978,
+              "center": 0.5064733326435089,
+              "basis_closed_band_ids": [
+                "closed_26"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_06",
+              "lower": 0.5152526884078981,
+              "upper": 0.5287161951065064,
+              "center": 0.5219844417572022,
+              "basis_closed_band_ids": [
+                "closed_28"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_07",
+              "lower": 0.5500590591430665,
+              "upper": 0.5801637654304505,
+              "center": 0.5651114122867584,
+              "basis_closed_band_ids": [
+                "closed_31"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -27915,7 +28023,29 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.13079818737506865,
+              "upper": 0.15621231842041017,
+              "center": 0.1435052528977394,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.19587346565723418,
+              "upper": 0.23285465288162233,
+              "center": 0.21436405926942825,
+              "basis_closed_band_ids": [
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -35181,7 +35311,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.11030763787031174,
+              "upper": 0.13699115413427354,
+              "center": 0.12364939600229263,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -39881,7 +40023,24 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.04254078891873359,
+              "upper": 0.331985790014267,
+              "center": 0.18726328946650028,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07",
+                "closed_10",
+                "closed_13",
+                "closed_16"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -43930,7 +44089,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -44981,7 +45141,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -50393,7 +50554,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -55372,7 +55534,32 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.13870247852802275,
+              "upper": 0.2721753602027893,
+              "center": 0.20543891936540604,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_06",
+                "closed_09"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.29517970371246344,
+              "upper": 0.3122820765972137,
+              "center": 0.30373089015483856,
+              "basis_closed_band_ids": [
+                "closed_12"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -61261,7 +61448,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.10436924201250077,
+              "upper": 0.17169396924972535,
+              "center": 0.13803160563111305,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_03",
+                "closed_06"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -67892,7 +68093,35 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.029173285037279124,
+              "upper": 0.2512470693588256,
+              "center": 0.14021017719805237,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_03",
+                "closed_06",
+                "closed_09",
+                "closed_12",
+                "closed_14",
+                "closed_17"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.41043076801300055,
+              "upper": 0.42659403729438783,
+              "center": 0.41851240265369416,
+              "basis_closed_band_ids": [
+                "closed_21"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -73153,7 +73382,31 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.07879703146219254,
+              "upper": 0.10691801059246063,
+              "center": 0.09285752102732658,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.22121615362167357,
+              "upper": 0.300626713514328,
+              "center": 0.2609214335680008,
+              "basis_closed_band_ids": [
+                "closed_04",
+                "closed_07",
+                "closed_10"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -77466,7 +77719,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.08655227375030518,
+              "upper": 0.30140920329093934,
+              "center": 0.19398073852062225,
+              "basis_closed_band_ids": [
+                "closed_02",
+                "closed_04",
+                "closed_10"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -83103,7 +83370,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.04520938944816589,
+              "upper": 0.07203392657637596,
+              "center": 0.05862165801227093,
+              "basis_closed_band_ids": [
+                "closed_02"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         },
         "right": {
           "calibration_contract": "all_modes_semantic_review_v2",
@@ -90221,7 +90500,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.1354502229690552,
+              "upper": 0.15845296132564546,
+              "center": 0.14695159214735032,
+              "basis_closed_band_ids": [
+                "closed_03"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -92264,7 +92555,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -93189,7 +93481,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -94655,7 +94948,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -95493,7 +95787,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0,
+              "upper": 0.013000000000000001,
+              "center": 0.006500000000000001,
+              "basis_closed_band_ids": [
+                "closed_00"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -96154,7 +96460,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -98123,7 +98430,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.043034609675407405,
+              "upper": 0.23102255511283876,
+              "center": 0.13702858239412308,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -99002,7 +99322,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.02062458944320679,
+              "upper": 0.044617417931556706,
+              "center": 0.032621003687381744,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -100454,7 +100786,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.046726994484663005,
+              "upper": 0.07094565379619598,
+              "center": 0.0588363241404295,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -103744,7 +104088,31 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.02494089704751968,
+              "upper": 0.03549358856678008,
+              "center": 0.03021724280714988,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.06298507404327393,
+              "upper": 0.16615471589565278,
+              "center": 0.11456989496946335,
+              "basis_closed_band_ids": [
+                "closed_03",
+                "closed_06",
+                "closed_09"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -105700,7 +106068,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0,
+              "upper": 0.1701003943681717,
+              "center": 0.08505019718408585,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -106130,7 +106511,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -111004,7 +111386,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -114419,7 +114802,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -118556,7 +118940,22 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.09447440159320832,
+              "upper": 0.17228304195404054,
+              "center": 0.13337872177362442,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_06",
+                "closed_08"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -118847,7 +119246,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -124036,7 +124436,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.05118962776660919,
+              "upper": 0.1085018624663353,
+              "center": 0.07984574511647224,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -130747,7 +131160,42 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.1295233483314514,
+              "upper": 0.13972998273372647,
+              "center": 0.13462666553258895,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.15134775292873381,
+              "upper": 0.2533031613826751,
+              "center": 0.20232545715570446,
+              "basis_closed_band_ids": [
+                "closed_03",
+                "closed_06",
+                "closed_09"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_02",
+              "lower": 0.25930316138267523,
+              "upper": 0.300626713514328,
+              "center": 0.2799649374485016,
+              "basis_closed_band_ids": [
+                "closed_10",
+                "closed_13"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -138003,7 +138451,31 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.006096614792943001,
+              "upper": 0.031532085061073294,
+              "center": 0.01881434992700815,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.05053128811717034,
+              "upper": 0.157728884100914,
+              "center": 0.10413008610904217,
+              "basis_closed_band_ids": [
+                "closed_03",
+                "closed_05",
+                "closed_08"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -144190,7 +144662,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.03260137167572975,
+              "upper": 0.28445522832870485,
+              "center": 0.1585283000022173,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_09"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -150604,7 +151090,50 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.056295778870582576,
+              "upper": 0.08995239782333374,
+              "center": 0.07312408834695816,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.1516967355012894,
+              "upper": 0.16840370345115663,
+              "center": 0.160050219476223,
+              "basis_closed_band_ids": [
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_02",
+              "lower": 0.22471537840366362,
+              "upper": 0.34149547266960145,
+              "center": 0.28310542553663254,
+              "basis_closed_band_ids": [
+                "closed_07",
+                "closed_10"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_03",
+              "lower": 0.3840625076293946,
+              "upper": 0.39496397089958185,
+              "center": 0.3895132392644882,
+              "basis_closed_band_ids": [
+                "closed_14"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -158204,7 +158733,45 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0776197875738144,
+              "upper": 0.13051400196552274,
+              "center": 0.10406689476966857,
+              "basis_closed_band_ids": [
+                "closed_02",
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.1365140019655228,
+              "upper": 0.16416155409812924,
+              "center": 0.15033777803182602,
+              "basis_closed_band_ids": [
+                "closed_09",
+                "closed_11"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_02",
+              "lower": 0.1701615540981293,
+              "upper": 0.23708451402187344,
+              "center": 0.20362303406000137,
+              "basis_closed_band_ids": [
+                "closed_12",
+                "closed_14",
+                "closed_16",
+                "closed_19"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -163426,7 +163993,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -171497,7 +172065,72 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.07953732860088349,
+              "upper": 0.09334520113468169,
+              "center": 0.08644126486778259,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.09934520113468172,
+              "upper": 0.1196242035627365,
+              "center": 0.1094847023487091,
+              "basis_closed_band_ids": [
+                "closed_02",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_02",
+              "lower": 0.15204228115081786,
+              "upper": 0.20358907294273373,
+              "center": 0.1778156770467758,
+              "basis_closed_band_ids": [
+                "closed_08",
+                "closed_11"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_03",
+              "lower": 0.24376414370536803,
+              "upper": 0.27868866038322443,
+              "center": 0.26122640204429626,
+              "basis_closed_band_ids": [
+                "closed_13",
+                "closed_16"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_04",
+              "lower": 0.28468866038322455,
+              "upper": 0.2948663716316223,
+              "center": 0.2897775160074234,
+              "basis_closed_band_ids": [
+                "closed_17"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_05",
+              "lower": 0.3181040375232697,
+              "upper": 0.3241420001983642,
+              "center": 0.32112301886081696,
+              "basis_closed_band_ids": [
+                "closed_20"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -176798,7 +177431,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.06461993259191513,
+              "upper": 0.127133819937706,
+              "center": 0.09587687626481056,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_03",
+                "closed_06"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -177116,7 +177763,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -180857,7 +181505,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.031131066650152202,
+              "upper": 0.15928079533576966,
+              "center": 0.09520593099296093,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -189050,7 +189711,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -191907,7 +192569,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.07127534252405167,
+              "upper": 0.09864966917037964,
+              "center": 0.08496250584721565,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -194033,7 +194707,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.047981750488281245,
+              "upper": 0.07404784831404686,
+              "center": 0.061014799401164055,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -200004,7 +200690,41 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.26360635113716124,
+              "upper": 0.3348982543945312,
+              "center": 0.29925230276584625,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.3408982543945313,
+              "upper": 0.3478958518505096,
+              "center": 0.34439705312252045,
+              "basis_closed_band_ids": [
+                "closed_08"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_02",
+              "lower": 0.45738930392265326,
+              "upper": 0.46311797809600824,
+              "center": 0.46025364100933075,
+              "basis_closed_band_ids": [
+                "closed_13"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -201084,7 +201804,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.24114076447486876,
+              "upper": 0.3154643659591675,
+              "center": 0.2783025652170181,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -201758,7 +202491,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.2513904089927673,
+              "upper": 0.27270739126205445,
+              "center": 0.2620489001274109,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -203568,7 +204313,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.421768408536911,
+              "upper": 0.48735206174850465,
+              "center": 0.4545602351427078,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -205054,7 +205812,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.2713552529811859,
+              "upper": 0.3697696511745453,
+              "center": 0.3205624520778656,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -206867,7 +207639,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.03440038141608238,
+              "upper": 0.1147158031463623,
+              "center": 0.07455809228122234,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -208009,7 +208794,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -209141,7 +209927,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.00991340008378029,
+              "upper": 0.04529691460728646,
+              "center": 0.027605157345533374,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -210749,7 +211547,22 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.015773980215191843,
+              "upper": 0.18106511580944062,
+              "center": 0.09841954801231623,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07",
+                "closed_10"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -211380,7 +212193,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.15186863791942595,
+              "upper": 0.1770700548887253,
+              "center": 0.16446934640407562,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -212274,7 +213099,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0,
+              "upper": 0.022878539480268953,
+              "center": 0.011439269740134476,
+              "basis_closed_band_ids": [
+                "closed_00"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -214317,7 +215154,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.22680158567428588,
+              "upper": 0.3119761233329773,
+              "center": 0.2693888545036316,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -217805,7 +218656,23 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.011520713835954667,
+              "upper": 0.19332491207122804,
+              "center": 0.10242281295359135,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07",
+                "closed_10",
+                "closed_13"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -218594,7 +219461,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.652225625038147,
+              "upper": 0.6922054176330567,
+              "center": 0.6722155213356018,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -221240,7 +222119,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -224065,7 +224945,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.004491426141001285,
+              "upper": 0.019072756834328172,
+              "center": 0.01178209148766473,
+              "basis_closed_band_ids": [
+                "closed_00"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -225650,7 +226542,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -227503,7 +228396,22 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.059753667831420894,
+              "upper": 0.23941304135322572,
+              "center": 0.1495833545923233,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07",
+                "closed_10"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -230602,7 +231510,26 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.028032489389181132,
+              "upper": 0.5178637390136719,
+              "center": 0.2729481142014265,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_06",
+                "closed_09",
+                "closed_12",
+                "closed_15",
+                "closed_18",
+                "closed_21"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -232178,7 +233105,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.2897135729789734,
+              "upper": 0.39168139147758485,
+              "center": 0.3406974822282791,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -234720,7 +235661,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.10651752007007599,
+              "upper": 0.12829115587472917,
+              "center": 0.11740433797240257,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -235993,7 +236946,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.14496628594398497,
+              "upper": 0.1907438521385193,
+              "center": 0.16785506904125214,
+              "basis_closed_band_ids": [
+                "closed_02",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -237722,7 +238688,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.3455492670536041,
+              "upper": 0.37372012782096864,
+              "center": 0.3596346974372864,
+              "basis_closed_band_ids": [
+                "closed_03"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -238126,7 +239104,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -239418,7 +240397,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -244319,7 +245299,40 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.04161947619915008,
+              "upper": 0.06794842305779457,
+              "center": 0.05478394962847233,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.1587172712087631,
+              "upper": 0.2002877057790756,
+              "center": 0.17950248849391937,
+              "basis_closed_band_ids": [
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_02",
+              "lower": 0.20990533518791202,
+              "upper": 0.2208189253807068,
+              "center": 0.2153621302843094,
+              "basis_closed_band_ids": [
+                "closed_08"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -246242,7 +247255,22 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0,
+              "upper": 0.21070924746990205,
+              "center": 0.10535462373495103,
+              "basis_closed_band_ids": [
+                "closed_00",
+                "closed_03",
+                "closed_06",
+                "closed_09"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -247330,7 +248358,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.26449472856521605,
+              "upper": 0.28960635113716127,
+              "center": 0.27705053985118866,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -249792,7 +250832,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.02747867655754089,
+              "upper": 0.05068093511462212,
+              "center": 0.039079805836081505,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -251350,7 +252402,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -252921,7 +253974,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -255820,7 +256874,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.2693285460472107,
+              "upper": 0.3693070297241211,
+              "center": 0.3193177878856659,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -257636,7 +258704,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.4250495250225067,
+              "upper": 0.4741703157424927,
+              "center": 0.4496099203824997,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -258384,7 +259465,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.4494340534210205,
+              "upper": 0.4697796587944031,
+              "center": 0.4596068561077118,
+              "basis_closed_band_ids": [
+                "closed_02"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -259920,7 +261013,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -264289,7 +265383,22 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.4678579087257385,
+              "upper": 0.6209591512680054,
+              "center": 0.544408529996872,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07",
+                "closed_10"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -267698,7 +268807,24 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.24404771280288695,
+              "upper": 0.61393092918396,
+              "center": 0.42898932099342346,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_03",
+                "closed_06",
+                "closed_09",
+                "closed_12",
+                "closed_15"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -271079,7 +272205,23 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.21253099691867827,
+              "upper": 0.373969215631485,
+              "center": 0.29325010627508163,
+              "basis_closed_band_ids": [
+                "closed_04",
+                "closed_07",
+                "closed_10",
+                "closed_13",
+                "closed_15"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -271925,7 +273067,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.1923244262933731,
+              "upper": 0.2150942270755768,
+              "center": 0.20370932668447495,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -274515,7 +275669,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -276417,7 +277572,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.10147416245937348,
+              "upper": 0.14284402477741243,
+              "center": 0.12215909361839294,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_03"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -277907,7 +279075,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.2648855264186859,
+              "upper": 0.30706538605690004,
+              "center": 0.28597545623779297,
+              "basis_closed_band_ids": [
+                "closed_02"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -280192,7 +281372,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.05003148716688156,
+              "upper": 0.0791771222949028,
+              "center": 0.06460430473089218,
+              "basis_closed_band_ids": [
+                "closed_03"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -281652,7 +282844,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -283169,7 +284362,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.09125430536270142,
+              "upper": 0.30706538605690004,
+              "center": 0.19915984570980072,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -284789,7 +285995,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.5564749355316162,
+              "upper": 0.5825768594741821,
+              "center": 0.5695258975028992,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -286461,7 +287679,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.58793092918396,
+              "upper": 0.6621354107856751,
+              "center": 0.6250331699848175,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -288223,7 +289455,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.24291325759887694,
+              "upper": 0.2673179988861084,
+              "center": 0.2551156282424927,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -288766,7 +290010,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -290573,7 +291818,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.46166707229614257,
+              "upper": 0.5014348809719086,
+              "center": 0.4815509766340256,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_03"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -292349,7 +293607,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.44416622471809386,
+              "upper": 0.4658771936893463,
+              "center": 0.4550217092037201,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -294644,7 +295914,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.45974136543273925,
+              "upper": 0.48164235401153566,
+              "center": 0.47069185972213745,
+              "basis_closed_band_ids": [
+                "closed_02"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -296610,7 +297892,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.2285700703859329,
+              "upper": 0.25457007038593293,
+              "center": 0.24157007038593292,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -298456,7 +299750,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -300840,7 +302135,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.057890806615352626,
+              "upper": 0.08060293990373611,
+              "center": 0.06924687325954437,
+              "basis_closed_band_ids": [
+                "closed_02"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -301872,7 +303179,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -302931,7 +304239,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0,
+              "upper": 0.013000000000000001,
+              "center": 0.006500000000000001,
+              "basis_closed_band_ids": [
+                "closed_00"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -303740,7 +305060,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -305719,7 +307040,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -307429,7 +308751,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -309153,7 +310476,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0,
+              "upper": 0.016037462709471585,
+              "center": 0.008018731354735792,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -310941,7 +312276,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0,
+              "upper": 0.013577505037654192,
+              "center": 0.006788752518827096,
+              "basis_closed_band_ids": [
+                "closed_00"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -312824,7 +314171,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -314913,7 +316261,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -315768,7 +317117,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0,
+              "upper": 0.038743665173649786,
+              "center": 0.019371832586824893,
+              "basis_closed_band_ids": [
+                "closed_00",
+                "closed_03"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -317450,7 +318812,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.002643149614334107,
+              "upper": 0.027047883450984953,
+              "center": 0.01484551653265953,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -319263,7 +320637,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0,
+              "upper": 0.013000000000000001,
+              "center": 0.006500000000000001,
+              "basis_closed_band_ids": [
+                "closed_00"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -321767,7 +323153,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -323116,7 +324503,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -324352,7 +325740,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -325420,7 +326809,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -327487,7 +328877,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.007025715231895447,
+              "upper": 0.03273724365234375,
+              "center": 0.0198814794421196,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -328205,7 +329607,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.000888468965888024,
+              "upper": 0.026282936997711656,
+              "center": 0.013585702981799841,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -329969,7 +331383,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.27508915615081786,
+              "upper": 0.3591245894432068,
+              "center": 0.31710687279701233,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -331571,7 +332999,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -332761,7 +334190,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -334263,7 +335693,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.02166178476810455,
+              "upper": 0.04769422832131386,
+              "center": 0.034678006544709206,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -335804,7 +337246,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0,
+              "upper": 0.013546104041859509,
+              "center": 0.006773052020929754,
+              "basis_closed_band_ids": [
+                "closed_00"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -337424,7 +338878,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0,
+              "upper": 0.015974259201437236,
+              "center": 0.007987129600718618,
+              "basis_closed_band_ids": [
+                "closed_00"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -340965,7 +342431,31 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0030000000000000005,
+              "upper": 0.11959251362085342,
+              "center": 0.06129625681042671,
+              "basis_closed_band_ids": [
+                "closed_00",
+                "closed_03",
+                "closed_06"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.21260159862041472,
+              "upper": 0.2335241918563843,
+              "center": 0.2230628952383995,
+              "basis_closed_band_ids": [
+                "closed_09"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -342176,7 +343666,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -344766,7 +346257,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.190814297914505,
+              "upper": 0.25980811166763307,
+              "center": 0.22531120479106903,
+              "basis_closed_band_ids": [
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -347259,7 +348763,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.15628204894065856,
+              "upper": 0.23747285056114198,
+              "center": 0.19687744975090027,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -349988,7 +351505,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0018133924230933195,
+              "upper": 0.16218020367622377,
+              "center": 0.08199679804965854,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -352684,7 +354215,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.042672492831945415,
+              "upper": 0.06607424440979957,
+              "center": 0.0543733686208725,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -355675,7 +357218,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.05003148716688156,
+              "upper": 0.13697545838356015,
+              "center": 0.09350347277522085,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -357307,7 +358863,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.015548071160912514,
+              "upper": 0.16795364367961885,
+              "center": 0.09175085742026567,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -358793,7 +360362,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.025981549441814418,
+              "upper": 0.11403943943977356,
+              "center": 0.07001049444079399,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -361117,7 +362699,29 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.04824613061547279,
+              "upper": 0.07474179911613464,
+              "center": 0.06149396486580372,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.15788441288471225,
+              "upper": 0.17710481929779054,
+              "center": 0.16749461609125138,
+              "basis_closed_band_ids": [
+                "closed_03"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -364602,7 +366206,24 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.04778362464904785,
+              "upper": 0.18711948740482331,
+              "center": 0.11745155602693558,
+              "basis_closed_band_ids": [
+                "closed_02",
+                "closed_04",
+                "closed_07",
+                "closed_10",
+                "closed_12",
+                "closed_15"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -368902,7 +370523,26 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.0301845411658287,
+              "upper": 0.3292079751491547,
+              "center": 0.17969625815749168,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07",
+                "closed_10",
+                "closed_13",
+                "closed_16",
+                "closed_19",
+                "closed_22"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -372243,7 +373883,22 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.04319924515485763,
+              "upper": 0.22890961515903474,
+              "center": 0.13605443015694618,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07",
+                "closed_10"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -374062,7 +375717,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.08287298333644867,
+              "upper": 0.11170781749486923,
+              "center": 0.09729040041565895,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -375842,7 +377509,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.20724232149124144,
+              "upper": 0.2326432799100876,
+              "center": 0.21994280070066452,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -377591,7 +379270,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.020981002867221835,
+              "upper": 0.044132265925407414,
+              "center": 0.03255663439631462,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -379250,7 +380941,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.049535338103771205,
+              "upper": 0.07556834417581558,
+              "center": 0.0625518411397934,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -383111,7 +384814,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.2378808374404907,
+              "upper": 0.266254771232605,
+              "center": 0.25206780433654785,
+              "basis_closed_band_ids": [
+                "closed_03"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -383370,7 +385085,8 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": []
         }
       }
     },
@@ -387453,7 +389169,21 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.2754092032909393,
+              "upper": 0.3907572214603424,
+              "center": 0.33308321237564087,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04",
+                "closed_07"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -390932,7 +392662,19 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.1469706087112427,
+              "upper": 0.18603997278213502,
+              "center": 0.16650529074668885,
+              "basis_closed_band_ids": [
+                "closed_01"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -396085,7 +397827,30 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.07272752511501314,
+              "upper": 0.11447905349731445,
+              "center": 0.0936032893061638,
+              "basis_closed_band_ids": [
+                "closed_00",
+                "closed_03"
+              ],
+              "pointwise_semantics_verified": false
+            },
+            {
+              "id": "matching_01",
+              "lower": 0.14881439161300658,
+              "upper": 0.19318540740013124,
+              "center": 0.1709998995065689,
+              "basis_closed_band_ids": [
+                "closed_08"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     },
@@ -397665,7 +399430,20 @@
             "independent_semantic_validation": false,
             "full_dataset_visually_reviewed": false,
             "all_numeric_mode_representatives_reviewed": true
-          }
+          },
+          "matching_bands": [
+            {
+              "id": "matching_00",
+              "lower": 0.18653268766403197,
+              "upper": 0.2592415099143982,
+              "center": 0.2228870987892151,
+              "basis_closed_band_ids": [
+                "closed_01",
+                "closed_04"
+              ],
+              "pointwise_semantics_verified": false
+            }
+          ]
         }
       }
     }
@@ -397705,5 +399483,14 @@
       "path": "runs/20261104_task_profile_second_sources_v2/normalization_final_v3/reviews.json",
       "sha256": "dae22ee25f2c2fa93cf68c92de111208e9b35963c5940afe1b8921824717e7cb"
     }
+  },
+  "matching_policy": {
+    "mode": "merge_expand_excluding_free_v1",
+    "expansion_margin": 0.01,
+    "pointwise_semantics_verified": false
+  },
+  "matching_basis": {
+    "catalog_version": "task-profiles-20261104-all-modes-pointwise-two-source-v3",
+    "catalog_semantic_sha256": "a33de0de15c6cb0f766f29295ea7bcb2fc71ec5527ff955c2dea25ddfc399b9f"
   }
 }

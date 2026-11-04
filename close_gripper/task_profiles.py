@@ -10,6 +10,7 @@ import math
 from statistics import median
 
 from .contracts import SIDE_INDICES, validate_episode
+from .profile_bands import derive_matching_bands, matching_closed_bands, validate_matching_policy
 
 
 SCHEMA = "close_gripper.task_profiles.v1"
@@ -163,6 +164,11 @@ def validate_catalog(catalog):
             raise ValueError(key + " must be positive and finite")
     if catalog["maximum_plateau_range"] > 1:
         raise ValueError("maximum_plateau_range must not exceed one")
+    matching_policy = catalog.get("matching_policy")
+    if matching_policy is not None:
+        validate_matching_policy(matching_policy)
+        if catalog.get("calibration_contract") != CALIBRATION_CONTRACT:
+            raise ValueError("expanded matching requires preserved all-mode calibration evidence")
     if "calibration_contract" in catalog and catalog["calibration_contract"] != CALIBRATION_CONTRACT:
         raise ValueError("unsupported calibration contract")
     if catalog.get("calibration_contract") == CALIBRATION_CONTRACT:
@@ -214,6 +220,12 @@ def validate_catalog(catalog):
                     and profile.get("calibration_contract") != CALIBRATION_CONTRACT):
                 raise ValueError("all-mode catalog requires all-mode side profiles")
             _mode_profile(profile)
+            if matching_policy is not None:
+                bands = _bands(profile, "matching_bands") if "matching_bands" in profile else []
+                if bands != derive_matching_bands(profile, matching_policy["expansion_margin"]):
+                    raise ValueError("matching bands must equal the declared merge/expansion without crossing free evidence")
+            elif "matching_bands" in profile:
+                raise ValueError("matching bands require an explicit catalog matching policy")
             if not profile["automatic_use"]:
                 continue
             if profile["status"] != "visual_reviewed":
@@ -362,7 +374,7 @@ def match_hold_interval(catalog, episode, side, start, end):
         return _reject("requires_interval_vision", interval_vision_band_ids=conflicts, **base)
     if not profile["automatic_use"]:
         return _reject("profile_not_automatic", **base)
-    matching = [b for b in profile["closed_bands"] if b["lower"] <= low and high <= b["upper"]]
+    matching = [b for b in matching_closed_bands(profile) if b["lower"] <= low and high <= b["upper"]]
     if len(matching) != 1:
         return _reject("outside_single_closed_band", **base)
     confirmation = next(i for i in range(start, end + 1)

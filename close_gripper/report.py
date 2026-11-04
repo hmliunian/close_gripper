@@ -117,7 +117,8 @@ const reasonNames={profile_not_automatic:'此侧任务配置未启用',outside_s
 function renderRuleIntervals(){
 const rule=r.workflow==='task_profile_rule';$('ruleSection').hidden=!rule;if(!rule)return;
 const rows=r.events||[],sides=r.valid_sides.map(side=>{const col=side==='left'?0:1,events=rows.filter(e=>e.side===side),applied=events.filter(e=>e.status==='applied').length,frames=r.rule_applied_mask.filter(v=>v[col]).length,status=r.side_status[side],reason=r.coverage[side]?.reason||(typeof status==='object'?status?.reason:status);
-return `${side==='left'?'左':'右'}侧：${applied} 个应用区间，${frames} 个应用帧，${events.length-applied} 个未应用区间${events.length?'':'；没有匹配区间'}${reason?`（${reasonNames[reason]||reason}）`:''}`});
+const bands=r.coverage[side]?.matching_bands,rangeText=bands?.length?`；夹持开度范围 ${bands.map(b=>`${b.lower.toFixed(4)}–${b.upper.toFixed(4)}`).join('、')}`:'';
+return `${side==='left'?'左':'右'}侧：${applied} 个应用区间，${frames} 个应用帧，${events.length-applied} 个未应用区间${events.length?'':'；没有匹配区间'}${reason?`（${reasonNames[reason]||reason}）`:''}${rangeText}`});
 $('ruleSummary').textContent=sides.join('。');$('intervals').replaceChildren();
 for(const event of rows){const start=event.status==='applied'&&Number.isInteger(event.modified_start)?event.modified_start:(event.start??event.hold_start),end=event.status==='applied'&&Number.isInteger(event.modified_end)?event.modified_end:(event.end??event.hold_end);
 const row=document.createElement('div');row.className='interval';row.dataset.side=event.side;row.dataset.status=event.status;const text=document.createElement('span');text.textContent=`${event.side==='left'?'左':'右'}侧 · ${event.status==='applied'?'已应用':'未应用'} · ${reasonNames[event.reason]||event.reason||'未提供原因'}`;
@@ -176,6 +177,10 @@ $('rate').onchange=()=>{videoEntries.forEach(entry=>entry.video.playbackRate=+$(
             if full_cycle else "橙色为待复核候选；绿色仅为通过当前契约的目标。合成示例只验证数学行为。此旧版张开事件流程的释放策略尚未批准，含释放事件不进入有效训练标签。真实模型判断不等于人工参考。")
     if task_profile and all(r["result"].get("rule_version") == "task-profile-rule-v3-hold-first" for r in records):
         note += " 当前规则：在任务夹持区间内稳定至少0.6秒即归零；两端沿原曲线拟合，不要求张到固定参考开度。"
+        margins = {coverage["matching_policy"]["expansion_margin"] for r in records
+                   for coverage in r["result"].get("coverage", {}).values() if coverage.get("matching_policy")}
+        if len(margins) == 1:
+            note += f" 同任务夹持区间已合并，边界各扩大{next(iter(margins)):g}，遇到已有空夹或冲突范围时停止。"
     (run_dir / "review.html").write_text(page.replace("__MODE_NOTE__", note).replace("__DATA__", encoded), encoding="utf-8")
     return run_dir / "review.html"
 

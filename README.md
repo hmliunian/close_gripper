@@ -18,11 +18,11 @@ python3 -m venv .venv
 
 ## 任务开合配置
 
-[任务配置](configs/task_gripper_profiles.json)覆盖三个发布版的150个中文任务、151个有效侧别；105个任务有可用区间，45个未自动启用。逐任务区间和状态可查[配置表](reports/20261104_verified_task_profiles.csv)，实际试跑可查[268条例子](reports/20261104_verified_profile_examples.csv)和[交付汇总](reports/20261104_verified_task_profiles_summary.json)。规则见 PLAN，扫描与视觉复核的实际覆盖见 VALIDATION。
+[任务配置](configs/task_gripper_profiles.json)覆盖三个发布版的150个中文任务、151个有效侧别；105个任务有可用区间，45个未自动启用。当前版本为 `task-profiles-20261104-merged-margin010-v4`，实际匹配用 `matching_bands`，原 `closed_bands` 保留校准证据。逐任务新旧范围可查[合并外扩配置表](reports/20261104_merged_profile_bands.csv)；原校准带、证据及旧例子见[原配置表](reports/20261104_verified_task_profiles.csv)和[校准汇总](reports/20261104_verified_task_profiles_summary.json)。规则见 PLAN，扫描与视觉复核的实际覆盖见 VALIDATION。
 
-当前曲线GUI为 `http://127.0.0.1:8766/review.html`（`runs/20261104_profile_hold_first_video_gui_v1/`），显示 `task-profile-rule-v3-hold-first` 全量重跑结果中的 **105任务／210条固定例子**。它与上次GUI的任务、episode、顺序和视频一致，每任务两例，直接读取全量落盘曲线；不是全部独立留出样本。稳定平台证据GUI仍为 `http://127.0.0.1:8767/review.html`（`runs/20261104_task_profile_verified_evidence_gui_v2/`）。离线停止服务后，可用下述 `serve_review.py` 命令按相应目录重新启动。
+当前曲线GUI为 `http://127.0.0.1:8766/review.html`（`runs/20261104_profile_merged_video_gui_v1/`），显示合并外扩配置下 `task-profile-rule-v3-hold-first` 全量重跑的 **105任务／210条固定例子**，并展示当前任务实际匹配的开度范围。它与上次GUI的任务、episode、顺序和视频一致，每任务两例，直接读取全量落盘曲线；不是全部独立留出样本。稳定平台证据GUI仍为 `http://127.0.0.1:8767/review.html`（`runs/20261104_task_profile_verified_evidence_gui_v2/`）。离线停止服务后，可用下述 `serve_review.py` 命令按相应目录重新启动。
 
-最新全量输出在 `runs/20261104_profile_hold_first_full_v1/`，覆盖原三版7子集。运行范围、旧／新结果与独立核验见[重跑汇总](reports/20261104_hold_first_summary.json)和[150任务对比表](reports/20261104_hold_first_task_results.csv)。原268条例子保留作配置及方法对照，不是当前GUI的显示数量。
+最新全量输出在 `runs/20261104_profile_merged_full_v1/`，覆盖原三版7子集。运行范围、旧／新结果与独立核验见[重跑汇总](reports/20261104_merged_profile_summary.json)和[150任务对比表](reports/20261104_merged_profile_task_results.csv)。原268条例子保留作配置及方法对照，不是当前GUI的显示数量。
 
 ```sh
 .venv/bin/python -B -m close_gripper.task_profiles validate configs/task_gripper_profiles.json
@@ -33,6 +33,12 @@ python3 -m venv .venv
 ```
 
 这些命令只读取配置和输入，输出 JSON。`match` 返回是否满足任务开度带和0.6秒稳定条件、原平台起点及确认帧；它不生成目标、不调用模型，当前 `clean` 尚未消费该任务配置。
+
+从原校准配置派生新的匹配范围可用以下入口。它保存原配置、新配置和逐任务范围对比，不新增视觉判断；输入必须是尚未合并外扩的校准版本，避免累计加宽。
+
+```sh
+.venv/bin/python -B scripts/expand_task_profile_bands.py --catalog /path/to/original_calibration.json --margin 0.01 --version my_matching_catalog --output runs/my_expanded_catalog
+```
 
 用户批准按任务配置试跑时，可用 `profile-clean` 对冻结清单生成完整审阅曲线，再绑定连续视频：
 

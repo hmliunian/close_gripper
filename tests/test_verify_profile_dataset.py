@@ -25,6 +25,20 @@ audit_tool = load("independent_profile_dataset_audit", ROOT / "scripts/verify_pr
 
 
 class WindowOracleTests(unittest.TestCase):
+    def test_matching_oracle_keeps_known_free_gap_and_limits_padding(self):
+        profile = dict(automatic_use=True,
+            closed_bands=[dict(id="a", lower=.10, upper=.12),dict(id="b", lower=.20, upper=.22)],
+            free_bands=[dict(lower=.125, upper=.195)], open_bands=[], interval_vision_bands=[])
+        bands = audit_tool.matching_bands_oracle(profile, .01)
+        self.assertEqual(len(bands), 2)
+        self.assertLess(bands[0]["upper"], .125)
+        self.assertGreater(bands[1]["lower"], .195)
+        self.assertAlmostEqual(bands[0]["lower"], .09)
+        profile["free_bands"] = []
+        merged = audit_tool.matching_bands_oracle(profile, .01)
+        self.assertEqual(len(merged), 1)
+        self.assertEqual(merged[0]["basis_closed_band_ids"], ["a", "b"])
+
     def test_partial_diagnostic_selection_is_disclosed_not_mislabeled_as_full(self):
         partial = dict(complete_source_scope=False, sampling="first shards plus known boundary diagnostics",
                        selection_uses_band_matching=False)
@@ -131,6 +145,36 @@ class SavedDerivativeAuditTests(unittest.TestCase):
         self.assertEqual(result["status"], "PASS", result["failures"])
         self.assertEqual(result["verified_episodes"], 4)
         self.assertEqual(result["verified_source_shards"], 2)
+
+    def test_expanded_catalog_runs_through_bulk_projection_and_independent_oracle(self):
+        from close_gripper.profile_bands import build_matching_catalog
+        f = self.fixture
+        f.catalog.update(calibration_contract="all_modes_semantic_review_v2", minimum_positive_sources=2)
+        for task in f.catalog["tasks"]:
+            for profile in task["sides"].values():
+                profile.update(calibration_contract="all_modes_semantic_review_v2", minimum_positive_sources=2,
+                               evidence_noise=.003, free_bands=copy.deepcopy(profile["open_bands"]),
+                               interval_vision_bands=[], release_rules=[])
+                for band in profile["closed_bands"]:
+                    band.update(reviewed_source_count=2, open_band_ids=[profile["open_bands"][0]["id"]])
+                for band in profile["open_bands"]:
+                    band["source_ids"] = ["reference-a"]
+        f.catalog = build_matching_catalog(f.catalog, margin=.01, version="expanded_fixture")
+        f.catalog_path.write_text(json.dumps(f.catalog,ensure_ascii=False))
+        f.manifest["catalog_sha256"] = audit_tool.digest(f.catalog_path)
+        f.manifest_path.write_text(json.dumps(f.manifest,ensure_ascii=False))
+        with contextlib.redirect_stdout(io.StringIO()):
+            f.run_bulk("expanded")
+        result = self.verify("expanded_audit")
+        self.assertEqual(result["status"], "PASS", result["failures"])
+        self.assertGreater(result["checks"]["runtime_generalized_matching_policy"], 0)
+        self.assertGreater(result["checks"]["independent_merged_padded_ranges"], 0)
+        corrupted = copy.deepcopy(f.catalog)
+        profile = corrupted["tasks"][0]["sides"]["right"]
+        profile["matching_bands"][0]["upper"] = .95
+        audit = audit_tool.Audit()
+        audit_tool.verify_catalog(corrupted,audit)
+        self.assertIn("matching_range_excludes_free_and_conflicts", {e["check"] for e in audit.failures})
 
     def test_parallel_shards_have_identical_checks_and_totals(self):
         sequential = self.verify("sequential")
