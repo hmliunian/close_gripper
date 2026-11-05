@@ -1,0 +1,46 @@
+{
+  "status": "complete",
+  "presentation_only": true,
+  "gui": "runs/20261105_profile_margin_comparison_gui_v1",
+  "url": "http://127.0.0.1:8766/review.html",
+  "source_comparison": "runs/20261104_profile_margin_comparison_gui_v2",
+  "variants": 4,
+  "episodes_per_variant": 210,
+  "tasks_per_variant": 105,
+  "video_references_per_variant": 424,
+  "original_records_and_media_preserved": true,
+  "algorithm_executions": 0,
+  "model_requests": 0,
+  "default_margin": 0.01,
+  "installed_catalog_sha256": "b9f412cce8c1c5d5edaaff5399bd3d53ac5390aa31763e077245be283a712d26",
+  "renderer_sha256": "d666a7720e65504e896353dcce3c878b367d6d4a839914e9b648ef43de4e19ba",
+  "display": {
+    "location": "above_curves",
+    "source": "saved coverage.matching_bands",
+    "sides": "valid episode sides only",
+    "decimals": 6,
+    "full_precision_tooltip": true,
+    "multiple_bands": "separate OR alternatives"
+  },
+  "offline_check": {
+    "command": ".venv/bin/python -B scripts/check.py",
+    "exit_code": 0,
+    "tests_passed": 375,
+    "skipped": 0,
+    "log": "runs/20261105_task_range_gui_work_v1/offline_check.log"
+  },
+  "browser_check": {
+    "path": "runs/20261105_task_range_gui_work_v1/browser-2/verification.json",
+    "status": "passed",
+    "checks": 21,
+    "javascript_errors": 0,
+    "failed_requests": 0,
+    "external_requests": 0
+  },
+  "preservation_check": "runs/20261105_task_range_gui_work_v1/preservation.json",
+  "screenshot": "runs/20261105_task_range_gui_work_v1/browser-2/margin030_9596_frame25.png",
+  "limitations": [
+    "Presentation-only change; no new numerical, semantic or training result.",
+    "Real video playback sampled; not all source videos replayed."
+  ]
+}

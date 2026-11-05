@@ -1,6 +1,16 @@
 # 实现与验证记录
 
-更新日期：2026-11-04。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录当前配置的全量数值处理核验，再保留此前证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
+更新日期：2026-11-05。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录最新展示及当前配置的全量数值处理核验，再保留此前证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
+
+## GUI显示对应任务夹持区间（2026-11-05）
+
+按用户要求，`close_gripper/report.py` 在曲线上方增加“当前任务夹持区间”，从已落盘的 `coverage.matching_bands` 读取实际范围，按有效左／右侧分别展示六位小数和每端外扩余量，悬停显示完整精度；多个区间保留为独立的“或”选项。任务、episode及四档外扩切换时更新，无搜索结果时随当前episode隐藏。
+
+四档均从原210条GUI输入重新生成展示，产物为 `runs/20261105_profile_margin010_video_gui_v1/`、`margin020`、`margin030`、`margin040` 同名目录；对比入口为 `runs/20261105_profile_margin_comparison_gui_v1/`，已在原 **`http://127.0.0.1:8766/review.html`** 启动。逐项比较四档各210条完整页面记录及媒体／偏移清单，与此前对应页面完全一致，原曲线、数据、视频和既有实验均保留。数值算法执行0、模型调用0，默认配置仍为0.01。
+
+实际执行 `.venv/bin/python -B scripts/check.py` **退出0，375项通过、0跳过**；日志见 `runs/20261105_task_range_gui_work_v1/offline_check.log`。`.venv/bin/python -B runs/20261105_task_range_gui_work_v1/refresh_gui.py` **退出0**，四次渲染和对比页生成的完整命令及保留性核验见[记录](runs/20261105_task_range_gui_work_v1/preservation.json)。服务入口见 README。
+
+真实Chromium在预览与最终8766地址均 **21项通过**，最终命令为 `node runs/20261105_task_range_gui_work_v1/verify_comparison.cjs --url http://127.0.0.1:8766/review.html`，退出0。检查四档曲线记录、9596任务区间与外扩联动、关微波炉的多个区间、叠衣服左右侧、空搜索恢复，以及视频解码／播放、筛选保留和Range 206；JavaScript错误、失败请求及外部请求均0。见[浏览器核验](runs/20261105_task_range_gui_work_v1/browser-2/verification.json)、[9596截图](runs/20261105_task_range_gui_work_v1/browser-2/margin030_9596_frame25.png)和[交付汇总](reports/20261105_task_range_gui_summary.json)。本轮仅完成显示改动，未新增语义或训练效果结论。
 
 ## 外扩0.02／0.03／0.04：全量参数对比与原GUI（当前）
 
