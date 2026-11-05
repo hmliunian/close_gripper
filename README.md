@@ -1,6 +1,6 @@
 # close_gripper
 
-从从臂实测开度和同侧腕部图像生成完整的 **0～1夹爪目标开度曲线**：抓前稳定张开、闭合过渡、持物保持0、释放过渡。目标及最终交付以用户的 [Untitled.md](Untitled.md) 为准，实现方法见 [PLAN.md](PLAN.md)，工程边界见 [BOUNDARIES.md](BOUNDARIES.md)，实际证据与限制见 [VALIDATION.md](VALIDATION.md)。
+从从臂实测开度和图像生成完整的 **0～1夹爪目标开度曲线**：抓前稳定张开、闭合过渡、持物保持0、释放过渡。历史流程使用同侧腕部图像，新增20条实验使用主视角。目标及最终交付以用户的 [Untitled.md](Untitled.md) 为准，实现方法见 [PLAN.md](PLAN.md)，工程边界见 [BOUNDARIES.md](BOUNDARIES.md)，实际证据与限制见 [VALIDATION.md](VALIDATION.md)。
 
 当前主入口是 `clean`，扫描完整 episode 的所有有效侧与候选周期。模型证据通过校验后可生成有效自动标签；有效不代表人工核验。原始观测保持不变，新目标独立保存。已实现小样本派生和隔离副本中的实际 ORION loader 接入；当前任务配置的三版全量数值规则处理及核验已完成，逐episode语义质量、训练采用和正式发布仍待验收，具体范围见 [VALIDATION](VALIDATION.md)。
 
@@ -15,6 +15,21 @@ python3 -m venv .venv
 统一检查不读取凭据、不访问实际数据集、不联网。数值核心只需标准库；数据、图片和 PNG 依赖按 extras 安装。缺少依赖时会报告跳过项，不能当作全检查通过。HTML 脚本有语法检查；视频交互另有真实浏览器验证，范围见 VALIDATION。
 
 所有运行输出必须使用本工作区内**新的** `runs/<run_id>`，已有目录拒绝覆盖。失败产物保留，重试使用新目录。
+
+## 主视角20条与新GUI
+
+新GUI：**[主视角审阅](http://127.0.0.1:8770/review.html)**。10个动作各2条原始录制、22个有效侧；视频只使用头部双目。页面同步展示主视角、开度与规则曲线、逐手held/free/uncertain状态，并支持分段和凹谷／半段跳转、逐帧、倍速、双目切换及配置下载。
+
+[主视角任务配置](configs/task_gripper_profiles_head20.json)保存10个动作的已观察持物范围、自动匹配带和未启用原因，配套[结果汇总](reports/20261105_head20_summary.json)。本批只有“插入缝隙刷”满足已有自动匹配条件；其他任务的可见持物证据或不确定状态仍完整保留。配置由同批20条生成，不能当作留出评估。原8766四档GUI继续可用。
+
+准备和构建入口如下。`native_reviews`需先通过实际主视角查看形成，脚本不会凭曲线自动编造这些判断；每次输出目录必须是新的。
+
+```sh
+.venv/bin/python -B scripts/prepare_head_review.py --manifest runs/20261104_task_profile_verified_inputs_v1/manifest.json --output runs/my_head_inputs
+.venv/bin/python -B scripts/run_head_review.py --inputs runs/my_head_inputs --reviews runs/my_native_reviews --config-output runs/my_head_config --output runs/my_head_evaluation
+.venv/bin/python -B scripts/render_video_review.py --source-run runs/my_head_evaluation --output runs/my_head_gui
+.venv/bin/python -B scripts/serve_review.py --run runs/my_head_gui --port 8770
+```
 
 ## 任务开合配置
 

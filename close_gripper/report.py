@@ -7,15 +7,23 @@ import re
 
 from .contracts import SIDE_CAMERAS
 
+HEAD_CAMERAS = tuple(f"observation.images.cam_head_{eye}" for eye in ("left", "right"))
+
 
 def _report_videos(episode, record):
-    """Only expose same-side, metadata-aligned videos through local media URLs."""
+    """Expose explicitly selected, metadata-aligned views through local URLs."""
     videos, seen = [], set()
+    head = episode.get("vision_camera_group") == "head"
     for value in record.get("videos", []):
         side, camera = value.get("side"), value.get("camera")
-        if side not in episode.get("valid_sides", []) or side not in SIDE_CAMERAS:
-            raise ValueError("review video requires an effective gripper side")
-        names = {name for short in SIDE_CAMERAS[side] for name in (short, "observation.images." + short)}
+        if head:
+            if side != "head" or not episode.get("valid_sides"):
+                raise ValueError("main-view video requires the shared head group and effective gripper sides")
+            names = set(HEAD_CAMERAS)
+        else:
+            if side not in episode.get("valid_sides", []) or side not in SIDE_CAMERAS:
+                raise ValueError("review video requires an effective gripper side")
+            names = {name for short in SIDE_CAMERAS[side] for name in (short, "observation.images." + short)}
         if camera not in names or camera in seen:
             raise ValueError("review video camera must match its side and be unique")
         spec = episode.get("cameras", {}).get(camera, {})
@@ -36,6 +44,47 @@ def _report_videos(episode, record):
         videos.append(dict(side=side, camera=camera, url=url, from_timestamp=start, to_timestamp=end))
         seen.add(camera)
     return videos
+
+
+def _visual_review(episode, result):
+    """Validate saved main-view segment identities without inferring new labels."""
+    review = result.get("visual_review")
+    if review is None:
+        return None
+    if (not isinstance(review, dict) or episode.get("vision_camera_group") != "head"
+            or review.get("camera_group") != "head" or review.get("review_source") != "model"
+            or review.get("confirmed") is not False):
+        raise ValueError("main-view review requires explicit non-human head-view provenance")
+    sides = review.get("sides")
+    if not isinstance(sides, dict) or set(sides) - set(episode.get("valid_sides", [])):
+        raise ValueError("main-view labels must identify effective gripper sides")
+    size = len(episode["timestamps"])
+    for value in sides.values():
+        if not isinstance(value, dict) or not isinstance(value.get("segments"), list):
+            raise ValueError("main-view labels require explicit segments")
+        previous = -1
+        for segment in value["segments"]:
+            if not isinstance(segment, dict):
+                raise ValueError("invalid main-view segment")
+            start, end = segment.get("start"), segment.get("end")
+            if (type(start) is not int or type(end) is not int or not previous < start <= end < size
+                    or segment.get("state") not in ("held", "free", "uncertain")
+                    or not isinstance(segment.get("note", ""), str)):
+                raise ValueError("invalid or overlapping main-view segment")
+            previous = end
+        indices = value.get("reviewed_frame_indices", [])
+        if (not isinstance(indices, list) or any(type(i) is not int or not 0 <= i < size for i in indices)
+                or len(indices) != len(set(indices))):
+            raise ValueError("invalid main-view reviewed frame indices")
+    focus = review.get("focus_intervals", [])
+    if not isinstance(focus, list):
+        raise ValueError("main-view focus intervals must be a list")
+    for interval in focus:
+        if (not isinstance(interval, dict) or interval.get("side") not in episode.get("valid_sides", [])
+                or type(interval.get("start")) is not int or type(interval.get("end")) is not int
+                or not 0 <= interval["start"] <= interval["end"] < size):
+            raise ValueError("invalid main-view focus interval")
+    return review
 
 
 def write_report(run_dir, records):
@@ -61,6 +110,8 @@ def write_report(run_dir, records):
                          valid=result["valid"], events=result["events"],
                          candidates=record["candidates"], frames=frames,
                          videos=_report_videos(episode, record), valid_sides=episode.get("valid_sides", []),
+                         vision_camera_group=episode.get("vision_camera_group", "wrist"),
+                         visual_review=_visual_review(episode, result),
                          identity=identity, issues=result.get("pipeline_issues", []),
                          comparisons=result.get("release_comparisons", []),
                          closing_comparisons=result.get("closing_comparisons", []),
@@ -76,6 +127,13 @@ def write_report(run_dir, records):
                          coverage=result.get("coverage", {}),
                          closing_policy=result.get("config", {}).get("closing_policy", "fixed_timing")))
     encoded = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
+    has_head = any(r["episode"].get("vision_camera_group") == "head" for r in records)
+    config_link = ""
+    if has_head:
+        for candidate in ("task_profiles.json", "../task_profiles.json"):
+            if (run_dir / candidate).is_file():
+                config_link = f'<p><a id="taskConfigDownload" href="{candidate}" download>下载本批动作 config（JSON）</a></p>'
+                break
     page = r'''<!doctype html><html lang="zh"><meta charset="utf-8">
 <title>夹爪开度曲线审阅</title><style>
 body{font:16px system-ui;margin:24px auto;max-width:1200px;padding:0 20px;background:#f4f7fa;color:#172b40}
@@ -93,16 +151,19 @@ svg{width:100%;height:auto}pre{white-space:pre-wrap;font-size:12px;max-height:36
 details{background:white;padding:18px;margin:18px 0;border-radius:12px}summary{cursor:pointer;font-weight:600}h2{font-size:18px}
 .filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.filters select{max-width:380px}.filters input{max-width:220px}.interval{padding:10px 0;border-top:1px solid #e6ebef}.interval button{margin:0 10px 0 0}.interval small{display:block;margin-top:6px;color:#526577}#ruleSummary{line-height:1.7}#episodeCount{color:#526577;font-size:14px}
 .task-ranges{margin:14px 0;padding:14px 16px;background:#edf5fc;border:1px solid #c9dfef;border-radius:8px}.task-ranges h2{margin:0 0 8px;font-size:17px}.task-ranges p{margin:8px 0 0;font-size:13px;color:#526577}.task-range-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}.task-band{font:600 16px ui-monospace,monospace;background:white;padding:5px 9px;border-radius:5px}.task-range-margin{font-size:13px;color:#526577}
+.visual-current{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.visual-state{padding:7px 10px;border-radius:6px;background:#edf1f5}.visual-state[data-state="held"]{background:#dff2e7;color:#175e40}.visual-state[data-state="free"]{background:#e1edf9;color:#214e78}.visual-state[data-state="uncertain"]{background:#fff0d5;color:#77520e}.visual-segment.active{background:#f1f6fa}.visual-segment button{font-size:14px}
 @media(max-width:850px){.review-grid{grid-template-columns:1fr}.video-grid{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}}
 </style><h1>夹爪开度与视频审阅</h1>
 <p>纵轴为归一化夹爪开度（0～1）：0 = 全闭，1 = 全开。灰线是原始实测开度；目标开度为0表示发出全闭指令，持物时实测开度仍可大于0。</p>
 <p class="note" id="modeNote">__MODE_NOTE__</p>
+__CONFIG_LINK__
 <div class="filters"><label>任务 <select id="tasks"></select></label><label>搜索 <input id="search" type="search" placeholder="任务或 episode"></label><label>Episode <select id="episodes"></select></label><span id="episodeCount"></span></div><section id="episodeSection"><div id="identity"></div>
 <div id="taskRanges" class="task-ranges" aria-labelledby="taskRangesTitle" hidden><h2 id="taskRangesTitle"></h2><div id="taskRangeRows"></div><p>归一化开度（0～1）；多个区间按“或”匹配。悬停区间可查看完整精度。</p></div>
 <p class="legend"><span style="color:#526577">━ 原始实测开度</span><span id="previewLegend" style="color:#e59420">┄ 候选目标开度</span><span id="closingLegend" style="color:#668cba">┈ 闭合对照方案</span><span id="acceptedLegend" style="color:#12826c">━ 有效目标开度</span></p>
 <div class="review-grid"><div><div id="charts"></div><input id="scrub" aria-label="Episode时间定位" type="range" min="0" value="0" step="1">
-<div class="controls"><button id="play">播放</button><button id="previous">上一帧</button><button id="next">下一帧</button><label>速度 <select id="rate"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label></div><p id="time"></p></div>
-<div><h2>对应腕部视频</h2><p class="video-status">点击视频或播放按钮开始；拖动时间条、点击曲线可同步定位。</p><div class="video-grid" id="videos"></div><p id="videoMessage" class="video-status" role="status"></p></div></div></section>
+<div class="controls"><button id="play">播放</button><button id="previous">上一帧</button><button id="next">下一帧</button><label>速度 <select id="rate"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label></div><p id="time"></p><div id="visualCurrent" class="visual-current" role="status"></div></div>
+<div><h2 id="videoTitle">对应腕部视频</h2><p class="video-status">点击视频或播放按钮开始；拖动时间条、点击曲线可同步定位。</p><div class="video-grid" id="videos"></div><p id="videoMessage" class="video-status" role="status"></p></div></div></section>
+<section id="visualSection" hidden><h2>主视角抓持判断</h2><p>按实际左／右手分别记录抓住、未抓住和不确定；头部双目的左／右表示相机视角。以下是模型判断，未经人工确认。</p><div id="focusIntervals"></div><div id="visualIntervals"></div></section>
 <section id="ruleSection" hidden><h2>规则应用区间</h2><p id="ruleSummary"></p><div id="intervals"></div></section>
 <details id="frameSection"><summary>模型使用的证据帧</summary><p>以下为模型判断时的抽帧；上方视频可查看连续过程。</p><div class="frames" id="frames"></div></details>
 <section id="coverageSection"><h2>完整周期与检查覆盖</h2><pre id="coverage"></pre></section>
@@ -114,7 +175,7 @@ let playing=false,currentEpisodeTime=0,videoEntries=[],master=null,displayedInde
 let fallbackStart=0,fallbackTime=0;const selectedCameras={};
 const taskNames=[...new Set(records.map(v=>v.task))].sort((a,b)=>a.localeCompare(b,'zh'));
 for(const task of ['',...taskNames]){const option=document.createElement('option');option.value=task;option.textContent=task||`全部任务（${taskNames.length}）`;$('tasks').append(option)}
-function filterEpisodes(){stopPlayback();const old=$('episodes').value,task=$('tasks').value,query=$('search').value.trim().toLowerCase();$('episodes').replaceChildren();records.forEach((v,i)=>{if(task&&v.task!==task||query&&!`${v.task} ${v.id}`.toLowerCase().includes(query))return;const option=document.createElement('option');option.value=i;option.textContent=`${v.task} · ${v.id}`;$('episodes').append(option)});if([...$('episodes').options].some(o=>o.value===old))$('episodes').value=old;$('episodeCount').textContent=`${$('episodes').options.length} / ${records.length} 条`;if($('episodes').options.length){$('episodeSection').hidden=false;$('eventsSection').hidden=false;render()}else{for(const id of ['episodeSection','ruleSection','frameSection','coverageSection','closingSection','releaseSection','eventsSection'])$(id).hidden=true;videoEntries.forEach(e=>{e.video.removeAttribute('src');e.video.load()})}}
+function filterEpisodes(){stopPlayback();const old=$('episodes').value,task=$('tasks').value,query=$('search').value.trim().toLowerCase();$('episodes').replaceChildren();records.forEach((v,i)=>{if(task&&v.task!==task||query&&!`${v.task} ${v.id}`.toLowerCase().includes(query))return;const option=document.createElement('option');option.value=i;option.textContent=`${v.task} · ${v.id}`;$('episodes').append(option)});if([...$('episodes').options].some(o=>o.value===old))$('episodes').value=old;$('episodeCount').textContent=`${$('episodes').options.length} / ${records.length} 条`;if($('episodes').options.length){$('episodeSection').hidden=false;$('eventsSection').hidden=false;render()}else{for(const id of ['episodeSection','visualSection','ruleSection','frameSection','coverageSection','closingSection','releaseSection','eventsSection'])$(id).hidden=true;videoEntries.forEach(e=>{e.video.removeAttribute('src');e.video.load()})}}
 const reasonNames={profile_not_automatic:'此侧任务配置未启用',outside_single_closed_band:'未落入单一夹持区间',outside_closed_bands:'没有进入已配置的夹持开度区间',insufficient_holding_duration:'稳定时间不足0.6秒',unstable_plateau:'开度波动超过阈值',timestamp_gap:'时间戳间隔过大',unknown_task:'任务未配置',missing_side_profile:'此侧缺少配置',invalid_side:'无效侧',task_profile_numeric_match:'任务开度区间匹配',task_profile_rule:'按任务开度规则应用',task_profile_rule_evaluation:'已按任务开度规则拟合',no_change:'目标与原曲线相同',missing_aligned_closing_boundary:'未找到可对齐的闭合边界',insufficient_holding_duration_after_boundary_alignment:'对齐边界后稳定时间不足0.6秒',unstable_confirmation_after_boundary_alignment:'接触对齐后的0.6秒确认窗口不稳定',unresolved_release_boundary:'释放边界不明确',unreliable_motion_speed:'运动速度超出可信范围',insufficient_closing_excursion:'闭合幅度不足',overlapping_incompatible_profile_cycles:'重叠区间的规则拟合冲突',rule_targets_generated:'已生成规则目标',matched_intervals_rejected_at_boundaries:'开度匹配，但边界条件未通过',profile_rejected:'此侧任务配置不可用',numerically_unchanged:'本次保持原曲线',rule_applied:'规则已应用'};
 function renderTaskRanges(){
 const rule=r.workflow==='task_profile_rule';$('taskRanges').hidden=!rule;$('taskRangeRows').replaceChildren();if(!rule)return;
@@ -125,6 +186,16 @@ if(bands?.length){bands.forEach((band,index)=>{if(index){const or=document.creat
 else{const empty=document.createElement('span');empty.textContent=Array.isArray(bands)||coverage.automatic_use===false?'暂无可用夹持区间':'该记录未保存区间值';row.append(empty)}
 const margin=coverage.matching_policy?.expansion_margin;if(Number.isFinite(margin)){const note=document.createElement('span');note.className='task-range-margin';note.textContent=`每端外扩 ${margin.toFixed(2)}`;row.append(note)}$('taskRangeRows').append(row)}
 }
+const stateNames={held:'抓住',free:'未抓住',uncertain:'不确定'};
+function renderVisualIntervals(){
+$('visualSection').hidden=!r.visual_review;$('visualIntervals').replaceChildren();$('visualCurrent').replaceChildren();$('focusIntervals').replaceChildren();if(!r.visual_review)return;
+const shapeNames={full_valley:'完整凹谷',descending_half:'下降半段',ascending_half:'上升半段',static_context:'稳定段'};
+for(const focus of r.visual_review.focus_intervals||[]){const jump=document.createElement('button');jump.className='focus-jump';jump.dataset.side=focus.side;jump.dataset.start=focus.start;jump.dataset.end=focus.end;jump.textContent=`${focus.side==='left'?'左':'右'}手 · ${shapeNames[focus.shape_hint]||'优先查看区间'} · ${r.t[focus.start].toFixed(2)}–${r.t[focus.end].toFixed(2)} s`;jump.onclick=()=>{stopPlayback();seekTo(r.t[focus.start])};$('focusIntervals').append(jump)}
+for(const side of r.valid_sides){const review=r.visual_review.sides[side];if(!review)continue;for(const segment of review.segments){const row=document.createElement('div');row.className='interval visual-segment';row.dataset.side=side;row.dataset.start=segment.start;row.dataset.end=segment.end;row.dataset.state=segment.state;
+const jump=document.createElement('button');jump.className='visual-jump';jump.textContent=`${side==='left'?'左':'右'}手 · ${stateNames[segment.state]} · ${r.t[segment.start].toFixed(2)}–${r.t[segment.end].toFixed(2)} s`;jump.onclick=()=>{stopPlayback();seekTo(r.t[segment.start])};const note=document.createElement('span');note.textContent=segment.note||'';row.append(jump,note);$('visualIntervals').append(row)}}}
+function updateVisualState(index){
+$('visualCurrent').replaceChildren();if(!r.visual_review)return;for(const side of r.valid_sides){const review=r.visual_review.sides[side],segment=review?.segments.find(s=>s.start<=index&&index<=s.end),state=segment?.state||'unreviewed',badge=document.createElement('span');badge.className='visual-state';badge.dataset.side=side;badge.dataset.state=state;badge.textContent=`${side==='left'?'左':'右'}手：${stateNames[state]||'未检查'}`;badge.title=segment?.note||'本帧没有保存的主视角判断';$('visualCurrent').append(badge)}
+document.querySelectorAll('.visual-segment').forEach(row=>row.classList.toggle('active',+row.dataset.start<=index&&index<=+row.dataset.end));}
 function renderRuleIntervals(){
 const rule=r.workflow==='task_profile_rule';$('ruleSection').hidden=!rule;if(!rule)return;
 const rows=r.events||[],sides=r.valid_sides.map(side=>{const col=side==='left'?0:1,events=rows.filter(e=>e.side===side),applied=events.filter(e=>e.status==='applied').length,frames=r.rule_applied_mask.filter(v=>v[col]).length,status=r.side_status[side],reason=r.coverage[side]?.reason||(typeof status==='object'?status?.reason:status);
@@ -140,14 +211,14 @@ function line(values,col,accepted=false){let active=false;return values.map((v,i
 function comparisonValues(c){return r.closing_policy==='original_speed'?c.fixed_timing:c.original_speed}
 function comparisonLine(c){return comparisonValues(c).slice(c.start,c.display_end+1).map((v,j)=>(j?'L':'M')+(55+930*(r.t[c.start+j]-r.t[0])/(r.t.at(-1)-r.t[0]||1)).toFixed(2)+','+(190-v*160).toFixed(2)).join(' ')}
 function render(){stopPlayback();r=records[+$('episodes').value];currentEpisodeTime=r.t[0];displayedIndex=-1;$('identity').textContent=`${r.task} · ${r.id} · 有效侧：${r.valid_sides.map(s=>s==='left'?'左':'右').join(' / ')}`;$('scrub').max=r.t.length-1;$('scrub').value=0;
-renderTaskRanges();
+renderTaskRanges();renderVisualIntervals();$('videoTitle').textContent=r.vision_camera_group==='head'?'主视角视频':'对应腕部视频';
 const rule=r.workflow==='task_profile_rule';$('previewLegend').textContent=rule?'┄ 规则生成开度（待审阅）':'┄ 候选目标开度';$('acceptedLegend').hidden=rule;$('frameSection').hidden=rule&&!r.frames.length;$('closingSection').hidden=rule;$('releaseSection').hidden=rule;
 $('coverageSection').hidden=r.workflow!=='full_cycle';$('coverage').textContent=JSON.stringify(r.coverage,null,2);
 $('charts').innerHTML=[0,1].map(col=>`<svg data-side="${col?'right':'left'}" viewBox="0 0 1020 230"><text x="5" y="20">${col?'右':'左'}夹爪开度（0～1）${r.valid_sides.includes(col?'right':'left')?'':' · 无效侧，保留原值'}</text>${[0,.25,.5,.75,1].map(v=>`<path d="M55 ${190-v*160}H985" stroke="#e6ebef"/><text x="12" y="${194-v*160}" font-size="12">${v}</text>`).join('')}<path class="original-curve" d="${line(r.original,col)}" stroke="#526577" fill="none" stroke-width="2"/><path class="preview-curve" d="${line(r.preview,col)}" stroke="#e59420" fill="none" stroke-width="3" stroke-dasharray="6 4"/><path class="accepted-curve" d="${rule?'':line(r.target,col,true)}" stroke="#12826c" fill="none" stroke-width="1.5"/><line class="cursor" y1="25" y2="195" stroke="#9b3065"/><text x="55" y="218" font-size="12">${r.t[0]} s</text><text x="930" y="218" font-size="12">${r.t.at(-1)} s</text></svg>`).join('');
 $('closingLegend').textContent=r.closing_policy==='original_speed'?'┈ 固定时序闭合拟合对照':'┈ 原速闭合延伸对照';
 $('charts').querySelectorAll('svg').forEach((svg,col)=>r.closing_comparisons.filter(c=>c.side===(col?'right':'left')&&comparisonValues(c)).forEach(c=>{let p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',comparisonLine(c));p.setAttribute('stroke','#668cba');p.setAttribute('stroke-dasharray','2 4');p.setAttribute('fill','none');p.setAttribute('stroke-width','2');svg.append(p)}));
 $('closing').textContent=`当前闭合策略：${r.closing_policy==='original_speed'?'按原速延伸':'固定起止时刻的端点拟合'}。\n`+(r.closing_comparisons.length?r.closing_comparisons.map(c=>`${c.side} · 原闭合帧 ${c.start}–${c.end}：端点拟合在原结束时刻到0，改变闭合速度；原速延伸需额外 ${c.extra_time_needed_s.toFixed(3)} s。${c.original_speed?'':'原速方案不能在确认持物范围内到0，未绘制。'}`).join('\n'):'无可拟合的非零平台闭合段。');
-$('events').textContent=JSON.stringify({identity:r.identity,workflow:r.workflow,profile_status:r.profile_status,side_status:r.side_status,pipeline_issues:r.issues,candidates:r.candidates,events:r.events,closing_comparisons:r.closing_comparisons,release_comparisons:r.comparisons},null,2);
+$('events').textContent=JSON.stringify({identity:r.identity,workflow:r.workflow,profile_status:r.profile_status,side_status:r.side_status,pipeline_issues:r.issues,candidates:r.candidates,events:r.events,visual_review:r.visual_review,closing_comparisons:r.closing_comparisons,release_comparisons:r.comparisons},null,2);
 $('release').textContent=r.comparisons.length?r.comparisons.map(c=>`${c.side} · 帧 ${c.start}–${c.end}：橙线保留释放起止时刻，改变张开速度；按原估计速度 ${(c.opening_speed_mm_s/95).toFixed(3)} 开度/秒从0开始，额外需要 ${c.extra_time_needed_s.toFixed(3)} s。${c.original_speed?'原速候选也能在确认窗口内完成。':'确认窗口不足，原速方案未延伸到窗口外。'} 两种方案均未批准。`).join('\n'):'本片段无可比较的完整释放候选。';
 if(r.workflow==='full_cycle'){$('closingLegend').hidden=true;$('closing').textContent='完整周期按抓前准备、闭合、持物和释放分别生成；数值边界与视觉持物范围分开核对。绿色目标经过当前算法校验，来源在逐帧读数中显示。';$('release').textContent='正常释放采用固定起止时刻的连续映射，校验通过可生成目标。模型来源仍为 model；未覆盖、遮挡和冲突区域保留原值。'}else{$('closingLegend').hidden=rule}renderRuleIntervals();
 $('charts').querySelectorAll('svg').forEach(svg=>{svg.style.cursor='crosshair';svg.onclick=event=>{const box=svg.getBoundingClientRect(),fraction=Math.max(0,Math.min(1,((event.clientX-box.left)*1020/box.width-55)/930));seekTo(r.t[0]+fraction*(r.t.at(-1)-r.t[0]))}});
@@ -157,7 +228,7 @@ function displayTime(t,force=false){currentEpisodeTime=Math.max(r.t[0],Math.min(
 $('time').textContent=`帧 ${i} · episode ${t.toFixed(2)} s · 左/右实测开度 ${r.original[i].map(x=>x.toFixed(3)).join(' / ')} · ${r.workflow==='task_profile_rule'?'规则生成开度':'候选目标开度'} ${r.preview[i].map(x=>x.toFixed(3)).join(' / ')}`;
 if(r.workflow==='task_profile_rule'){$('time').textContent+=` · 左/右规则 ${r.rule_applied_mask[i]?.map((v,col)=>r.valid_sides.includes(col?'right':'left')?(v?'已应用':'未应用'):'无效侧').join(' / ')||'未提供应用标记'}`}else{$('time').textContent+=` · 有效目标开度 ${r.target[i].map((x,col)=>r.valid[i][col]?x.toFixed(3):'未确认').join(' / ')}`}
 if(r.phase.length)$('time').textContent+=` · 阶段 ${r.phase[i].join(' / ')} · 来源 ${r.source[i].join(' / ')}`;
-if(!force&&displayedIndex===i)return;displayedIndex=i;
+if(!force&&displayedIndex===i)return;displayedIndex=i;updateVisualState(i);
 $('frames').replaceChildren();[...new Set(r.frames.map(f=>f.camera))].forEach(camera=>{let fs=r.frames.filter(f=>f.camera===camera),f=fs.reduce((a,b)=>Math.abs(b.timestamp-t)<Math.abs(a.timestamp-t)?b:a),d=document.createElement('div');d.className='frame';let p=document.createElement('p');p.textContent=`${camera} · 证据帧 ${f.frame_index} · episode ${f.timestamp.toFixed(2)}s · 原视频 ${f.video_timestamp.toFixed(2)}s`;d.append(p);let img=document.createElement('img');img.src=f.path;img.alt=`${camera} 证据帧 ${f.frame_index}`;d.append(img);$('frames').append(d)});
 if(!r.frames.length)$('frames').textContent='此示例无视觉证据；请查看来源标记。'}
 function setVideoTime(entry,t,force=false){if(entry.failed||entry.video.readyState<1)return;const target=entry.spec.from_timestamp+t;if(force||Math.abs(entry.video.currentTime-target)>.08){try{entry.video.currentTime=target}catch(error){entry.status.textContent='视频正在加载，稍后定位。'}}}
@@ -169,10 +240,10 @@ function startPlayback(){if(playing||r.t.at(-1)<=r.t[0])return;if(currentEpisode
 function togglePlayback(){if(playing)stopPlayback();else startPlayback();}
 function tick(now){if(!playing)return;let t=currentEpisodeTime;if(master){if(master.video.readyState<2||master.video.seeking){timer=requestAnimationFrame(tick);return}t=master.video.currentTime-master.spec.from_timestamp;if(t<r.t[0]-.01){syncVideos(r.t[0],true);timer=requestAnimationFrame(tick);return}}else{t=fallbackTime+(now-fallbackStart)/1000*+$('rate').value}displayTime(t);if(t>=r.t.at(-1)-.001){stopPlayback();seekTo(r.t.at(-1));return}syncVideos(t,false,true);timer=requestAnimationFrame(tick);}
 function buildVideos(){mediaVersion++;const version=mediaVersion;videoEntries.forEach(entry=>{entry.video.pause();entry.video.removeAttribute('src');entry.video.load()});videoEntries=[];master=null;$('videos').replaceChildren();$('videoMessage').textContent='';
-for(const side of ['left','right']){const specs=(r.videos||[]).filter(value=>value.side===side);if(!specs.length)continue;const spec=specs.find(value=>value.camera===selectedCameras[side])||specs[0];selectedCameras[side]=spec.camera;
-const card=document.createElement('div');card.className='video-card';const header=document.createElement('header'),title=document.createElement('strong');title.textContent=side==='left'?'左腕':'右腕';header.append(title);
+for(const side of ['head','left','right']){const specs=(r.videos||[]).filter(value=>value.side===side);if(!specs.length)continue;const spec=specs.find(value=>value.camera===selectedCameras[side])||specs[0];selectedCameras[side]=spec.camera;
+const card=document.createElement('div');card.className='video-card';const header=document.createElement('header'),title=document.createElement('strong');title.textContent=side==='head'?'主视角':side==='left'?'左腕':'右腕';header.append(title);
 const select=document.createElement('select');select.className='camera-select';select.dataset.side=side;select.setAttribute('aria-label',`${title.textContent}视角`);specs.forEach(value=>{const option=document.createElement('option');option.value=value.camera;option.textContent=value.camera.endsWith('_left')?'双目左视角':'双目右视角';option.selected=value.camera===spec.camera;select.append(option)});header.append(select);card.append(header);
-const video=document.createElement('video');video.muted=true;video.defaultMuted=true;video.playsInline=true;video.preload='metadata';video.tabIndex=0;video.dataset.side=side;video.dataset.camera=spec.camera;video.dataset.fromTimestamp=spec.from_timestamp;video.dataset.episodeStart=spec.from_timestamp+r.t[0];video.dataset.episodeEnd=spec.from_timestamp+r.t.at(-1);video.setAttribute('aria-label',`${title.textContent}视频，点击播放或暂停`);
+const video=document.createElement('video');video.muted=true;video.defaultMuted=true;video.playsInline=true;video.defaultPlaybackRate=+$('rate').value;video.playbackRate=+$('rate').value;video.preload='metadata';video.tabIndex=0;video.dataset.side=side;video.dataset.camera=spec.camera;video.dataset.fromTimestamp=spec.from_timestamp;video.dataset.episodeStart=spec.from_timestamp+r.t[0];video.dataset.episodeEnd=spec.from_timestamp+r.t.at(-1);video.setAttribute('aria-label',`${title.textContent}视频，点击播放或暂停`);
 const status=document.createElement('p');status.className='video-status';status.setAttribute('role','status');status.textContent='正在读取视频…';const entry={video,spec,status,failed:false};videoEntries.push(entry);
 video.addEventListener('loadedmetadata',()=>{if(version!==mediaVersion)return;status.textContent='与开度曲线同步';setVideoTime(entry,currentEpisodeTime,true)});
 video.addEventListener('error',()=>{if(version!==mediaVersion)return;entry.failed=true;status.textContent='视频加载失败，请检查连接；曲线仍可查看。';status.classList.add('video-error');if(entry===master){master=videoEntries.find(value=>!value.failed)||null;if(!master)stopPlayback()}});
@@ -193,7 +264,9 @@ $('rate').onchange=()=>{videoEntries.forEach(entry=>entry.video.playbackRate=+$(
                    for coverage in r["result"].get("coverage", {}).values() if coverage.get("matching_policy")}
         if len(margins) == 1:
             note += f" 同任务夹持区间已合并，边界各扩大{next(iter(margins)):g}，遇到已有空夹或冲突范围时停止。"
-    (run_dir / "review.html").write_text(page.replace("__MODE_NOTE__", note).replace("__DATA__", encoded), encoding="utf-8")
+    if has_head:
+        note = "本批使用主视角判断抓持，并据此生成动作配置。橙线为配置生成的审阅曲线；抓持状态保留模型来源，未经人工确认。重点查看凹谷及起止裁剪的半段过程。"
+    (run_dir / "review.html").write_text(page.replace("__MODE_NOTE__", note).replace("__CONFIG_LINK__", config_link).replace("__DATA__", encoded), encoding="utf-8")
     return run_dir / "review.html"
 
 

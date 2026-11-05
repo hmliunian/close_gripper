@@ -12,13 +12,15 @@ from .pipeline import create_run, dump, episode_fingerprint
 from .profile_clean import RULE_VERSION, generate_profile_targets
 from .report import write_report
 from .task_profiles import validate_catalog
+from .head_review import validate_head_review
 
 
 def _digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False, allow_nan=False).encode()).hexdigest()
 
 
-def run_profile_clean(episodes, output, catalog, *, config=None, workers=4, input_paths=()):
+def run_profile_clean(episodes, output, catalog, *, config=None, workers=4, input_paths=(),
+                      visual_reviews=None, evidence_frames=None):
     """Evaluate full curves, preserving the training target/validity contract.
 
     The actual rule curve is saved as ``evaluation.gripper_target``. Existing
@@ -31,6 +33,14 @@ def run_profile_clean(episodes, output, catalog, *, config=None, workers=4, inpu
         raise ValueError("distinct nonempty episode inputs are required")
     for episode in episodes:
         validate_episode(episode)
+    if visual_reviews is not None or evidence_frames is not None:
+        expected = {ep["episode_id"] for ep in episodes}
+        if (not isinstance(visual_reviews, dict) or not isinstance(evidence_frames, dict)
+                or set(visual_reviews) != expected or set(evidence_frames) != expected):
+            raise ValueError("visual reviews and evidence must match the whole input cohort")
+        for episode in episodes:
+            identifier = episode["episode_id"]
+            validate_head_review(episode, visual_reviews[identifier], evidence_frames[identifier])
     numerical = cycle_config(config)
     numerical["minimum_hold_s"] = catalog["minimum_hold_s"]
     fingerprints = {ep["episode_id"]: episode_fingerprint(ep) for ep in episodes}
@@ -48,11 +58,30 @@ def run_profile_clean(episodes, output, catalog, *, config=None, workers=4, inpu
     cfg = dict(workflow="task_profile_rule", rule_version=RULE_VERSION, evaluation_only=True, model_requests=0,
                catalog_version=catalog["version"], catalog_semantic_sha256=_digest(catalog),
                minimum_hold_s=catalog["minimum_hold_s"], numerical=numerical)
+    if visual_reviews is not None:
+        cfg.update(visual_camera_group="head", native_visual_review_episodes=len(visual_reviews),
+                   review_method="codex_native_vision", external_model_requests=0,
+                   visual_review_source="model", human_confirmed=False,
+                   rule_version=RULE_VERSION + "-reviewed-v1")
     dump(directory / "config.json", cfg)
 
     def process(episode):
         identifier = episode["episode_id"]
-        result = generate_profile_targets(episode, catalog, numerical)
+        if visual_reviews is None:
+            result = generate_profile_targets(episode, catalog, numerical)
+        else:
+            states = {side: [segment["state"] for segment in value["segments"]
+                            for _ in range(segment["start"], segment["end"] + 1)]
+                      for side, value in visual_reviews[identifier]["sides"].items()}
+            result = generate_profile_targets(episode, catalog, numerical, reviewed_states=states)
+            for side, values in states.items():
+                col = 0 if side == "left" else 1
+                for i, state in enumerate(values):
+                    if state == "uncertain" and (result["rule_applied_mask"][i][col]
+                            or result["preview_target"][i][col] != episode["state"][i][9 if col == 0 else 19]):
+                        raise ValueError("main-view unknown frame was modified")
+                    if result["preview_phase"][i][col] == "hold" and state != "held":
+                        raise ValueError("main-view zero hold extends outside observed holding")
         if episode_fingerprint(episode) != fingerprints[identifier]:
             raise ValueError("rule processing modified its observation input")
         original = [[row[9], row[19]] for row in episode["state"]]
@@ -61,16 +90,30 @@ def run_profile_clean(episodes, output, catalog, *, config=None, workers=4, inpu
         candidate_list = result.get("candidates", [])
         child = directory / hashlib.sha256(identifier.encode()).hexdigest()[:12]
         child.mkdir(exist_ok=False)
+        frames = []
+        if visual_reviews is not None:
+            result["visual_review"] = visual_reviews[identifier]
+            result["visual_review_scope"] = "dense_main_camera_model_observations_separate_from_numeric_rule"
+            image_dir = child / "images"
+            image_dir.mkdir()
+            for frame in evidence_frames[identifier]:
+                source_image = Path(frame["path"])
+                raw = source_image.read_bytes()
+                if hashlib.sha256(raw).hexdigest() != frame["sha256"]:
+                    raise ValueError("reviewed main image checksum differs")
+                destination = image_dir / (frame["camera"].rsplit("_", 1)[-1] + f"_{frame['frame_index']:06d}.jpg")
+                destination.write_bytes(raw)
+                frames.append(dict(frame, path=str(destination)))
         dump(child / "episode.json", episode)
         dump(child / "result.json", result)
         dump(child / "candidates.json", candidate_list)
-        dump(child / "frames.json", [])
+        dump(child / "frames.json", frames)
         dump(child / "model_responses.json", [])
         dump(child / "decisions.json", [])
         dump(child / "targets.json", dict(episode_id=identifier, identity=episode["identity"],
             episode_sha256=fingerprints[identifier], evidence_type="task_profile_rule",
             evaluation_only=True, grasp_semantics_verified=False,
-            method_version=RULE_VERSION, catalog_version=catalog["version"],
+            method_version=result["rule_version"], catalog_version=catalog["version"],
             source_run=str(directory), timestamps=episode["timestamps"],
             frame_indices=episode.get("frame_indices", list(range(len(original)))),
             **{"annotation.gripper_target": result["target"],
@@ -81,7 +124,7 @@ def run_profile_clean(episodes, output, catalog, *, config=None, workers=4, inpu
                "evaluation.gripper_rule_applied": result["rule_applied_mask"],
                "evaluation.gripper_phase": result["preview_phase"],
                "evaluation.gripper_source": result["preview_source"]}))
-        record = dict(episode=episode, result=result, candidates=candidate_list, frames=[],
+        record = dict(episode=episode, result=result, candidates=candidate_list, frames=frames,
                       responses=[], directory=child.name)
         write_report(child, [record])
         changed = sum(any(abs(row[col] - original[i][col]) > 1e-12 for col in (0, 1))
@@ -142,5 +185,10 @@ def run_profile_clean(episodes, output, catalog, *, config=None, workers=4, inpu
         generated_curve_field="evaluation.gripper_target", generated_mask_field="evaluation.gripper_rule_applied")
     if summary["implementation_changed_during_run"]:
         raise ValueError("implementation changed during this evaluation")
+    if visual_reviews is not None:
+        summary.update(native_visual_review_episodes=len(visual_reviews),
+                       native_visual_review_source="model", visual_camera_group="head",
+                       rule_version=records[0]["result"]["rule_version"],
+                       unknown_visual_frames_preserved=True, heldout_evaluation=False)
     dump(directory / "summary.json", summary)
     return summary

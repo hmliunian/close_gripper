@@ -22,6 +22,75 @@ class ReportTests(unittest.TestCase):
                     videos=[dict(side="right", camera=camera, url="/media/abc123.mp4",
                                  from_timestamp=12.7, to_timestamp=16.0)])
 
+    def head_record(self):
+        record = self.video_record()
+        episode = record["episode"]
+        episode.update(vision_camera_group="head", valid_sides=["right"], cameras={})
+        record["videos"] = []
+        for eye, offset in (("left", 12.7), ("right", 12.9)):
+            camera = f"observation.images.cam_head_{eye}"
+            episode["cameras"][camera] = dict(from_timestamp=offset, to_timestamp=16.2)
+            record["videos"].append(dict(side="head", camera=camera, url=f"/media/head_{eye}.mp4",
+                                         from_timestamp=offset, to_timestamp=16.2))
+        record["result"]["visual_review"] = dict(camera_group="head", review_source="model", confirmed=False,
+            sides=dict(right=dict(segments=[dict(start=0, end=1, state="free", note="夹爪尚未接触"),
+                                            dict(start=2, end=4, state="held", note="物体随手移动")],
+                                  reviewed_frame_indices=[0, 1, 2, 3, 4])),
+            focus_intervals=[dict(side="right", start=0, end=4, shape_hint="descending_half")])
+        return record
+
+    def test_head_stereo_keeps_one_view_group_and_arm_labels_separate(self):
+        record = self.head_record()
+        before = copy.deepcopy(record)
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "task_profiles.json").write_text('{"tasks": []}')
+            page = write_report(tmp, [record]).read_text()
+        value = json.loads(page.split("const records=", 1)[1].split(";let r, timer;", 1)[0])[0]
+        self.assertEqual([v["side"] for v in value["videos"]], ["head", "head"])
+        self.assertEqual([v["from_timestamp"] for v in value["videos"]], [12.7, 12.9])
+        self.assertEqual(value["valid_sides"], ["right"])
+        self.assertEqual(value["visual_review"], record["result"]["visual_review"])
+        self.assertEqual(value["target"], record["result"]["target"])
+        self.assertIn('id="taskConfigDownload" href="task_profiles.json" download', page)
+        self.assertEqual(record, before)
+
+    def test_head_camera_requires_explicit_group_and_cannot_impersonate_an_arm(self):
+        for mutation in ("missing_group", "head_is_right_arm", "wrist_in_head_group", "wrong_eye_offset"):
+            record = self.head_record()
+            if mutation == "missing_group":
+                record["episode"].pop("vision_camera_group")
+            elif mutation == "head_is_right_arm":
+                record["videos"][0]["side"] = "right"
+            elif mutation == "wrist_in_head_group":
+                record["videos"][0]["camera"] = "observation.images.cam_right_wrist_left"
+            else:
+                record["videos"][1]["from_timestamp"] = 12.7
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as tmp:
+                with self.assertRaises(ValueError):
+                    write_report(tmp, [record])
+
+    def test_main_view_segments_reject_false_provenance_or_wrong_frame_identity(self):
+        for mutation in ("human_claim", "invalid_side", "overlap", "outside_episode", "unknown_state", "bad_focus"):
+            record = self.head_record()
+            review = record["result"]["visual_review"]
+            if mutation == "human_claim":
+                review["confirmed"] = True
+            elif mutation == "invalid_side":
+                review["sides"]["left"] = review["sides"].pop("right")
+            elif mutation == "bad_focus":
+                review["focus_intervals"][0]["side"] = "head"
+            else:
+                segment = review["sides"]["right"]["segments"][1]
+                if mutation == "overlap":
+                    segment["start"] = 1
+                elif mutation == "outside_episode":
+                    segment["end"] = len(record["episode"]["timestamps"])
+                else:
+                    segment["state"] = "maybe"
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as tmp:
+                with self.assertRaises(ValueError):
+                    write_report(tmp, [record])
+
     def test_video_preserves_the_episode_offset_and_numeric_curves(self):
         record = self.video_record()
         snapshot = copy.deepcopy(record)

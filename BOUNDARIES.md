@@ -1,6 +1,6 @@
 # close_gripper 工程边界与验证
 
-更新日期：2026-11-04。[Untitled.md](Untitled.md) 定义任务目标与交付；[PLAN.md](PLAN.md) 定义实现方法、业务语义和任务验收。本文负责工程边界，不用写入限制或阶段状态缩小任务。用户已授权实现、测试、提交、推送和任务对齐后的验证准备；正式发布仍按任务书约定确认。
+更新日期：2026-11-05。[Untitled.md](Untitled.md) 定义任务目标与交付；[PLAN.md](PLAN.md) 定义实现方法、业务语义和任务验收。本文负责工程边界，不用写入限制或阶段状态缩小任务。用户已授权实现、测试、提交、推送和任务对齐后的验证准备；正式发布仍按任务书约定确认。
 
 ## 输入与写入范围
 
@@ -26,6 +26,7 @@
 | --- | --- | --- |
 | `contracts.py` | 输入身份、侧别、帧与相机引用、视觉和周期结构、来源及目标校验 | 不执行文件读写、网络或意图推断 |
 | `dataset.py` | 只读加载、mask、视频偏移及同侧取帧 | 不改源数据、不决定标签、不读模型凭据 |
+| `head_review.py`、`scripts/prepare_head_review.py`、`scripts/run_head_review.py` | 主视角20条输入、逐侧完整语义记录、证据校验和任务配置构建 | 显式head相机组、各目独立偏移；相机目别不能充当手臂侧别；只接收实际已查看图片，校验来源、帧覆盖与SHA；不借用腕部语义，不冒充人工或留出评估 |
 | `core.py`、`cycles.py` | 历史局部候选与完整周期数值定位、平台与过渡拟合、按证据生成目标及回退 | 不读凭据、不访问网络、不依赖主臂逐帧值；算法规则只在 PLAN 定义 |
 | `task_profiles.py`、`scripts/survey_task_grippers.py`、`scripts/build_task_profiles.py` | 全发布数值扫描、视觉校准证据与模式关联、任务配置校验／解析／数值匹配 | 扫描只读；新产物写入独立 run；原生视觉记录标为模型来源；数值匹配不生成标签、不绕过完整周期证据或自动发布 |
 | `profile_clean.py`、`profile_run.py`、CLI `profile-clean` | 根据任务配置生成完整数值审阅曲线，保存输入／配置／实现快照和任务统计 | 规则曲线使用独立 evaluation 字段；原观测和训练目标合同保持；不伪造逐episode视觉决定，不发布派生数据 |
@@ -36,7 +37,7 @@
 | `pipeline.py`、`clean.py` | 历史流程／完整 episode 编排、共享预算、输入与实现快照、覆盖、任务统计及报告 | 不复制数值算法、不绕过证据校验、不默认发布 |
 | `batch.py`、`batch_report.py` | 有界批次执行、身份核验、任务统计与汇总审阅 | 区分代表事件实验和完整 episode 处理，分开统计未检查与回退 |
 | `report.py`、`sampling.py` | 展示原始／目标开度、覆盖和来源；建立可追溯样本清单 | 展示和取样不能代替人工参考或算法验收 |
-| `review_server.py`、`scripts/render_video_review.py`、`scripts/render_mode_review.py`、`scripts/serve_review.py` | 连续腕部视频与曲线同步、稳定模式证据展示、独立展示目录、只读媒体清单及 HTTP Range | 视频绑定有效侧、相机和原时间偏移；模式页只展示保存的帧状态与原曲线，逐图校验摘要并复制原字节；只服务清单中的视频与展示目录内文件，不改原数值或源视频，不开放任意外部路径 |
+| `review_server.py`、`scripts/render_video_review.py`、`scripts/render_mode_review.py`、`scripts/serve_review.py` | 连续腕部／主视角视频与曲线同步、语义区间与模式证据、独立展示目录、只读媒体清单及 HTTP Range | 视频绑定显式视角组、相机和原时间偏移；主视角共享画面与左右手语义分别校验；只展示保存的判断，逐图校验摘要并复制原字节；只服务清单中的视频与展示目录内文件，不改原数值或源视频，不开放任意外部路径 |
 | `training.py` 及实际 loader 接入 | 新动作目标与原观测分离、维度和时间网格合同 | 本地适配函数不等同于外部实际 loader 已接入 |
 | `export.py`、`scripts/verify_orion_loader.py` | 独立派生、元数据、标签 sidecar 与摘要、隔离 loader 补丁和真实 batch 验证 | 不原地修改源发布版或外部训练仓库，正式发布与本地准备分开 |
 | `scripts/replay_clean_run.py`、`scripts/verify_clean_run.py` | 同候选的零调用数值重放、独立落盘产物核验 | 核验原输入／实现／证据摘要；旧请求与新请求分计，复用不作为独立效果评估 |

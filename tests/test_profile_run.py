@@ -31,7 +31,7 @@ def catalog():
 def generated(ep, profiles, config):
     original = [[r[9], r[19]] for r in ep["state"]]
     preview = [[r[9], 0.] for r in ep["state"]]
-    return dict(workflow="task_profile_rule", target=original, preview_target=preview,
+    return dict(workflow="task_profile_rule", rule_version="test-profile-generator-v1", target=original, preview_target=preview,
         valid=[[False,False] for _ in original], rule_applied_mask=[[False,True] for _ in original],
         phase=[["unchanged","unchanged"] for _ in original], source=[["",""] for _ in original],
         preview_phase=[["unchanged","hold"] for _ in original],
@@ -61,6 +61,7 @@ class ProfileRunContracts(unittest.TestCase):
                 self.assertEqual(targets["annotation.gripper_target_valid"], [[False,False]] * 9)
                 self.assertEqual(targets["evaluation.gripper_target"], [[.7,0.]] * 9)
                 self.assertEqual(targets["evaluation.gripper_rule_applied"], [[False,True]] * 9)
+                self.assertEqual(targets["method_version"], "test-profile-generator-v1")
                 self.assertTrue(targets["evaluation_only"])
                 self.assertFalse(targets["grasp_semantics_verified"])
                 self.assertEqual(summary["actual_requests"], 0)

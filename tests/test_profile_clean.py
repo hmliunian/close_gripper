@@ -52,6 +52,166 @@ def local_release_catalog():
 
 
 class ProfileRuleContracts(unittest.TestCase):
+    def test_reviewed_half_valleys_stop_at_visible_brush_hold_boundaries(self):
+        # Main-view brush reviews end before the numeric plateau: ambiguity
+        # covers insertion/release while width remains in the holding band.
+        for numeric_end, held_end, uncertain_end, size in ((29, 26, 34, 46), (23, 20, 28, 37)):
+            with self.subTest(held_end=held_end):
+                values = [.2] * (numeric_end + 1) + [.4, .6, .8]
+                values += [.8] * (size - len(values))
+                states = (["held"] * (held_end + 1) + ["uncertain"] * (uncertain_end - held_end)
+                          + ["free"] * (size - uncertain_end - 1))
+                ep, c = episode(values), catalog()
+                numeric = generate_profile_targets(ep, c)
+                result = generate_profile_targets(ep, c, reviewed_states={"right": states})
+                event, = applied(result)
+                self.assertEqual((event["hold_start"], event["hold_end"], event["modified_end"]),
+                                 (0, held_end, held_end))
+                self.assertIsNone(event["release_end"])
+                self.assertIn("release:no_observed_boundary", event["transition_issues"])
+                self.assertEqual([row[1] for row in result["rule_target"][:held_end + 1]],
+                                 [0.] * (held_end + 1))
+                for i in range(held_end + 1, size):
+                    self.assertEqual(result["rule_target"][i][1], values[i])
+                    self.assertFalse(result["rule_applied_mask"][i][1])
+                self.assertEqual(result["numeric_candidates"], numeric["candidates"])
+                self.assertEqual((event["block_start"], event["block_end"]), (0, size - 1))
+                removed, = [e for e in result["events"] if e["reason"] == "reviewed_uncertain"]
+                self.assertEqual((removed["start"], removed["end"]), (held_end + 1, numeric_end))
+                self.assertEqual(removed["numeric_candidate_id"], event["numeric_candidate_id"])
+
+    def test_reviewed_intersections_need_six_tenths_after_unknown_frames_split_hold(self):
+        values = [.2] * 13
+        states = ["held"] * 6 + ["uncertain"] + ["held"] * 6
+        result = generate_profile_targets(episode(values), catalog(), reviewed_states={"right": states})
+        self.assertFalse(applied(result))
+        self.assertEqual(result["rule_target"], result["target"])
+        self.assertFalse(any(any(row) for row in result["rule_applied_mask"]))
+        self.assertEqual([(e["start"], e["end"], e["reason"]) for e in result["events"]],
+                         [(0, 5, "insufficient_reviewed_holding_duration"),
+                          (6, 6, "reviewed_uncertain"),
+                          (7, 12, "insufficient_reviewed_holding_duration")])
+        self.assertEqual(result["coverage"]["right"]["reason"], "no_qualified_reviewed_held_window")
+        self.assertEqual(result["coverage"]["right"]["numeric_matched_intervals"], 1)
+
+    def test_reviewed_hold_union_cannot_replace_a_qualified_stable_witness(self):
+        # The 0.7 s reviewed hold crosses two drift modes; each stable
+        # intersection lasts only 0.5 s, even though the original union qualified.
+        values = [.19] * 3 + [.205] * 4 + [.22] * 3
+        states = ["free"] + ["held"] * 8 + ["free"]
+        result = generate_profile_targets(episode(values), catalog(), reviewed_states={"right": states})
+        numeric, = result["numeric_candidates"]
+        self.assertEqual([(w["start"], w["end"]) for w in numeric["matched_windows"]], [(0, 6), (3, 9)])
+        self.assertFalse(applied(result))
+        self.assertEqual(result["rule_target"], result["target"])
+        rejected, = [e for e in result["events"] if e.get("reviewed_state") == "held"]
+        self.assertEqual([(w["start"], w["end"]) for w in rejected["unqualified_windows"]],
+                         [(1, 6), (3, 8)])
+        self.assertTrue(all(w["duration_s"] < .6 for w in rejected["unqualified_windows"]))
+        self.assertEqual(sum(e["end"] - e["start"] + 1 for e in result["events"]), len(values))
+
+    def test_overlapping_reviewed_witnesses_merge_and_cover_each_claimed_hold_frame(self):
+        values = [.19] * 7 + [.205] * 7 + [.22] * 7
+        states = ["uncertain"] + ["held"] * 19 + ["free"]
+        result = generate_profile_targets(episode(values), catalog(), reviewed_states={"right": states})
+        event, = applied(result)
+        self.assertEqual((event["hold_start"], event["hold_end"]), (1, 19))
+        self.assertEqual([(w["start"], w["end"]) for w in event["matched_windows"]], [(1, 13), (7, 19)])
+        for i in range(1, 20):
+            self.assertTrue(any(w["start"] <= i <= w["end"] and w["duration_s"] >= .6
+                                for w in event["matched_windows"]))
+            self.assertEqual(result["rule_target"][i][1], 0.)
+        for i in (0, 20):
+            self.assertEqual(result["rule_target"][i][1], values[i])
+            self.assertFalse(result["rule_applied_mask"][i][1])
+
+    def test_visible_full_cycle_preserves_fixed_time_mapping_and_marks_reviewed_source(self):
+        values = [.8, .8, .6, .4, .2] + [.2] * 8 + [.4, .6, .8, .8]
+        states = ["free"] * 4 + ["held"] * 9 + ["free"] * 4
+        ep, c = episode(values), catalog()
+        before = copy.deepcopy((ep, c, states))
+        numeric = generate_profile_targets(ep, c)
+        result = generate_profile_targets(ep, c, reviewed_states={"right": states})
+        event, = applied(result)
+        self.assertEqual((event["closing_start"], event["hold_start"], event["hold_end"], event["release_end"]),
+                         (1, 4, 12, 15))
+        for field in ("rule_target", "rule_applied_mask", "preview_phase", "target", "valid"):
+            self.assertEqual(result[field], numeric[field])
+        self.assertAlmostEqual(result["rule_target"][2][1], .8 * (.6 - .2) / (.8 - .2))
+        self.assertAlmostEqual(result["rule_target"][13][1], .8 * (.4 - .2) / (.8 - .2))
+        self.assertEqual(result["workflow"], "task_profile_rule")
+        self.assertEqual(result["rule_source"], "task_profile_rule_reviewed")
+        self.assertEqual(event["source"], result["rule_source"])
+        self.assertEqual(result["preview_source"][5][1], result["rule_source"])
+        self.assertEqual(result["hold_policy"], "reviewed_held_stable_task_band")
+        self.assertNotEqual(result["rule_version"], numeric["rule_version"])
+        self.assertFalse(result["grasp_semantics_verified"])
+        self.assertFalse(result["training_ready"])
+        self.assertEqual((ep, c, states), before)
+        self.assertNotIn("numeric_candidates", numeric)
+        self.assertNotIn("semantic_gate_applied", numeric)
+        self.assertEqual(numeric, generate_profile_targets(ep, c, reviewed_states=None))
+
+    def test_unknown_frame_rejects_whole_transition_without_rejecting_hold(self):
+        values = [.8, .8, .6, .4, .2] + [.2] * 8 + [.4, .6, .8, .8]
+        states = ["free"] * 4 + ["held"] * 9 + ["free"] * 4
+        states[2] = states[14] = "uncertain"
+        result = generate_profile_targets(episode(values), catalog(), reviewed_states={"right": states})
+        event, = applied(result)
+        self.assertEqual((event["modified_start"], event["modified_end"]), (4, 12))
+        self.assertIsNone(event["closing_start"])
+        self.assertIsNone(event["release_end"])
+        self.assertIn("closing:reviewed_uncertain_boundary", event["transition_issues"])
+        self.assertIn("release:reviewed_uncertain_boundary", event["transition_issues"])
+        for i, value in enumerate(values):
+            self.assertEqual(result["rule_target"][i][1], 0. if 4 <= i <= 12 else value)
+            self.assertEqual(result["rule_applied_mask"][i][1], 4 <= i <= 12)
+
+    def test_reviewed_transition_cannot_cross_an_independent_held_cycle(self):
+        c = catalog()
+        c["tasks"][0]["sides"]["right"]["closed_bands"].append(
+            dict(id="next", lower=.24, center=.25, upper=.26))
+        values = [.2] * 8 + [.21, .22, .23, .24, .25] + [.25] * 8
+        states = ["held"] * 10 + ["free"] + ["held"] * 10
+        result = generate_profile_targets(episode(values), c, reviewed_states={"right": states})
+        first, second = applied(result)
+        self.assertEqual((first["hold_start"], first["hold_end"]), (0, 9))
+        self.assertEqual((second["hold_start"], second["hold_end"]), (11, 20))
+        self.assertIn("release:crosses_independent_held_cycle", first["transition_issues"])
+        self.assertIsNone(first["release_end"])
+        self.assertEqual(result["rule_target"][10][1], values[10])
+        self.assertFalse(result["rule_applied_mask"][10][1])
+
+    def test_transition_cannot_extend_zero_to_visible_free_frames(self):
+        values = [.2] * 6 + [.21, .22, .219, .3, .8]
+        states = ["held"] * 8 + ["free"] * 3
+        result = generate_profile_targets(episode(values), catalog(), reviewed_states={"right": states})
+        event, = applied(result)
+        self.assertEqual(event["hold_end"], 7)
+        self.assertIn("release:zero_on_reviewed_free_frame", event["transition_issues"])
+        self.assertEqual(result["rule_target"][8:], [[0., v] for v in values[8:]])
+        self.assertTrue(all(not row[1] for row in result["rule_applied_mask"][8:]))
+
+    def test_reviewed_states_are_specific_to_each_actual_arm(self):
+        c = catalog()
+        c["tasks"][0]["sides"]["left"] = copy.deepcopy(c["tasks"][0]["sides"]["right"])
+        ep = episode([.2] * 7, left=[.2] * 7)
+        result = generate_profile_targets(ep, c, reviewed_states={"left": ["held"] * 7,
+                                                                 "right": ["uncertain"] * 7})
+        self.assertEqual({e["side"] for e in applied(result)}, {"left"})
+        self.assertEqual(result["rule_target"], [[0., .2] for _ in range(7)])
+        self.assertEqual(result["rule_applied_mask"], [[True, False] for _ in range(7)])
+
+    def test_malformed_per_frame_reviewed_states_are_rejected(self):
+        cases = [[], {}, {"left": ["held"] * 7}, {"right": ["held"] * 6},
+                 {"right": "held"}, {"right": tuple(["held"] * 7)},
+                 {"right": ["held"] * 6 + ["unknown"]}, {"right": ["held"] * 6 + [None]},
+                 {"right": ["held"] * 6 + [True]},
+                 {"right": ["held"] * 7, "left": ["held"] * 7}]
+        for states in cases:
+            with self.subTest(states=states), self.assertRaisesRegex(ValueError, "reviewed_states"):
+                generate_profile_targets(episode([.2] * 7), catalog(), reviewed_states=states)
+
     def test_known_misaligned_source_is_rejected_by_source_or_exact_release_identity(self):
         c = catalog()
         c.update(excluded_source_ids=["bad-source"], excluded_episode_identities=[

@@ -240,7 +240,10 @@ def _mode_record(record, mapping, modes):
         if i in panels and abs(panels[i]["opening"] - value) > _EPS:
             raise ValueError("stereo panels disagree on opening")
         camera = panel.get("camera")
-        if camera is not None and "cam_" + r["side"] + "_wrist_" not in camera:
+        if r.get("camera_group") == "head":
+            if camera not in ("observation.images.cam_head_left", "observation.images.cam_head_right"):
+                raise ValueError("head review requires an explicit main camera")
+        elif camera is not None and "cam_" + r["side"] + "_wrist_" not in camera:
             raise ValueError("visual evidence uses the wrong side camera")
         panels[i] = panel
     states = {}

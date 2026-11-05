@@ -77,6 +77,49 @@ class RenderVideoReviewTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "artifact changed"):
             render.finalize_video_review(self.output())
 
+    def test_main_view_render_preserves_each_eye_offset_config_and_visual_segments(self):
+        episode = render.read_json(self.episode_dir / "episode.json")
+        episode["vision_camera_group"] = "head"
+        video = self.workspace / "source.mp4"
+        episode["cameras"] = {
+            f"observation.images.cam_head_{eye}": dict(path=str(video), from_timestamp=offset, to_timestamp=3.)
+            for eye, offset in (("left", .7), ("right", .8))}
+        # A masked/irrelevant wrist path must not be opened by a head-only run.
+        episode["cameras"]["observation.images.cam_right_wrist_left"] = dict(
+            path="/missing-unused-wrist.mp4", from_timestamp=0., to_timestamp=3.)
+        pipeline.dump(self.episode_dir / "episode.json", episode)
+        targets = render.read_json(self.episode_dir / "targets.json")
+        targets["episode_sha256"] = pipeline.episode_fingerprint(episode)
+        pipeline.dump(self.episode_dir / "targets.json", targets)
+        result = render.read_json(self.episode_dir / "result.json")
+        result["visual_review"] = dict(camera_group="head", review_source="model", confirmed=False,
+            sides=dict(right=dict(segments=[dict(start=0, end=2, state="held", note="物体随夹爪运动")],
+                                  reviewed_frame_indices=[0, 1, 2])))
+        pipeline.dump(self.episode_dir / "result.json", result)
+        frames = render.read_json(self.episode_dir / "frames.json")
+        frames[0]["camera"] = "observation.images.cam_head_left"
+        pipeline.dump(self.episode_dir / "frames.json", frames)
+        config = b'{"schema": "fixture", "camera_group": "head"}\n'
+        (self.source / "task_profiles.json").write_bytes(config)
+        summary = render.prepare_video_review(self.source, self.output())
+        display = render.read_json(self.output() / "display_manifest.json")["episodes"][0]
+        self.assertEqual(summary["video_references"], 2)
+        self.assertEqual([v["side"] for v in display["videos"]], ["head", "head"])
+        self.assertEqual([v["from_timestamp"] for v in display["videos"]], [.7, .8])
+        self.assertEqual((self.output() / "task_profiles.json").read_bytes(), config)
+        self.assertIn('href="task_profiles.json" download', (self.output() / "review.html").read_text())
+        self.assertIn('href="../task_profiles.json" download', (self.output() / "episode/review.html").read_text())
+        saved = render.read_json(self.output() / "episode/result.json")
+        self.assertEqual(saved, result)
+
+    def test_main_view_preparation_rejects_a_video_that_does_not_cover_the_episode(self):
+        episode = render.read_json(self.episode_dir / "episode.json")
+        episode["vision_camera_group"] = "head"
+        episode["cameras"] = {"observation.images.cam_head_left": dict(
+            path=str(self.workspace / "source.mp4"), from_timestamp=.7, to_timestamp=.8)}
+        with self.assertRaisesRegex(ValueError, "cover the episode"):
+            render.video_entries(episode, {})
+
     def test_fingerprint_or_invalid_video_interval_is_rejected(self):
         target = render.read_json(self.episode_dir / "targets.json")
         target["episode_sha256"] = "stale"

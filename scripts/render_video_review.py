@@ -46,11 +46,13 @@ def copy_artifact(source, destination, source_root, output, inventory, expected=
 
 def video_entries(episode, media):
     videos = []
-    for side in ("left", "right"):
-        if side not in episode.get("valid_sides", []):
-            continue
-        for eye in ("left", "right"):
-            camera = f"observation.images.cam_{side}_wrist_{eye}"
+    if episode.get("vision_camera_group") == "head":
+        groups = [("head", report.HEAD_CAMERAS)]
+    else:
+        groups = [(side, tuple(f"observation.images.cam_{side}_wrist_{eye}" for eye in ("left", "right")))
+                  for side in ("left", "right") if side in episode.get("valid_sides", [])]
+    for side, cameras in groups:
+        for camera in cameras:
             spec = episode.get("cameras", {}).get(camera)
             if not isinstance(spec, dict) or spec.get("valid", True) is not True:
                 continue
@@ -65,7 +67,7 @@ def video_entries(episode, media):
             url = f"/media/{identity}.mp4"
             media[url] = dict(source_path=str(path), **stat)
             videos.append(dict(side=side, camera=camera, url=url, from_timestamp=start, to_timestamp=end))
-    return videos
+    return report._report_videos(episode, dict(videos=videos))
 
 
 def verify_preservation(root, inventory, media, source):
@@ -103,6 +105,8 @@ def prepare_video_review(source_run, output, *, prepare_only=False):
         path = source / name
         if path.is_file():
             copy_artifact(safe_child(source, name), root / ("source_" + name), source, root, inventory)
+    if (source / "task_profiles.json").is_file():
+        copy_artifact(safe_child(source, "task_profiles.json"), root / "task_profiles.json", source, root, inventory)
     image_count = 0
     for item in prepared:
         old, new = safe_child(source, item["directory"]), safe_child(root, item["directory"])

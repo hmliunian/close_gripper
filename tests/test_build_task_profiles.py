@@ -400,6 +400,34 @@ class BuildTaskProfilesContracts(unittest.TestCase):
             with self.subTest(change=change), self.assertRaises(ValueError):
                 self.module.build_catalog(**args)
 
+    def test_main_camera_mode_evidence_requires_an_explicit_head_group(self):
+        args = mode_fixture()
+        source = args["reviews"]["records"][0]
+        mapping = args["mappings"]["samples"][0]
+        modes = {("lower", "grip"): dict(lower=.1, upper=.3)}
+        for eye in ("left", "right"):
+            record = copy.deepcopy(source)
+            record["camera_group"] = "head"
+            camera = f"observation.images.cam_head_{eye}"
+            for panel in record["panels"]:
+                panel["camera"] = camera
+            before = copy.deepcopy(record)
+            normalized = self.module._mode_record(record, mapping, modes)
+            self.assertEqual(normalized["interval_semantics"], "held")
+            self.assertEqual({p["camera"] for p in normalized["_panels"].values()}, {camera})
+            self.assertEqual(record, before)
+        for failure in ("wrist_masquerade", "unmarked_head", "missing_camera"):
+            record = copy.deepcopy(source)
+            if failure != "unmarked_head":
+                record["camera_group"] = "head"
+            for panel in record["panels"]:
+                if failure == "unmarked_head":
+                    panel["camera"] = "observation.images.cam_head_left"
+                elif failure == "missing_camera":
+                    panel.pop("camera")
+            with self.subTest(failure=failure), self.assertRaises(ValueError):
+                self.module._mode_record(record, mapping, modes)
+
     def test_single_free_frame_does_not_inflate_to_population_upper_mode(self):
         args = mode_fixture()
         profile = self.module.build_catalog(**args)["tasks"][0]["sides"]["right"]

@@ -1,0 +1,545 @@
+{
+  "schema": "close_gripper.head20_delivery.v1",
+  "episodes": 20,
+  "independent_sources": 20,
+  "tasks": 10,
+  "effective_episode_sides": 22,
+  "time_frames": 1612,
+  "effective_side_frames": 2258,
+  "native_visual_state_counts": {
+    "uncertain": 948,
+    "free": 677,
+    "held": 633
+  },
+  "viewed_images": 2357,
+  "camera_group": "head",
+  "wrist_evidence_used": false,
+  "human_confirmed": false,
+  "config": "configs/task_gripper_profiles_head20.json",
+  "gui_url": "http://127.0.0.1:8770/review.html",
+  "input_run": "runs/20261105_head20_inputs_v1",
+  "review_run": "runs/20261105_head20_reviews_v1",
+  "config_run": "runs/20261105_head20_config_v3",
+  "evaluation_run": "runs/20261105_head20_eval_v3",
+  "gui_run": "runs/20261105_head20_gui_v2",
+  "automatic_tasks": [
+    "插入缝隙刷"
+  ],
+  "changed_episodes": 2,
+  "changed_frames": 48,
+  "evaluation_only": true,
+  "heldout_evaluation": false,
+  "source_data_changed": false,
+  "task_profiles": [
+    {
+      "task": "拿起刷子",
+      "side": "right",
+      "episodes": 2,
+      "state_frames": {
+        "uncertain": 67
+      },
+      "automatic_use": false,
+      "closed_bands": [],
+      "held_candidate_bands": [],
+      "reasons": [
+        "no_confirmed_holding_in_main_view",
+        "no_supported_stable_holding_interval"
+      ]
+    },
+    {
+      "task": "拿起杯子",
+      "side": "right",
+      "episodes": 2,
+      "state_frames": {
+        "uncertain": 93
+      },
+      "automatic_use": false,
+      "closed_bands": [],
+      "held_candidate_bands": [],
+      "reasons": [
+        "no_confirmed_holding_in_main_view",
+        "no_supported_stable_holding_interval"
+      ]
+    },
+    {
+      "task": "拿起魔方",
+      "side": "right",
+      "episodes": 2,
+      "state_frames": {
+        "uncertain": 78,
+        "free": 21
+      },
+      "automatic_use": false,
+      "closed_bands": [],
+      "held_candidate_bands": [],
+      "reasons": [
+        "no_confirmed_holding_in_main_view",
+        "no_supported_stable_holding_interval"
+      ]
+    },
+    {
+      "task": "拿起海绵擦",
+      "side": "right",
+      "episodes": 2,
+      "state_frames": {
+        "free": 44,
+        "uncertain": 57,
+        "held": 8
+      },
+      "automatic_use": false,
+      "closed_bands": [],
+      "held_candidate_bands": [
+        {
+          "lower": 0.06712650370597839,
+          "upper": 0.0733258290886879,
+          "calibration_centers": [
+            0.07022616639733315
+          ],
+          "case_ids": [
+            "episode_06:right:35-58"
+          ],
+          "source_ids": [
+            "8bcb2295244e844ccc5d6b0d0fdb5853"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_00",
+          "center": 0.07022616639733315,
+          "reviewed_source_count": 1
+        }
+      ],
+      "reasons": [
+        "insufficient_independent_holding_sources"
+      ]
+    },
+    {
+      "task": "拿起芒果",
+      "side": "right",
+      "episodes": 2,
+      "state_frames": {
+        "free": 23,
+        "uncertain": 91
+      },
+      "automatic_use": false,
+      "closed_bands": [],
+      "held_candidate_bands": [],
+      "reasons": [
+        "no_confirmed_holding_in_main_view",
+        "no_supported_stable_holding_interval"
+      ]
+    },
+    {
+      "task": "插入缝隙刷",
+      "side": "right",
+      "episodes": 2,
+      "state_frames": {
+        "held": 48,
+        "uncertain": 16,
+        "free": 19
+      },
+      "automatic_use": true,
+      "closed_bands": [
+        {
+          "lower": 0.16107005488872528,
+          "upper": 0.16710481929779053,
+          "case_ids": [
+            "episode_10:right:0-29",
+            "episode_11:right:0-24"
+          ],
+          "source_ids": [
+            "02b3136abc0e489521ff289f828980dd",
+            "2f930b5e7e16cc8fd102a00fca456741"
+          ],
+          "numeric_mode_ids": [],
+          "calibration_centers": [
+            0.1640353500843048,
+            0.16412213444709778
+          ],
+          "basis": [
+            "pointwise_two_distinct_source_intersection",
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "center": 0.1640787422657013,
+          "reviewed_source_count": 2,
+          "id": "closed_01",
+          "parent_band_id": "closed_00",
+          "excluded_interval_vision_ids": [],
+          "minimum_pointwise_source_count": 2,
+          "open_band_ids": [
+            "open_00",
+            "open_01"
+          ]
+        }
+      ],
+      "held_candidate_bands": [
+        {
+          "lower": 0.1609658808708191,
+          "upper": 0.16717421400547028,
+          "calibration_centers": [
+            0.1640353500843048,
+            0.16412213444709778
+          ],
+          "case_ids": [
+            "episode_10:right:0-29",
+            "episode_11:right:0-24"
+          ],
+          "source_ids": [
+            "02b3136abc0e489521ff289f828980dd",
+            "2f930b5e7e16cc8fd102a00fca456741"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_00",
+          "center": 0.1640787422657013,
+          "reviewed_source_count": 2
+        }
+      ],
+      "reasons": [
+        "insufficient_independent_holding_sources"
+      ]
+    },
+    {
+      "task": "揭开锅盖",
+      "side": "right",
+      "episodes": 2,
+      "state_frames": {
+        "free": 39,
+        "uncertain": 49,
+        "held": 49
+      },
+      "automatic_use": false,
+      "closed_bands": [],
+      "held_candidate_bands": [
+        {
+          "lower": 0.18672393870353698,
+          "upper": 0.1929687796831131,
+          "calibration_centers": [
+            0.18984635919332504
+          ],
+          "case_ids": [
+            "episode_12:right:28-56"
+          ],
+          "source_ids": [
+            "e803d889d571fdd5a0b65dba85a290cf"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_00",
+          "center": 0.18984635919332504,
+          "reviewed_source_count": 1
+        },
+        {
+          "lower": 0.24543694269657135,
+          "upper": 0.2569280951023102,
+          "calibration_centers": [
+            0.25118251889944077
+          ],
+          "case_ids": [
+            "episode_13:right:50-79"
+          ],
+          "source_ids": [
+            "9f769a6697f0676da810e294aba4aed5"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_01",
+          "center": 0.25118251889944077,
+          "reviewed_source_count": 1
+        }
+      ],
+      "reasons": [
+        "insufficient_independent_holding_sources"
+      ]
+    },
+    {
+      "task": "盖上锅盖",
+      "side": "right",
+      "episodes": 2,
+      "state_frames": {
+        "held": 48,
+        "uncertain": 63,
+        "free": 18
+      },
+      "automatic_use": false,
+      "closed_bands": [],
+      "held_candidate_bands": [
+        {
+          "lower": 0.19723424923419952,
+          "upper": 0.20772732186317444,
+          "calibration_centers": [
+            0.20248078554868698
+          ],
+          "case_ids": [
+            "episode_14:right:0-29"
+          ],
+          "source_ids": [
+            "110b11c942668a46b265e41bcef88488"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_00",
+          "center": 0.20248078554868698,
+          "reviewed_source_count": 1
+        },
+        {
+          "lower": 0.2418255866765976,
+          "upper": 0.2478963224887848,
+          "calibration_centers": [
+            0.2448609545826912
+          ],
+          "case_ids": [
+            "episode_15:right:0-54"
+          ],
+          "source_ids": [
+            "371588f876835c6f09735cfb1e2248bf"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_01",
+          "center": 0.2448609545826912,
+          "reviewed_source_count": 1
+        }
+      ],
+      "reasons": [
+        "insufficient_independent_holding_sources"
+      ]
+    },
+    {
+      "task": "橱柜门打开",
+      "side": "right",
+      "episodes": 2,
+      "state_frames": {
+        "uncertain": 84,
+        "held": 26,
+        "free": 25
+      },
+      "automatic_use": false,
+      "closed_bands": [],
+      "held_candidate_bands": [
+        {
+          "lower": 0.07558822494745254,
+          "upper": 0.09425864505767823,
+          "calibration_centers": [
+            0.08492343500256538
+          ],
+          "case_ids": [
+            "episode_17:right:40-62"
+          ],
+          "source_ids": [
+            "3c58614948865089ed018c4e919e9714"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_00",
+          "center": 0.08492343500256538,
+          "reviewed_source_count": 1
+        },
+        {
+          "lower": 0.1313379020690918,
+          "upper": 0.13833389568328858,
+          "calibration_centers": [
+            0.13483589887619019
+          ],
+          "case_ids": [
+            "episode_16:right:10-45"
+          ],
+          "source_ids": [
+            "c6dd1c4ae74a7b8c1f0617106fa78383"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_01",
+          "center": 0.13483589887619019,
+          "reviewed_source_count": 1
+        }
+      ],
+      "reasons": [
+        "insufficient_independent_holding_sources",
+        "requires_interval_vision"
+      ]
+    },
+    {
+      "task": "叠衣服",
+      "side": "left",
+      "episodes": 2,
+      "state_frames": {
+        "free": 333,
+        "uncertain": 166,
+        "held": 147
+      },
+      "automatic_use": false,
+      "closed_bands": [],
+      "held_candidate_bands": [
+        {
+          "lower": 0.0,
+          "upper": 0.006669176483526826,
+          "calibration_centers": [
+            0.0,
+            0.00024157071311492473,
+            0.00028875251882709563,
+            0.0003360146074555814,
+            0.0014556081732735038,
+            0.0015818546526134014,
+            0.001834588241763413
+          ],
+          "case_ids": [
+            "episode_18:left:130-174",
+            "episode_18:left:191-221",
+            "episode_18:left:67-78",
+            "episode_18:left:92-107",
+            "episode_19:left:138-182",
+            "episode_19:left:198-221",
+            "episode_19:left:25-35"
+          ],
+          "source_ids": [
+            "d43dd1ced6d7677e8d4fa60c3b82862d",
+            "d8f60b92c8ed6674ed7a3ab68cfaea98"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_00",
+          "center": 0.0003360146074555814,
+          "reviewed_source_count": 2
+        }
+      ],
+      "reasons": [
+        "requires_interval_vision"
+      ]
+    },
+    {
+      "task": "叠衣服",
+      "side": "right",
+      "episodes": 2,
+      "state_frames": {
+        "free": 155,
+        "uncertain": 184,
+        "held": 307
+      },
+      "automatic_use": false,
+      "closed_bands": [],
+      "held_candidate_bands": [
+        {
+          "lower": 0.0,
+          "upper": 0.0060058210249990225,
+          "calibration_centers": [
+            0.0003675761981867254,
+            0.0008403577376157045,
+            0.0008560983696952462,
+            0.0014713890850543976,
+            0.0015029105124995112
+          ],
+          "case_ids": [
+            "episode_18:right:202-222",
+            "episode_18:right:52-174",
+            "episode_19:right:209-221",
+            "episode_19:right:292-318",
+            "episode_19:right:88-182"
+          ],
+          "source_ids": [
+            "d43dd1ced6d7677e8d4fa60c3b82862d",
+            "d8f60b92c8ed6674ed7a3ab68cfaea98"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_00",
+          "center": 0.0008560983696952462,
+          "reviewed_source_count": 2
+        },
+        {
+          "lower": 0.006878539480268955,
+          "upper": 0.013005509480834006,
+          "calibration_centers": [
+            0.009942024480551481
+          ],
+          "case_ids": [
+            "episode_19:right:236-261"
+          ],
+          "source_ids": [
+            "d8f60b92c8ed6674ed7a3ab68cfaea98"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_01",
+          "center": 0.009942024480551481,
+          "reviewed_source_count": 1
+        },
+        {
+          "lower": 0.01315423895418644,
+          "upper": 0.020176738008856773,
+          "calibration_centers": [
+            0.016665488481521606
+          ],
+          "case_ids": [
+            "episode_18:right:274-285"
+          ],
+          "source_ids": [
+            "d43dd1ced6d7677e8d4fa60c3b82862d"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_02",
+          "center": 0.016665488481521606,
+          "reviewed_source_count": 1
+        },
+        {
+          "lower": 0.027808940529823304,
+          "upper": 0.03925158965587616,
+          "calibration_centers": [
+            0.03353026509284973
+          ],
+          "case_ids": [
+            "episode_18:right:237-256"
+          ],
+          "source_ids": [
+            "d43dd1ced6d7677e8d4fa60c3b82862d"
+          ],
+          "numeric_mode_ids": [],
+          "basis": [
+            "reviewed_held_span_plus_motion_noise"
+          ],
+          "id": "closed_03",
+          "center": 0.03353026509284973,
+          "reviewed_source_count": 1
+        }
+      ],
+      "reasons": [
+        "insufficient_independent_holding_sources",
+        "requires_interval_vision"
+      ]
+    }
+  ],
+  "rule_version": "task-profile-rule-v3-hold-first-reviewed-v1",
+  "uncertain_frames_changed": 0,
+  "free_frames_changed": 0,
+  "applied_intervals": 2,
+  "incomplete_transition_notes": "Both enabled examples start already holding; release boundary is uncertain and remains original, so full-cycle smoothness is not claimed.",
+  "independent_audit": "runs/20261105_head20_audit_v1/verification_final.json",
+  "browser_verification": "runs/20261105_head20_browser_v1/attempt-003/verification.json",
+  "offline_log": "runs/20261105_head20_work_v1/offline_final_v2.log",
+  "offline_tests_passed": 399,
+  "browser_checks_passed": 14
+}

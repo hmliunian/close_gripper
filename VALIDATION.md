@@ -2,6 +2,38 @@
 
 更新日期：2026-11-05。任务目标与验收依据见 [Untitled.md](Untitled.md)，当前方法见 [PLAN.md](PLAN.md)。本页先记录最新展示及当前配置的全量数值处理核验，再保留此前证据。软件检查、模型自动标签、主臂参考、真实 loader 读取和训练效果分别报告。
 
+## 主视角20条、动作配置与独立GUI（2026-11-05）
+
+按用户最新指令，选10个动作各2条独立原始录制，共20条episode、22个有效侧；直接用主视角取代腕部作本批判断，没有做视角对照。动作包括拿起刷子、杯子、魔方、海绵擦、芒果、插入缝隙刷、揭开锅盖、盖上锅盖、橱柜门打开和叠衣服。取样沿用这些任务已有冻结清单中的两条来源，没有按本轮是否抓住或配置是否启用筛选。准备输入为 `runs/20261105_head20_inputs_v1/`，原生审阅为 `runs/20261105_head20_reviews_v1/`。
+
+三个子agent分别承担主视角语义查看、GUI和合同检查，另作独立数据审计；主agent完成输入、配置、整合与复看。1,612个时间帧完整查看，双侧合计2,258个侧帧：**held633、free677、uncertain948**。实际查看并绑定SHA的主视角图片2,357张；头部双目各自按视频元数据偏移及解码时间对齐。全部为Codex原生模型观察，人工确认false、外部Qwen请求0；这些计数不是人工真值或准确率。
+
+主视角可见性按实际记录：刷子两例和杯子两例的接触区位于有效画面上沿或之外，未据手臂动作推断持物；魔方、芒果及部分海绵擦有遮挡。锅盖、柜门、缝隙刷和叠衣服可看到部分明确持物与释放过程。盖上锅盖25438末尾的下降半谷是放盖后空夹闭合，叠衣服也有同开度持物和空夹；曲线形状只作查看线索。
+
+最终配置为 [task_gripper_profiles_head20.json](configs/task_gripper_profiles_head20.json)，构建产物在 `runs/20261105_head20_config_v3/`。10动作／11任务侧均保存观察区间及原因；**只有插入缝隙刷右侧满足现有逐值双来源自动匹配条件**，其实际匹配带为 **0.15107005488872527～0.17710481929779054**。另一些任务已观察到持物，但两个来源的开度带没有交集或存在同值空夹，不能记作没有抓住。配置和曲线都使用同批20条，不声称留出效果。
+
+最终数值运行 `runs/20261105_head20_eval_v3/` 使用 `task-profile-rule-v3-hold-first-reviewed-v1`。原数值稳定窗与主视角held段相交后重新检查时长，保留原数值候选和被拒绝子段；固定时序拟合遇到未知边界保留原值。**2条、2段、48帧发生数值改变**：13838右侧0～26帧、1012右侧0～20帧。两个例子均起始已经持物，释放边界不确定，未拟合该过渡；因此不能声称这20条已完成完整曲线清洗。原观测和训练目标保持，训练有效位全false。
+
+独立审计 [verification_final.json](runs/20261105_head20_audit_v1/verification_final.json) **29,673项检查通过、0失败**：精确发布来源映射及SHA、20个独立source、原Parquet状态／时间／索引、实际证据摘要、逐点双来源校准、图像与40个主视角视频引用及各目偏移一致；948个uncertain与677个free侧帧全部原值保留，48个改写帧全部held且有合格稳定窗支持。安装配置与config／eval／GUI配置字节一致。审计为数据及规则核验，不能代替人工语义参考。
+
+新GUI在 **[8770主视角审阅](http://127.0.0.1:8770/review.html)**，目录 `runs/20261105_head20_gui_v2/`；原8766页继续可用。新页包含20条、40路主视角引用、逐手状态、凹谷／半段和语义区间跳转、同步曲线及配置下载。真实Chromium153最终 **14项通过**，20条视频均实际解码；JS、控制台、HTTP、网络失败和外部请求均0，见 [browser verification](runs/20261105_head20_browser_v1/attempt-003/verification.json)。涵盖2倍速播放／暂停切目、时间偏移、逐帧、双臂状态、Range206和配置原字节下载。
+
+实际命令如下，准备、构建、渲染、审计及浏览器命令均退出0；服务持续运行。更多运行记录见 [commands.json](runs/20261105_head20_work_v1/commands.json)。
+
+```sh
+.venv/bin/python -B scripts/prepare_head_review.py --manifest runs/20261104_task_profile_verified_inputs_v1/manifest.json --output runs/20261105_head20_inputs_v1
+.venv/bin/python -B scripts/run_head_review.py --inputs runs/20261105_head20_inputs_v1 --reviews runs/20261105_head20_reviews_v1 --config-output runs/20261105_head20_config_v3 --output runs/20261105_head20_eval_v3
+.venv/bin/python -B scripts/render_video_review.py --source-run runs/20261105_head20_eval_v3 --output runs/20261105_head20_gui_v2
+.venv/bin/python -B scripts/serve_review.py --run runs/20261105_head20_gui_v2 --port 8770
+.venv/bin/python -B runs/20261105_head20_audit_v1/audit_final.py
+node runs/20261105_head20_browser_v1/verify.cjs --gui runs/20261105_head20_gui_v2
+.venv/bin/python -B scripts/check.py
+```
+
+统一离线检查最终 **399项通过、0跳过，退出0**，日志 [offline_final_v2.log](runs/20261105_head20_work_v1/offline_final_v2.log)。覆盖主视角身份、错目／错时、双侧与稠密语义合同、未知帧保护、短持物／缺帧／独立周期及默认规则兼容；首次统一检查的旧模拟生成结果缺少版本字段，补齐夹具并验证实际版本落盘后通过，初次日志保留。
+
+历史尝试保留：config_v1因重复整段图片元数据导致校准冲突枚举过慢而中止（退出130，无完成产物）；v2生成的数值曲线把6个uncertain帧归零、10个uncertain帧实际改写，已由v3的逐段视觉约束纠正，[旧审计](runs/20261105_head20_audit_v1/verification.json)不作最终验收。浏览器attempt-001被沙箱阻止，获权限后attempt-002发现暂停换目会重置视频倍速，修复后attempt-003通过。旧产物均未覆盖。已完成本轮20条主视角审阅、对应配置和GUI；人工语义评估、更多来源覆盖、训练采用及效果和正式发布未在本轮完成，见 [交付汇总](reports/20261105_head20_summary.json)。
+
 ## GUI显示对应任务夹持区间（2026-11-05）
 
 按用户要求，`close_gripper/report.py` 在曲线上方增加“当前任务夹持区间”，从已落盘的 `coverage.matching_bands` 读取实际范围，按有效左／右侧分别展示六位小数和每端外扩余量，悬停显示完整精度；多个区间保留为独立的“或”选项。任务、episode及四档外扩切换时更新，无搜索结果时随当前episode隐藏。
